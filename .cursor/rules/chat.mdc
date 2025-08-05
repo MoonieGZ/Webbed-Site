@@ -1,0 +1,10 @@
+---
+description: Website development rules
+globs: 
+alwaysApply: true
+---
+- Always use ShadCN components where applicable.
+
+- Use Context7 MCP Tool to find applicable components and packages if you don't know about one. You can also use this to know about a library or package.
+
+- Maintain a list of used ShadCN components in shadcn-context.md (make one if it doesn't exist). It should contain all the components used and reference this to check if you need to install a ShadCN component from scratch with the CLI tool or not.
