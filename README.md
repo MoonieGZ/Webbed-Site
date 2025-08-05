@@ -1,6 +1,6 @@
-# MultiTools - Your All-in-One Toolkit
+# Moonsy's Webbed Site
 
-A comprehensive collection of useful tools for developers, designers, and creators. Built with Next.js 15, TypeScript, and Tailwind CSS.
+A collection of useful tools for various uses, also includes a PFQ playground. Built with Next.js 15, TypeScript, and Tailwind CSS.
 
 ## 🚀 Features
 
@@ -9,16 +9,6 @@ A comprehensive collection of useful tools for developers, designers, and creato
 - **Dark Mode Support** - Beautiful dark and light themes
 - **Smooth Animations** - Hardware-accelerated transitions
 - **Modular Architecture** - Clean separation of concerns
-
-## 🛠️ Available Tools
-
-- **Calculator** - Advanced calculator with scientific functions and history
-- **Text Tools** - Text manipulation and formatting utilities
-- **Color Tools** - Color picker and palette generator
-- **Code Tools** - Code formatting and utilities
-- **Data Tools** - Data processing and analysis
-- **Charts** - Interactive charts and graphs
-- **Settings** - Customize your experience
 
 ## 🏗️ Architecture
 
@@ -35,18 +25,13 @@ This project follows a clean, modular architecture with clear separation of conc
 
 /components
   /ui                   # Shared UI components
-    Sidebar.tsx         # Persistent sidebar
   /tools                # Tool-specific components
-    CalculatorWidget.tsx
 
 /hooks                  # Custom React hooks
-  useCalculator.ts
 
 /lib                    # Utility functions
-  calculatorUtils.ts
 
 /services               # API and backend interaction
-  api.ts
 
 /styles                 # Global styles
   globals.css
@@ -142,17 +127,9 @@ The sidebar and all tools are fully responsive:
 - Keep components focused and single-purpose
 - Use meaningful variable and function names
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes following the architecture guidelines
-4. Test thoroughly
-5. Submit a pull request
-
 ## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is open source and available under the [GNU General Public License v3.0](LICENSE).
 
 ## 🙏 Acknowledgments
 
