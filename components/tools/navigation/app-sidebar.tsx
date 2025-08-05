@@ -2,22 +2,19 @@
 
 import * as React from "react"
 import {
-  BookOpen,
-  Bot,
   Moon,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
   Send,
   Settings2,
-  SquareTerminal,
+  Gamepad2,
+  Webhook,
+  MessageCircleHeart,
+  FishSymbol,
 } from "lucide-react"
 
-import { NavMain } from "@/components/nav-main"
-import { NavLinks } from "@/components/nav-links"
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
+import { NavMain } from "@/components/tools/navigation/nav-main"
+import { NavLinks } from "@/components/tools/navigation/nav-links"
+import { NavSecondary } from "@/components/tools/navigation/nav-secondary"
+import { NavUser } from "@/components/tools/navigation/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -30,69 +27,69 @@ import {
 
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: "Moonsy",
+    rank: "Admin",
+    avatar: "/hysilens.png",
   },
   navMain: [
     {
-      title: "Playground",
+      title: "Fimsh 1",
       url: "#",
-      icon: SquareTerminal,
+      icon: FishSymbol,
       isActive: true,
       items: [
         {
-          title: "History",
+          title: "Fimsh 1.1",
           url: "#",
         },
         {
-          title: "Starred",
+          title: "Fimsh 1.2",
           url: "#",
         },
         {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
+          title: "Fimsh 1.3",
           url: "#",
         },
       ],
     },
     {
-      title: "Documentation",
+      title: "Fimsh 2",
       url: "#",
-      icon: BookOpen,
+      icon: FishSymbol,
       items: [
         {
-          title: "Introduction",
+          title: "Fimsh 2.1",
           url: "#",
         },
         {
-          title: "Get Started",
+          title: "Fimsh 2.2",
           url: "#",
         },
         {
-          title: "Tutorials",
+          title: "Fimsh 2.3",
+          url: "#",
+        },
+      ],
+    },
+    {
+      title: "Fimsh 3",
+      url: "#",
+      icon: FishSymbol,
+      items: [
+        {
+          title: "Fimsh 3.1",
           url: "#",
         },
         {
-          title: "Changelog",
+          title: "Fimsh 3.2",
+          url: "#",
+        },
+        {
+          title: "Fimsh 3.3",
+          url: "#",
+        },
+        {
+          title: "Fimsh 3.4",
           url: "#",
         },
       ],
@@ -101,53 +98,30 @@ const data = {
       title: "Settings",
       url: "#",
       icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
     },
   ],
   navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
     {
       title: "Feedback",
       url: "#",
       icon: Send,
     },
+    {
+      title: "Bluesky",
+      url: "https://bsky.app/profile/mnsy.dev",
+      icon: MessageCircleHeart,
+    },
   ],
   links: [
     {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
+      name: "PokéFarm Q",
+      url: "https://pokefarm.com/",
+      icon: Gamepad2,
     },
     {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      name: "PokéFarm Q API",
+      url: "https://api.pokefarm.com/docs/",
+      icon: Webhook,
     },
   ],
 }

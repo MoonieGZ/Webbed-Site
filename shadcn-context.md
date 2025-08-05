@@ -8,12 +8,14 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - Sidebar (custom implementation with Lucide icons)
   - Calculator Widget (custom implementation)
   - Settings Page (custom implementation)
+  - Magic Link Authentication System (custom implementation)
 
 ## Installation History
 
 - Project initialized with basic ShadCN setup
 - Using Lucide React icons for all iconography
 - Custom components built with Tailwind CSS for optimal performance
+- Magic link authentication system implemented with custom components
 - No ShadCN components installed yet - using custom implementations
 
 ## Notes
@@ -22,6 +24,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 - Update this file when adding new components
 - Reference the ShadCN registry for available components
 - Current approach: Custom components with Tailwind CSS for better control and performance
+- Magic link system uses existing UI components (Button, Input, Label) from shadcn/ui
 
 ## Potential Future ShadCN Components
 
@@ -30,4 +33,6 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 - Dialog (for modals)
 - Dropdown Menu (for advanced navigation)
 - Switch (for toggles)
-- Select (for dropdowns) 
+- Select (for dropdowns)
+- Card (for dashboard layouts)
+- Badge (for status indicators) 
