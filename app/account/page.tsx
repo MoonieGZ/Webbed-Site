@@ -1,14 +1,6 @@
 "use client"
 
-import {
-  User,
-  Save,
-  AlertCircle,
-  CheckCircle,
-  Calendar,
-  Camera,
-  Download,
-} from "lucide-react"
+import { User, Save, Camera, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
