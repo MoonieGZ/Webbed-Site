@@ -94,13 +94,12 @@ export default function AccountPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">Display Name</Label>
                 <div className="flex rounded-md shadow-xs">
                   <Input
                     id="username"
                     onChange={(e) => setNewUsername(e.target.value)}
                     placeholder={user?.name.startsWith("User #") ? "Enter new username" : user?.name}
-                    value={user?.name.startsWith("User #") ? newUsername : user?.name}
                     maxLength={32}
                     className="-me-px rounded-e-none shadow-none focus-visible:z-1"
                     disabled={!canChangeUsername()}
@@ -108,7 +107,7 @@ export default function AccountPage() {
                   <Button
                     className="rounded-s-none"
                     onClick={handleUsernameChange}
-                    disabled={isChangingUsername || !canChangeUsername() || newUsername.trim() === user?.name}
+                    disabled={isChangingUsername || !canChangeUsername() || newUsername.trim() === user?.name || newUsername.trim() === ""}
                   >
                     {isChangingUsername ? (
                       <>
@@ -125,7 +124,7 @@ export default function AccountPage() {
                 </div>
                 
                 <p className={`text-xs ${canChangeUsername() ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-                  {canChangeUsername() ? "You can change your username now" : `You can change your username again in ${getDaysUntilUsernameChange()} days`}
+                  {canChangeUsername() ? "You can change your display name now" : `You can change your display name again in ${getDaysUntilUsernameChange()} days`}
                 </p>
               </div>
 
@@ -172,7 +171,7 @@ export default function AccountPage() {
                     accept="image/*"
                     onChange={onAvatarFileChange}
                     disabled={isUploadingAvatar}
-                    className="w-full text-muted-foreground file:border-input file:text-foreground p-0 pr-3 italic file:me-3 file:h-full file:border-0 file:border-e file:border-solid file:bg-transparent file:px-3 file:text-sm file:font-medium file:not-italic file:leading-none file:py-2.25"
+                    className="w-full text-muted-foreground file:border-input file:text-foreground p-0 pr-3 italic file:me-3 file:h-full file:border-0 file:border-e file:border-solid file:bg-primary file:text-primary-foreground file:px-3 file:text-sm file:font-medium file:not-italic file:leading-none file:py-2.25 file:hover:bg-primary/90 file:transition-colors"
                   />
                   <div className="flex gap-2">
                     <Button

@@ -49,6 +49,8 @@ export function useAccount() {
     setLoading(false);
   };
 
+
+
   const canChangeUsername = () => {
     if (!user?.name_changed_at) return true;
     
@@ -72,13 +74,13 @@ export function useAccount() {
   };
 
   const handleUsernameChange = async () => {
-    if (!user || !newUsername.trim()) {
-      toast.error('Please enter a valid username', toastStyles.error);
+    if (!user) {
+      toast.error('User not found', toastStyles.error);
       return;
     }
 
-    if (newUsername.trim() === user.name) {
-      toast.error('New username must be different from current username', toastStyles.error);
+    if (!newUsername.trim()) {
+      toast.error('Please enter a username', toastStyles.error);
       return;
     }
 
@@ -95,14 +97,14 @@ export function useAccount() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name: newUsername.trim() }),
+        body: JSON.stringify({ name: newUsername }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         toast.success('Username updated successfully!', toastStyles.success);
-        setUser(prev => prev ? { ...prev, name: newUsername.trim(), name_changed_at: new Date().toISOString() } : null);
+        setUser(prev => prev ? { ...prev, name: data.name, name_changed_at: data.name_changed_at } : null);
       } else {
         toast.error(data.error || 'Failed to update username', toastStyles.error);
       }

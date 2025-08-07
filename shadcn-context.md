@@ -40,6 +40,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 - Animate-UI provides advanced animation and interaction components
 - Toast styling centralized in `lib/utils.ts` with `toastStyles` utility for consistent sonner notifications
 - Gravatar integration for automatic avatar import from user's email address
+- Username validation with profanity filtering using bad-words-next library (server-side validation)
 
 ## Potential Future ShadCN Components
 
