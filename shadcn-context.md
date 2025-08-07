@@ -38,6 +38,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 - Current approach: Mix of shadcn/ui components and custom implementations
 - Magic link system uses existing UI components (Button, Input, Label) from shadcn/ui
 - Animate-UI provides advanced animation and interaction components
+- Toast styling centralized in `lib/utils.ts` with `toastStyles` utility for consistent sonner notifications
 
 ## Potential Future ShadCN Components
 

@@ -1,7 +1,6 @@
 "use client"
 
 import {
-  BadgeCheck,
   Bell,
   ChevronsUpDown,
   LogOut,
@@ -21,7 +20,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/animate-ui/radix/dropdown-menu"
@@ -95,8 +93,8 @@ export function NavUser({
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 {user.name !== "Guest" && (
-                  <DropdownMenuItem>
-                    <BadgeCheck />
+                  <DropdownMenuItem onClick={() => window.location.href = '/account'}>
+                    <User />
                     Account
                   </DropdownMenuItem>
                 )}

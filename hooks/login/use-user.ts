@@ -6,6 +6,7 @@ interface User {
   name: string;
   rank?: string;
   avatar?: string;
+  name_changed_at?: string;
 }
 
 interface SessionResponse {

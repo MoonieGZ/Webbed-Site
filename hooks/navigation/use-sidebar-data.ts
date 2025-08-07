@@ -87,11 +87,6 @@ export function useSidebarData() {
           },
         ],
       },
-      {
-        title: "Settings",
-        url: "#",
-        icon: Settings2,
-      },
     ],
     navSecondary: [
       {

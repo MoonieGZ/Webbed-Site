@@ -28,9 +28,10 @@ export async function GET(request: NextRequest) {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name || "User ID: #" + user.id,
+        name: user.name || "User #" + user.id,
         rank: user.rank,
-        avatar: "/avatars/" + user.id + "/" + user.avatar
+        avatar: user.avatar ? `/avatars/${user.id}/${user.avatar}` : null,
+        name_changed_at: user.name_changed_at
       }
     });
 

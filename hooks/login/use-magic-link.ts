@@ -30,7 +30,7 @@ export function useMagicLink() {
         }
 
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push('/account');
         }, 2000);
       } else {
         setStatus('error');

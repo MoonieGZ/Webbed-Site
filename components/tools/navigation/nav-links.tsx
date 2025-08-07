@@ -23,7 +23,7 @@ export function NavLinks({
 }) {
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Useful Links</SidebarGroupLabel>
+      <SidebarGroupLabel>Other Links</SidebarGroupLabel>
       <SidebarMenu>
         {links.map((item) => (
           <SidebarMenuItem key={item.name}>
