@@ -4,9 +4,11 @@ import {
   BadgeCheck,
   Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
   Sparkles,
+  Settings,
+  User,
+  Loader2,
 } from "lucide-react"
 
 import {
@@ -35,12 +37,14 @@ import { useLogout } from "@/hooks/login/use-logout"
 
 export function NavUser({
   user,
+  loading = false,
 }: {
   user: {
     name: string
     rank: string
     avatar: string
   }
+  loading?: boolean
 }) {
   const { isMobile } = useSidebar()
   const {
@@ -63,11 +67,15 @@ export function NavUser({
               >
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">M</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {loading ? <Loader2 className="size-4 animate-spin" /> : <User className="size-4" />}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.rank}</span>
+                  <span className="truncate font-medium">
+                    {loading ? "Loading..." : user.name}
+                  </span>
+                  {user.rank && <span className="truncate text-xs">{user.rank}</span>}
                 </div>
                 <ChevronsUpDown className="ml-auto size-4" />
               </SidebarMenuButton>
@@ -78,45 +86,40 @@ export function NavUser({
               align="end"
               sideOffset={4}
             >
-              <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                  <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="rounded-lg">M</AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{user.name}</span>
-                    <span className="truncate text-xs">{user.rank}</span>
-                  </div>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem>
                   <Sparkles />
-                  Upgrade to Pro
+                  Become a Supporter
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
+                {user.name !== "Guest" && (
+                  <DropdownMenuItem>
+                    <BadgeCheck />
+                    Account
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem>
-                  <BadgeCheck />
-                  Account
+                  <Settings />
+                  Preferences
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CreditCard />
-                  Billing
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Bell />
-                  Notifications
-                </DropdownMenuItem>
+                {user.name !== "Guest" && (
+                  <DropdownMenuItem>
+                    <Bell />
+                    Notifications
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onClick={handleLogoutClick}>
-                <LogOut />
-                Log out
-              </DropdownMenuItem>
+              {user.name !== "Guest" && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="destructive" onClick={handleLogoutClick}>
+                    <LogOut />
+                    Log out
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </SidebarMenuItem>

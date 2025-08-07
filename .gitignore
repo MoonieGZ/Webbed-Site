@@ -45,4 +45,4 @@ next-env.d.ts
 
 # avatars folder except default
 /public/avatars/*
-!/public/avatars/hysilens.png
+!/public/avatars/1/hysilens.png

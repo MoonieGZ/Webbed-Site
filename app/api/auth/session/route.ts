@@ -28,7 +28,9 @@ export async function GET(request: NextRequest) {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name
+        name: user.name || "User ID: #" + user.id,
+        rank: user.rank,
+        avatar: "/avatars/" + user.id + "/" + user.avatar
       }
     });
 

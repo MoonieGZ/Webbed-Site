@@ -7,14 +7,23 @@ import {
   MessageCircleHeart,
   FishSymbol,
 } from "lucide-react"
+import { useUser } from "@/hooks/login/use-user"
 
 export function useSidebarData() {
+  const { user, loading, error } = useUser();
+  
+  const userData = user ? {
+    name: user.name,
+    rank: user.rank || "",
+    avatar: user.avatar || "",
+  } : {
+    name: "Guest",
+    rank: "",
+    avatar: "",
+  };
+
   const data = {
-    user: {
-      name: "Moonsy",
-      rank: "Admin",
-      avatar: "/hysilens.png",
-    },
+    user: userData,
     navMain: [
       {
         title: "Fimsh 1",
@@ -110,5 +119,8 @@ export function useSidebarData() {
     ],
   };
 
-  return data;
+  return {
+    ...data,
+    loading,
+  };
 }

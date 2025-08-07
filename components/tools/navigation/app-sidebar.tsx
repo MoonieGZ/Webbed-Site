@@ -19,7 +19,7 @@ import {
 import { useSidebarData } from "@/hooks/navigation/use-sidebar-data"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const data = useSidebarData();
+  const { loading, ...data } = useSidebarData();
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -45,7 +45,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={data.user} loading={loading} />
       </SidebarFooter>
     </Sidebar>
   )
