@@ -43,6 +43,5 @@ next-env.d.ts
 # cursor
 .cursor/
 
-# avatars folder except default
+# avatars folder
 /public/avatars/*
-!/public/avatars/1/hysilens.png

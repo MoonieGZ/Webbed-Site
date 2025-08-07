@@ -152,6 +152,39 @@ export function useAccount() {
     }
   };
 
+  const handleGravatarImport = async () => {
+    if (!user?.email) {
+      toast.error('No email address available for Gravatar', toastStyles.error);
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+
+    try {
+      const response = await fetch('/api/account/gravatar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: user.email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Gravatar imported successfully!', toastStyles.success);
+        setUser(prev => prev ? { ...prev, avatar: data.avatar } : null);
+      } else {
+        toast.error(data.error || 'Failed to import Gravatar', toastStyles.error);
+      }
+    } catch (error) {
+      console.error('Gravatar import failed:', error);
+      toast.error('An error occurred while importing Gravatar', toastStyles.error);
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   return {
     user,
     loading,
@@ -164,5 +197,6 @@ export function useAccount() {
     getDaysUntilUsernameChange,
     handleUsernameChange,
     handleAvatarUpload,
+    handleGravatarImport,
   };
 }

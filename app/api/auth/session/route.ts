@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         email: user.email,
         name: user.name || "User #" + user.id,
         rank: user.rank,
-        avatar: user.avatar ? `/avatars/${user.id}/${user.avatar}` : null,
+        avatar: user.avatar ?? null,
         name_changed_at: user.name_changed_at
       }
     });
