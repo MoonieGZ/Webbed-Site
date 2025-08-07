@@ -1,15 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  Moon,
-  Send,
-  Settings2,
-  Gamepad2,
-  Webhook,
-  MessageCircleHeart,
-  FishSymbol,
-} from "lucide-react"
+import { Moon } from "lucide-react"
 
 import { NavMain } from "@/components/tools/navigation/nav-main"
 import { NavLinks } from "@/components/tools/navigation/nav-links"
@@ -24,109 +16,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/animate-ui/radix/sidebar"
-
-const data = {
-  user: {
-    name: "Moonsy",
-    rank: "Admin",
-    avatar: "/hysilens.png",
-  },
-  navMain: [
-    {
-      title: "Fimsh 1",
-      url: "#",
-      icon: FishSymbol,
-      isActive: true,
-      items: [
-        {
-          title: "Fimsh 1.1",
-          url: "#",
-        },
-        {
-          title: "Fimsh 1.2",
-          url: "#",
-        },
-        {
-          title: "Fimsh 1.3",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Fimsh 2",
-      url: "#",
-      icon: FishSymbol,
-      items: [
-        {
-          title: "Fimsh 2.1",
-          url: "#",
-        },
-        {
-          title: "Fimsh 2.2",
-          url: "#",
-        },
-        {
-          title: "Fimsh 2.3",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Fimsh 3",
-      url: "#",
-      icon: FishSymbol,
-      items: [
-        {
-          title: "Fimsh 3.1",
-          url: "#",
-        },
-        {
-          title: "Fimsh 3.2",
-          url: "#",
-        },
-        {
-          title: "Fimsh 3.3",
-          url: "#",
-        },
-        {
-          title: "Fimsh 3.4",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-    {
-      title: "Bluesky",
-      url: "https://bsky.app/profile/mnsy.dev",
-      icon: MessageCircleHeart,
-    },
-  ],
-  links: [
-    {
-      name: "PokéFarm Q",
-      url: "https://pokefarm.com/",
-      icon: Gamepad2,
-    },
-    {
-      name: "PokéFarm Q API",
-      url: "https://api.pokefarm.com/docs/",
-      icon: Webhook,
-    },
-  ],
-}
+import { useSidebarData } from "@/hooks/navigation/use-sidebar-data"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const data = useSidebarData();
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>

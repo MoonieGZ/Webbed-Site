@@ -1,64 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
 import { Moon, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useMagicLink } from '@/hooks/login/use-magic-link';
 
 export default function MagicLinkPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'invalid'>('loading');
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    const token = searchParams.get('token');
-    
-    if (!token) {
-      setStatus('invalid');
-      setMessage('No token provided');
-      return;
-    }
-
-    validateToken(token);
-  }, [searchParams]);
-
-  const validateToken = async (token: string) => {
-    try {
-      const response = await fetch('/api/login/magic/validate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setStatus('success');
-        if (data.shouldCreateUser) {
-          setMessage('Account created successfully! Redirecting...');
-
-          setTimeout(() => {
-            router.push('/dashboard');
-          }, 2000);
-        } else {
-          setMessage('Login successful! Redirecting...');
-
-          setTimeout(() => {
-            router.push('/dashboard');
-          }, 2000);
-        }
-      } else {
-        setStatus('error');
-        setMessage(data.error || 'Invalid or expired token');
-      }
-    } catch (error) {
-      setStatus('error');
-      setMessage('An error occurred while validating the token');
-    }
-  };
+  const { status, message, handleBackToLogin } = useMagicLink();
 
   const getStatusIcon = () => {
     switch (status) {
@@ -113,7 +60,7 @@ export default function MagicLinkPage() {
             </p>
             {(status === 'error' || status === 'invalid') && (
               <Button 
-                onClick={() => router.push('/login')}
+                onClick={handleBackToLogin}
                 className="w-full"
               >
                 Back to Login

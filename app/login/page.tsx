@@ -1,31 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Moon } from "lucide-react"
 import { LoginForm } from "@/components/tools/login/login-form"
 import { MotionEffect } from "@/components/animate-ui/effects/motion-effect"
+import { useSession } from "@/hooks/login/use-session"
 
 export default function LoginPage() {
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    checkSession();
-  }, []);
-
-  const checkSession = async () => {
-    try {
-      const response = await fetch('/api/auth/session');
-      const data = await response.json();
-
-      if (data.authenticated) {
-        window.location.href = '/';
-        return;
-      }
-    } catch (error) {
-      console.error('Session check failed:', error);
-    }
-    setLoading(false);
-  };
+  const { loading } = useSession();
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2 relative">

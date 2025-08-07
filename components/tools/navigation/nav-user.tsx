@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import {
   BadgeCheck,
   Bell,
@@ -32,6 +31,7 @@ import {
 } from "@/components/animate-ui/radix/sidebar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/animate-ui/radix/dialog" 
 import { Button } from "@/components/ui/button"
+import { useLogout } from "@/hooks/login/use-logout"
 
 export function NavUser({
   user,
@@ -43,29 +43,13 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
-  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/session', { method: 'DELETE' });
-      window.location.href = '/login';
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
-
-  const handleLogoutClick = () => {
-    setLogoutDialogOpen(true);
-  };
-
-  const handleCancelLogout = () => {
-    setLogoutDialogOpen(false);
-  };
-
-  const handleConfirmLogout = async () => {
-    setLogoutDialogOpen(false);
-    await handleLogout();
-  };
+  const {
+    logoutDialogOpen,
+    setLogoutDialogOpen,
+    handleLogoutClick,
+    handleCancelLogout,
+    handleConfirmLogout,
+  } = useLogout()
 
   return (
     <>
