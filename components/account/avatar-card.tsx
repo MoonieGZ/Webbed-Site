@@ -107,14 +107,13 @@ export function AvatarCard() {
 
         {recentAvatars.length > 0 && (
           <div className="space-y-3">
-            {recentAvatars.length > 0 && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Recent Avatars</Label>
-                <AvatarGroup invertOverlap className="h-16 -space-x-4.5">
+            <div className="space-y-2">
+              <CardTitle>Recent Avatars</CardTitle>
+                <AvatarGroup invertOverlap className="h-16 -space-x-4.5 flex items-center justify-center">
                   {recentAvatars.map((avatar, index) => (
                     <Avatar
                       key={index}
-                      className="size-16 border-2 cursor-pointer hover:opacity-80 transition-opacity"
+                      className="size-16 border-2 cursor-pointer hover:opacity-80 transition-opacity shrink-0 hover:scale-110 hover:z-10"
                       onClick={() => handleSetRecentAvatar(avatar.filename)}
                     >
                       <AvatarImage src={avatar.src} />
@@ -124,12 +123,12 @@ export function AvatarCard() {
                     </Avatar>
                   ))}
                 </AvatarGroup>
-                <p className="text-xs text-muted-foreground text-end">
+
+                <p className="text-xs text-muted-foreground text-center">
                   Click any avatar to set it as your current profile picture
-                  &bull; Last 10 avatars are shown here
+                  &bull; Last 5 avatars are shown here
                 </p>
-              </div>
-            )}
+            </div>
           </div>
         )}
       </CardContent>

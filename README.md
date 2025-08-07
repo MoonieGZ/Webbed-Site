@@ -25,7 +25,7 @@ This project follows a clean, modular architecture with clear separation of conc
 
 /components
   /ui                   # Shared UI components
-  /tools                # Tool-specific components
+  /[tool-name]          # Tool-specific components
 
 /hooks                  # Custom React hooks
 
@@ -46,7 +46,7 @@ This project follows a clean, modular architecture with clear separation of conc
 
 2. **Component Organization**
    - Shared components in `/components/ui/`
-   - Tool-specific components in `/components/tools/`
+   - Tool-specific components in `/components/[tool-name]/`
    - Clear naming conventions
 
 3. **State Management**
@@ -119,7 +119,7 @@ The sidebar and all tools are fully responsive:
 
 1. Create a new folder in `/app/[tool-name]/`
 2. Add a `page.tsx` file with only layout and components
-3. Create tool-specific components in `/components/tools/`
+3. Create tool-specific components in `/components/[tool-name]/`
 4. Add business logic to custom hooks in `/hooks/`
 5. Add utility functions to `/lib/` if needed
 6. Update the sidebar navigation in `/components/ui/Sidebar.tsx`

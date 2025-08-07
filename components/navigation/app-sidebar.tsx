@@ -3,10 +3,10 @@
 import * as React from "react"
 import { Moon } from "lucide-react"
 
-import { NavMain } from "@/components/tools/navigation/nav-main"
-import { NavLinks } from "@/components/tools/navigation/nav-links"
-import { NavSecondary } from "@/components/tools/navigation/nav-secondary"
-import { NavUser } from "@/components/tools/navigation/nav-user"
+import { NavMain } from "@/components/navigation/nav-main"
+import { NavLinks } from "@/components/navigation/nav-links"
+import { NavSecondary } from "@/components/navigation/nav-secondary"
+import { NavUser } from "@/components/navigation/nav-user"
 import {
   Sidebar,
   SidebarContent,

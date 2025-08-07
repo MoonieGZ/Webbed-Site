@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       user.id,
     ])
 
-    await cleanupOldAvatars(user.id, 10)
+    await cleanupOldAvatars(user.id, 5)
 
     const avatarUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}${avatarPath}`
     await DiscordWebhookService.notifyAvatarUpload(user, avatarUrl)

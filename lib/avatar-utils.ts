@@ -53,7 +53,7 @@ export async function getRecentAvatars(
 
 export async function cleanupOldAvatars(
   userId: number,
-  keepCount: number = 10,
+  keepCount: number = 5,
 ): Promise<void> {
   try {
     const userAvatarDir = join(

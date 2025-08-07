@@ -1,7 +1,7 @@
 "use client"
 
 import { Moon } from "lucide-react"
-import { LoginForm } from "@/components/tools/login/login-form"
+import { LoginForm } from "@/components/login/login-form"
 import { MotionEffect } from "@/components/animate-ui/effects/motion-effect"
 import { useSession } from "@/hooks/login/use-session"
 
