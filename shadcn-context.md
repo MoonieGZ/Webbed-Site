@@ -31,6 +31,9 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - usePFQApiKey (PFQ API key management)
   - useProfileInformation (profile information management)
   - useAvatar (avatar management and upload)
+  - useNavMain (main navigation menu data)
+  - useNavLinks (external links navigation data)
+  - useNavSecondary (secondary navigation menu data)
 
 ## Installation History
 
@@ -55,6 +58,8 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 - Recent avatars system with file modification time tracking (keeps last 10 avatars, auto-cleanup on upload/import)
 - PokéFarm Q API integration with secure API key storage and validation
 - PFQ API service with centralized API calls and error handling
+- Discord webhook service for user activity notifications (avatar uploads, imports, username changes)
+- Global user context for real-time avatar updates across components
 
 ## Potential Future ShadCN Components
 

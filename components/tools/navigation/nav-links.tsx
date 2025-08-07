@@ -9,16 +9,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/animate-ui/radix/sidebar"
+import { useNavLinks } from "@/hooks/navigation/use-nav-links"
 
-export function NavLinks({
-  links,
-}: {
-  links: {
-    name: string
-    url: string
-    icon: LucideIcon
-  }[]
-}) {
+export function NavLinks() {
+  const { links } = useNavLinks()
+
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Other Links</SidebarGroupLabel>

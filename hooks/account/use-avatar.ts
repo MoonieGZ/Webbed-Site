@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
+import { useUserContext } from "@/contexts/user-context"
 
 interface RecentAvatar {
   src: string
@@ -8,49 +9,16 @@ interface RecentAvatar {
   modifiedTime: Date
 }
 
-interface User {
-  id: number
-  email: string
-  name: string
-  rank?: string
-  avatar?: string
-  name_changed_at?: string
-}
-
 export function useAvatar() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, updateUser, loading } = useUserContext()
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const [recentAvatars, setRecentAvatars] = useState<RecentAvatar[]>([])
-
-  useEffect(() => {
-    fetchUserData()
-  }, [])
 
   useEffect(() => {
     if (user) {
       fetchRecentAvatars()
     }
   }, [user])
-
-  const fetchUserData = async () => {
-    try {
-      const response = await fetch("/api/auth/session")
-      const data = await response.json()
-
-      if (data.authenticated) {
-        setUser(data.user)
-      } else {
-        window.location.href = "/login"
-        return
-      }
-    } catch (error) {
-      console.error("Session check failed:", error)
-      window.location.href = "/login"
-      return
-    }
-    setLoading(false)
-  }
 
   const fetchRecentAvatars = async () => {
     if (!user) return
@@ -75,7 +43,7 @@ export function useAvatar() {
       const formData = new FormData()
       formData.append("avatar", file)
 
-      const response = await fetch("/api/account/avatar", {
+      const response = await fetch("/api/account/avatar/upload", {
         method: "POST",
         body: formData,
       })
@@ -84,7 +52,7 @@ export function useAvatar() {
 
       if (response.ok) {
         toast.success("Avatar uploaded successfully!", toastStyles.success)
-        setUser({ ...user, avatar: data.avatar })
+        updateUser({ avatar: data.avatar })
         await fetchRecentAvatars()
       } else {
         toast.error(data.error || "Failed to upload avatar", toastStyles.error)
@@ -110,7 +78,7 @@ export function useAvatar() {
 
       if (response.ok) {
         toast.success("Gravatar imported successfully!", toastStyles.success)
-        setUser({ ...user, avatar: data.avatar })
+        updateUser({ avatar: data.avatar })
         await fetchRecentAvatars()
       } else {
         toast.error(
@@ -130,7 +98,7 @@ export function useAvatar() {
     if (!user) return
 
     try {
-      const response = await fetch("/api/account/avatar/recent", {
+      const response = await fetch("/api/account/avatar/set", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -142,7 +110,7 @@ export function useAvatar() {
 
       if (response.ok) {
         toast.success("Avatar set successfully!", toastStyles.success)
-        setUser({ ...user, avatar: data.avatar })
+        updateUser({ avatar: data.avatar })
       } else {
         toast.error(data.error || "Failed to set avatar", toastStyles.error)
       }

@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get user from session
     const user = (await queryOne(
       "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
       [sessionToken],
@@ -20,7 +19,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get PFQ API key for user
     const apiKeyRecord = (await queryOne(
       "SELECT api_key, created_at, last_validated FROM pfq_apikeys WHERE user_id = ?",
       [user.id],
@@ -30,7 +28,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ hasApiKey: false })
     }
 
-    // Fetch PFQ user data
     const pfqUserResult = await PFQApiService.whoAmI(apiKeyRecord.api_key)
 
     return NextResponse.json({
@@ -38,7 +35,6 @@ export async function GET(request: NextRequest) {
       created_at: apiKeyRecord.created_at,
       last_validated: apiKeyRecord.last_validated,
       pfqUser: pfqUserResult.success ? pfqUserResult.data : null,
-      // Don't return the actual API key for security
     })
   } catch (error) {
     console.error("PFQ API key fetch error:", error)
@@ -57,7 +53,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get user from session
     const user = (await queryOne(
       "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
       [sessionToken],
@@ -76,7 +71,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate the API key with PFQ
     const validationResult = await PFQApiService.whoAmI(apiKey)
 
     if (!validationResult.success) {
@@ -86,20 +80,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if user already has an API key
     const existingKey = await queryOne(
       "SELECT id FROM pfq_apikeys WHERE user_id = ?",
       [user.id],
     )
 
     if (existingKey) {
-      // Update existing API key
       await query(
         "UPDATE pfq_apikeys SET api_key = ?, last_validated = NOW() WHERE user_id = ?",
         [apiKey, user.id],
       )
     } else {
-      // Insert new API key
       await query(
         "INSERT INTO pfq_apikeys (user_id, api_key, created_at, last_validated) VALUES (?, ?, NOW(), NOW())",
         [user.id, apiKey],
@@ -124,7 +115,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Get user from session
     const user = (await queryOne(
       "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
       [sessionToken],
@@ -134,7 +124,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Delete PFQ API key
     await query("DELETE FROM pfq_apikeys WHERE user_id = ?", [user.id])
 
     return NextResponse.json({ success: true })

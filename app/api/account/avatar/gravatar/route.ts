@@ -5,6 +5,7 @@ import { cleanupOldAvatars } from "@/lib/avatar-utils"
 import crypto from "crypto"
 import fs from "fs/promises"
 import path from "path"
+import { DiscordWebhookService } from "@/services/discord-webhook"
 
 export async function POST(request: NextRequest) {
   try {
@@ -72,6 +73,9 @@ export async function POST(request: NextRequest) {
     ])
 
     await cleanupOldAvatars(user.id, 10)
+
+    const avatarUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}${avatarPath}`
+    await DiscordWebhookService.notifyGravatarImport(user, avatarUrl)
 
     return NextResponse.json({
       success: true,

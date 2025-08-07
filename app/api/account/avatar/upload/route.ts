@@ -5,6 +5,7 @@ import crypto from "crypto"
 import { getUserBySession } from "@/lib/session"
 import { query } from "@/lib/db"
 import { cleanupOldAvatars } from "@/lib/avatar-utils"
+import { DiscordWebhookService } from "@/services/discord-webhook"
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,6 +78,9 @@ export async function POST(request: NextRequest) {
     ])
 
     await cleanupOldAvatars(user.id, 10)
+
+    const avatarUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}${avatarPath}`
+    await DiscordWebhookService.notifyAvatarUpload(user, avatarUrl)
 
     return NextResponse.json({
       success: true,
