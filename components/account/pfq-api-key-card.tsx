@@ -55,8 +55,7 @@ export function PFQApiKeyCard() {
           PokéFarm Q API Key
         </CardTitle>
         <CardDescription>
-          Connect your PokéFarm Q account to enable the PFQ pages and
-          functionality
+          Connect your PFQ account to enable the PFQ pages and functionality
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -65,20 +64,19 @@ export function PFQApiKeyCard() {
             <div className="p-4 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
               <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
                 <div className="w-2 h-2 bg-green-500 rounded-full" />
-                <span className="font-medium">
+                <span className="font-medium px-2">
                   API Key Connected on{" "}
                   <strong>
                     {apiKeyInfo.created_at
                       ? new Date(apiKeyInfo.created_at).toLocaleDateString()
                       : "Unknown"}
                   </strong>{" "}
-                  (Last validated on{" "}
+                  <br />Last validated on{" "}
                   <strong>
                     {apiKeyInfo.last_validated
                       ? new Date(apiKeyInfo.last_validated).toLocaleDateString()
                       : "Unknown"}
                   </strong>
-                  )
                 </span>
               </div>
             </div>

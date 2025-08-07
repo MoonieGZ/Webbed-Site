@@ -43,7 +43,7 @@ export default function AccountPage() {
           <AvatarCard />
         </div>
 
-        <div className="grid gap-6 md:grid-cols-1">
+        <div className="grid gap-6 md:grid-cols-2">
           <PFQApiKeyCard />
         </div>
       </div>
