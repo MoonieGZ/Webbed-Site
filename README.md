@@ -63,23 +63,26 @@ This project follows a clean, modular architecture with clear separation of conc
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - pnpm (recommended) or npm
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd Website
 ```
 
 2. Install dependencies:
+
 ```bash
 pnpm install
 ```
 
 3. Run the development server:
+
 ```bash
 pnpm dev
 ```
@@ -96,6 +99,7 @@ pnpm start
 ## 🎨 Styling
 
 This project uses:
+
 - **Tailwind CSS** for utility-first styling
 - **Custom CSS** for global styles and animations
 - **Hardware acceleration** for smooth transitions
@@ -104,6 +108,7 @@ This project uses:
 ## 📱 Responsive Design
 
 The sidebar and all tools are fully responsive:
+
 - **Desktop**: Persistent sidebar with full navigation
 - **Mobile**: Collapsible sidebar with overlay
 - **Tablet**: Adaptive layout with optimized spacing

@@ -1,54 +1,54 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react"
 
 interface User {
-  id: number;
-  email: string;
-  name: string;
-  rank?: string;
-  avatar?: string;
-  name_changed_at?: string;
+  id: number
+  email: string
+  name: string
+  rank?: string
+  avatar?: string
+  name_changed_at?: string
 }
 
 interface SessionResponse {
-  authenticated: boolean;
-  user?: User;
+  authenticated: boolean
+  user?: User
 }
 
 export function useUser() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchUser = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await fetch('/api/auth/session');
-      const data: SessionResponse = await response.json();
+      setLoading(true)
+      setError(null)
+
+      const response = await fetch("/api/auth/session")
+      const data: SessionResponse = await response.json()
 
       if (data.authenticated && data.user) {
-        setUser(data.user);
+        setUser(data.user)
       } else {
-        setUser(null);
+        setUser(null)
       }
     } catch (err) {
-      console.error('Failed to fetch user:', err);
-      setError('Failed to fetch user data');
-      setUser(null);
+      console.error("Failed to fetch user:", err)
+      setError("Failed to fetch user data")
+      setUser(null)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchUser();
-  }, []);
+    fetchUser()
+  }, [])
 
   return {
     user,
     loading,
     error,
     refetch: fetchUser,
-  };
+  }
 }

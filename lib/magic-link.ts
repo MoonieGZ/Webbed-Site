@@ -1,82 +1,86 @@
-import crypto from 'crypto';
-import { query, queryOne } from './db';
-import sendEmail from './email';
+import crypto from "crypto"
+import { query, queryOne } from "./db"
+import sendEmail from "./email"
 
 export interface MagicLink {
-  id: number;
-  token: string;
-  email: string;
-  user_id: number | null;
-  expires_at: Date;
-  used: boolean;
-  created_at: Date;
+  id: number
+  token: string
+  email: string
+  user_id: number | null
+  expires_at: Date
+  used: boolean
+  created_at: Date
 }
 
 export interface User {
-  id: number;
-  email: string;
-  name: string | null;
-  created_at: Date;
-  updated_at: Date;
+  id: number
+  email: string
+  name: string | null
+  created_at: Date
+  updated_at: Date
 }
 
 export function generateMagicLinkToken(): string {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString("hex")
 }
 
-export async function createMagicLink(email: string, userId?: number): Promise<string> {
-  const token = generateMagicLinkToken();
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+export async function createMagicLink(
+  email: string,
+  userId?: number,
+): Promise<string> {
+  const token = generateMagicLinkToken()
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
 
   await query(
-    'INSERT INTO magic_links (token, email, user_id, expires_at, used) VALUES (?, ?, ?, ?, 0)',
-    [token, email, userId || null, expiresAt]
-  );
+    "INSERT INTO magic_links (token, email, user_id, expires_at, used) VALUES (?, ?, ?, ?, 0)",
+    [token, email, userId || null, expiresAt],
+  )
 
-  return token;
+  return token
 }
 
-export async function validateMagicLink(token: string): Promise<{ 
-  valid: boolean; 
-  user?: User; 
-  email: string;
-  shouldCreateUser: boolean;
+export async function validateMagicLink(token: string): Promise<{
+  valid: boolean
+  user?: User
+  email: string
+  shouldCreateUser: boolean
 }> {
-  const magicLink = await queryOne(
-    'SELECT * FROM magic_links WHERE token = ? AND used = 0 AND expires_at > NOW()',
-    [token]
-  ) as MagicLink | null;
+  const magicLink = (await queryOne(
+    "SELECT * FROM magic_links WHERE token = ? AND used = 0 AND expires_at > NOW()",
+    [token],
+  )) as MagicLink | null
 
   if (!magicLink) {
-    return { valid: false, email: '', shouldCreateUser: false };
+    return { valid: false, email: "", shouldCreateUser: false }
   }
 
-  await query(
-    'UPDATE magic_links SET used = 1 WHERE id = ?',
-    [magicLink.id]
-  );
+  await query("UPDATE magic_links SET used = 1 WHERE id = ?", [magicLink.id])
 
-  let user: User | undefined;
+  let user: User | undefined
   if (magicLink.user_id) {
-    const userResult = await queryOne(
-      'SELECT * FROM users WHERE id = ?',
-      [magicLink.user_id]
-    ) as User | null;
-    user = userResult || undefined;
+    const userResult = (await queryOne("SELECT * FROM users WHERE id = ?", [
+      magicLink.user_id,
+    ])) as User | null
+    user = userResult || undefined
   }
 
   return {
     valid: true,
     user,
     email: magicLink.email,
-    shouldCreateUser: !magicLink.user_id
-  };
+    shouldCreateUser: !magicLink.user_id,
+  }
 }
 
-export async function sendMagicLinkEmail(email: string, token: string): Promise<void> {
-  const magicLinkUrl = `https://mnsy.dev/login/magic?token=${token}`;
-  
-  const subject = 'Sign in to mnsy.dev';
+export async function sendMagicLinkEmail(
+  email: string,
+  token: string,
+): Promise<void> {
+  const environment = process.env.NODE_ENV
+  const url = environment === "development" ? "localhost:3000" : "mnsy.dev"
+  const magicLinkUrl = `https://${url}/login/magic?token=${token}`
+
+  const subject = "Sign in to mnsy.dev"
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h1 style="color: #333;">Sign in to mnsy.dev</h1>
@@ -97,8 +101,8 @@ export async function sendMagicLinkEmail(email: string, token: string): Promise<
         <a href="${magicLinkUrl}" style="color: #007bff;">${magicLinkUrl}</a>
       </p>
     </div>
-  `;
-  
+  `
+
   const text = `
     Sign in to mnsy.dev
     
@@ -107,21 +111,20 @@ export async function sendMagicLinkEmail(email: string, token: string): Promise<
     ${magicLinkUrl}
     
     If you didn't request this email, you can safely ignore it.
-  `;
+  `
 
-  await sendEmail(email, subject, html, text);
+  await sendEmail(email, subject, html, text)
 }
 
 export async function createUser(email: string, name?: string): Promise<User> {
-  const result = await query(
-    'INSERT INTO users (email, name) VALUES (?, ?)',
-    [email, name || null]
-  ) as any;
+  const result = (await query("INSERT INTO users (email, name) VALUES (?, ?)", [
+    email,
+    name || null,
+  ])) as any
 
-  return await queryOne(
-    'SELECT * FROM users WHERE id = ?',
-    [result.insertId]
-  ) as User;
-} 
+  return (await queryOne("SELECT * FROM users WHERE id = ?", [
+    result.insertId,
+  ])) as User
+}
 
-export { queryOne };
+export { queryOne }

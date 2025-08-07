@@ -5,25 +5,25 @@ export function useLogout() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/session', { method: 'DELETE' });
-      window.location.href = '/login';
+      await fetch("/api/auth/session", { method: "DELETE" })
+      window.location.href = "/login"
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error)
     }
-  };
+  }
 
   const handleLogoutClick = () => {
-    setLogoutDialogOpen(true);
-  };
+    setLogoutDialogOpen(true)
+  }
 
   const handleCancelLogout = () => {
-    setLogoutDialogOpen(false);
-  };
+    setLogoutDialogOpen(false)
+  }
 
   const handleConfirmLogout = async () => {
-    setLogoutDialogOpen(false);
-    await handleLogout();
-  };
+    setLogoutDialogOpen(false)
+    await handleLogout()
+  }
 
   return {
     logoutDialogOpen,

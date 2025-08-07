@@ -4,7 +4,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 
 ## Currently Used Components
 
-- **ShadCN/UI Components**: 
+- **ShadCN/UI Components**:
   - Button (from shadcn/ui)
   - Input (from shadcn/ui)
   - Label (from shadcn/ui)
@@ -15,7 +15,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - SidebarProvider, SidebarInset, SidebarTrigger (from animate-ui/radix/sidebar)
   - MotionEffect (from animate-ui/effects/motion-effect)
 
-- **Custom Components Built**: 
+- **Custom Components Built**:
   - AppSidebar (custom implementation)
   - LoginForm (custom implementation with shadcn/ui components)
   - Magic Link Authentication System (custom implementation)
@@ -41,6 +41,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 - Toast styling centralized in `lib/utils.ts` with `toastStyles` utility for consistent sonner notifications
 - Gravatar integration for automatic avatar import from user's email address
 - Username validation with profanity filtering using bad-words-next library (server-side validation)
+- Recent avatars system with file modification time tracking (keeps last 10 avatars, auto-cleanup on upload/import)
 
 ## Potential Future ShadCN Components
 
@@ -52,4 +53,4 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 - Badge (for status indicators)
 - Toast (for notifications - though using sonner currently)
 - Tabs (for content organization)
-- Accordion (for collapsible content) 
+- Accordion (for collapsible content)

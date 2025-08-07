@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import { Moon } from "lucide-react"
 import { LoginForm } from "@/components/tools/login/login-form"
@@ -6,7 +6,7 @@ import { MotionEffect } from "@/components/animate-ui/effects/motion-effect"
 import { useSession } from "@/hooks/login/use-session"
 
 export default function LoginPage() {
-  const { loading } = useSession();
+  const { loading } = useSession()
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2 relative">
@@ -18,7 +18,9 @@ export default function LoginPage() {
           </div>
         </div>
       )}
-      <div className={`flex flex-col gap-4 p-6 md:p-10 transition-opacity duration-500 ${loading ? 'opacity-0' : 'opacity-100'}`}>
+      <div
+        className={`flex flex-col gap-4 p-6 md:p-10 transition-opacity duration-500 ${loading ? "opacity-0" : "opacity-100"}`}
+      >
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
             <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
@@ -35,7 +37,9 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-      <div className={`bg-muted relative hidden lg:block transition-opacity duration-500 ${loading ? 'opacity-0' : 'opacity-100'}`}>
+      <div
+        className={`bg-muted relative hidden lg:block transition-opacity duration-500 ${loading ? "opacity-0" : "opacity-100"}`}
+      >
         <img
           src="/login/bg.jpg"
           alt="Image"

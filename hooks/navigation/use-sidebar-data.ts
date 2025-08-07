@@ -10,17 +10,19 @@ import {
 import { useUser } from "@/hooks/login/use-user"
 
 export function useSidebarData() {
-  const { user, loading, error } = useUser();
-  
-  const userData = user ? {
-    name: user.name,
-    rank: user.rank || "",
-    avatar: user.avatar || "",
-  } : {
-    name: "Guest",
-    rank: "",
-    avatar: "",
-  };
+  const { user, loading, error } = useUser()
+
+  const userData = user
+    ? {
+        name: user.name,
+        rank: user.rank || "",
+        avatar: user.avatar || "",
+      }
+    : {
+        name: "Guest",
+        rank: "",
+        avatar: "",
+      }
 
   const data = {
     user: userData,
@@ -112,10 +114,10 @@ export function useSidebarData() {
         icon: Webhook,
       },
     ],
-  };
+  }
 
   return {
     ...data,
     loading,
-  };
+  }
 }

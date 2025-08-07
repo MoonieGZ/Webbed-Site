@@ -1,23 +1,36 @@
-'use client';
+"use client"
 
-import { 
-  User, 
-  Save, 
-  AlertCircle, 
-  CheckCircle, 
+import {
+  User,
+  Save,
+  AlertCircle,
+  CheckCircle,
   Calendar,
   Camera,
-  Download
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from '@/components/animate-ui/radix/sidebar';
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { useAccount } from "@/hooks/account/use-account";
+  Download,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Separator } from "@/components/ui/separator"
+import { SidebarTrigger } from "@/components/animate-ui/radix/sidebar"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { useAccount } from "@/hooks/account/use-account"
+import { AvatarGroup } from "@/components/animate-ui/components/avatar-group"
 
 export default function AccountPage() {
   const {
@@ -28,21 +41,23 @@ export default function AccountPage() {
     setNewUsername,
     isChangingUsername,
     isUploadingAvatar,
+    recentAvatars,
     canChangeUsername,
     getDaysUntilUsernameChange,
     handleUsernameChange,
     handleAvatarUpload,
     handleGravatarImport,
-  } = useAccount();
+    handleSetRecentAvatar,
+  } = useAccount()
 
   const onAvatarFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const file = event.target.files?.[0]
     if (file) {
-      handleAvatarUpload(file);
+      handleAvatarUpload(file)
     }
-    
-    event.target.value = '';
-  };
+
+    event.target.value = ""
+  }
 
   if (loading || !authenticated) {
     return (
@@ -52,7 +67,7 @@ export default function AccountPage() {
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -67,9 +82,7 @@ export default function AccountPage() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="/">
-                  Home
-                </BreadcrumbLink>
+                <BreadcrumbLink href="/">Home</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
@@ -79,7 +92,7 @@ export default function AccountPage() {
           </Breadcrumb>
         </div>
       </header>
-      
+
       <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
@@ -99,7 +112,11 @@ export default function AccountPage() {
                   <Input
                     id="username"
                     onChange={(e) => setNewUsername(e.target.value)}
-                    placeholder={user?.name.startsWith("User #") ? "Enter new username" : user?.name}
+                    placeholder={
+                      user?.name.startsWith("User #")
+                        ? "Enter new username"
+                        : user?.name
+                    }
                     maxLength={32}
                     className="-me-px rounded-e-none shadow-none focus-visible:z-1"
                     disabled={!canChangeUsername()}
@@ -107,7 +124,12 @@ export default function AccountPage() {
                   <Button
                     className="rounded-s-none"
                     onClick={handleUsernameChange}
-                    disabled={isChangingUsername || !canChangeUsername() || newUsername.trim() === user?.name || newUsername.trim() === ""}
+                    disabled={
+                      isChangingUsername ||
+                      !canChangeUsername() ||
+                      newUsername.trim() === user?.name ||
+                      newUsername.trim() === ""
+                    }
                   >
                     {isChangingUsername ? (
                       <>
@@ -122,9 +144,13 @@ export default function AccountPage() {
                     )}
                   </Button>
                 </div>
-                
-                <p className={`text-xs ${canChangeUsername() ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-                  {canChangeUsername() ? "You can change your display name now" : `You can change your display name again in ${getDaysUntilUsernameChange()} days`}
+
+                <p
+                  className={`text-xs ${canChangeUsername() ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+                >
+                  {canChangeUsername()
+                    ? "You can change your display name now"
+                    : `You can change your display name again in ${getDaysUntilUsernameChange()} days`}
                 </p>
               </div>
 
@@ -132,13 +158,17 @@ export default function AccountPage() {
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" value={user?.email} disabled />
                 <p className="text-xs text-muted-foreground">
-                  Email address cannot be changed, contact <a href="/feedback" className="text-primary">support</a> if you need to change it
+                  Email address cannot be changed, contact{" "}
+                  <a href="/feedback" className="text-primary hover:underline">
+                    support
+                  </a>{" "}
+                  if you need to change it
                 </p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="rank">Rank</Label>
-                <Input id="rank" value={user?.rank || 'User'} disabled />
+                <Input id="rank" value={user?.rank || "User"} disabled />
                 <p className="text-xs text-muted-foreground">
                   Rank is managed by administrators
                 </p>
@@ -152,11 +182,9 @@ export default function AccountPage() {
                 <Camera className="h-5 w-5" />
                 Avatar
               </CardTitle>
-              <CardDescription>
-                Upload a new profile picture
-              </CardDescription>
+              <CardDescription>Upload a new profile picture</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="flex items-start gap-4">
                 <Avatar className="h-20 w-20 shrink-0">
                   <AvatarImage src={user?.avatar} alt={user?.name} />
@@ -195,14 +223,54 @@ export default function AccountPage() {
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground text-end">
-                    JPG, PNG, GIF, WEBP up to 5MB • Or import from Gravatar
+                    JPG, PNG, GIF, WEBP up to 5MB &bull; Or import from{" "}
+                    <a
+                      href="https://gravatar.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Gravatar
+                    </a>
                   </p>
                 </div>
               </div>
+
+              {recentAvatars.length > 0 && (
+                <div className="space-y-3">
+                  {recentAvatars.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        Recent Avatars
+                      </Label>
+                      <AvatarGroup invertOverlap className="h-16 -space-x-4.5">
+                        {recentAvatars.map((avatar, index) => (
+                          <Avatar
+                            key={index}
+                            className="size-16 border-2 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() =>
+                              handleSetRecentAvatar(avatar.filename)
+                            }
+                          >
+                            <AvatarImage src={avatar.src} />
+                            <AvatarFallback>
+                              <User className="h-6 w-6" />
+                            </AvatarFallback>
+                          </Avatar>
+                        ))}
+                      </AvatarGroup>
+                      <p className="text-xs text-muted-foreground text-end">
+                        Click any avatar to set it as your current profile
+                        picture &bull; Last 10 avatars are shown here
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
     </>
-  );
-} 
+  )
+}

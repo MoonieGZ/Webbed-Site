@@ -19,7 +19,7 @@ import {
 import { useSidebarData } from "@/hooks/navigation/use-sidebar-data"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { loading, ...data } = useSidebarData();
+  const { loading, ...data } = useSidebarData()
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>

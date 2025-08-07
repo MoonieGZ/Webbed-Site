@@ -10,11 +10,7 @@ import {
   Loader2,
 } from "lucide-react"
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +25,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/animate-ui/radix/sidebar"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/animate-ui/radix/dialog" 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/animate-ui/radix/dialog"
 import { Button } from "@/components/ui/button"
 import { useLogout } from "@/hooks/login/use-logout"
 
@@ -66,14 +68,20 @@ export function NavUser({
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
                   <AvatarFallback className="rounded-lg">
-                    {loading ? <Loader2 className="size-4 animate-spin" /> : <User className="size-4" />}
+                    {loading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <User className="size-4" />
+                    )}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">
                     {loading ? "Loading..." : user.name}
                   </span>
-                  {user.rank && <span className="truncate text-xs">{user.rank}</span>}
+                  {user.rank && (
+                    <span className="truncate text-xs">{user.rank}</span>
+                  )}
                 </div>
                 <ChevronsUpDown className="ml-auto size-4" />
               </SidebarMenuButton>
@@ -93,7 +101,9 @@ export function NavUser({
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 {user.name !== "Guest" && (
-                  <DropdownMenuItem onClick={() => window.location.href = '/account'}>
+                  <DropdownMenuItem
+                    onClick={() => (window.location.href = "/account")}
+                  >
                     <User />
                     Account
                   </DropdownMenuItem>
@@ -112,7 +122,10 @@ export function NavUser({
               {user.name !== "Guest" && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onClick={handleLogoutClick}>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={handleLogoutClick}
+                  >
                     <LogOut />
                     Log out
                   </DropdownMenuItem>
@@ -128,16 +141,25 @@ export function NavUser({
           <DialogHeader>
             <DialogTitle>Log out?</DialogTitle>
           </DialogHeader>
-  
+
           <div className="grid gap-4 py-4">
             <p>
-              This will log you out of your account and you will need to log in again.
+              This will log you out of your account and you will need to log in
+              again.
             </p>
           </div>
-  
+
           <DialogFooter>
-            <Button variant="outline" onClick={handleCancelLogout}>Cancel</Button>
-            <Button variant="destructive" type="submit" onClick={handleConfirmLogout}>Log out</Button>
+            <Button variant="outline" onClick={handleCancelLogout}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              type="submit"
+              onClick={handleConfirmLogout}
+            >
+              Log out
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

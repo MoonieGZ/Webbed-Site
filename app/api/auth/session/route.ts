@@ -1,27 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { validateSession, extendSession, getUserBySession } from '@/lib/session';
+import { NextRequest, NextResponse } from "next/server"
+import { validateSession, extendSession, getUserBySession } from "@/lib/session"
 
 export async function GET(request: NextRequest) {
   try {
-    const sessionToken = request.cookies.get('session')?.value;
+    const sessionToken = request.cookies.get("session")?.value
 
     if (!sessionToken) {
-      return NextResponse.json({ authenticated: false });
+      return NextResponse.json({ authenticated: false })
     }
 
-    const session = await validateSession(sessionToken);
-    
+    const session = await validateSession(sessionToken)
+
     if (!session) {
-      return NextResponse.json({ authenticated: false });
+      return NextResponse.json({ authenticated: false })
     }
 
-    const user = await getUserBySession(sessionToken);
-    
+    const user = await getUserBySession(sessionToken)
+
     if (!user) {
-      return NextResponse.json({ authenticated: false });
+      return NextResponse.json({ authenticated: false })
     }
 
-    await extendSession(sessionToken);
+    await extendSession(sessionToken)
 
     const response = NextResponse.json({
       authenticated: true,
@@ -31,44 +31,42 @@ export async function GET(request: NextRequest) {
         name: user.name || "User #" + user.id,
         rank: user.rank,
         avatar: user.avatar ?? null,
-        name_changed_at: user.name_changed_at
-      }
-    });
+        name_changed_at: user.name_changed_at,
+      },
+    })
 
-    const expiresDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    response.cookies.set('session', sessionToken, {
+    const expiresDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    response.cookies.set("session", sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
       expires: expiresDate,
-      path: '/'
-    });
+      path: "/",
+    })
 
-    return response;
-
+    return response
   } catch (error) {
-    console.error('Session check error:', error);
-    return NextResponse.json({ authenticated: false });
+    console.error("Session check error:", error)
+    return NextResponse.json({ authenticated: false })
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const sessionToken = request.cookies.get('session')?.value;
+    const sessionToken = request.cookies.get("session")?.value
 
     if (sessionToken) {
-      await import('@/lib/session').then(({ deleteSession }) => 
-        deleteSession(sessionToken)
-      );
+      await import("@/lib/session").then(({ deleteSession }) =>
+        deleteSession(sessionToken),
+      )
     }
 
-    const response = NextResponse.json({ success: true });
-    response.cookies.delete('session');
+    const response = NextResponse.json({ success: true })
+    response.cookies.delete("session")
 
-    return response;
-
+    return response
   } catch (error) {
-    console.error('Logout error:', error);
-    return NextResponse.json({ success: false });
+    console.error("Logout error:", error)
+    return NextResponse.json({ success: false })
   }
-} 
+}
