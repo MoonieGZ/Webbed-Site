@@ -109,25 +109,28 @@ export function AvatarCard() {
           <div className="space-y-3">
             <div className="space-y-2">
               <CardTitle>Recent Avatars</CardTitle>
-                <AvatarGroup invertOverlap className="h-16 -space-x-4.5 flex items-center justify-center">
-                  {recentAvatars.map((avatar, index) => (
-                    <Avatar
-                      key={index}
-                      className="size-16 border-2 cursor-pointer hover:opacity-80 transition-opacity shrink-0 hover:scale-110 hover:z-10"
-                      onClick={() => handleSetRecentAvatar(avatar.filename)}
-                    >
-                      <AvatarImage src={avatar.src} />
-                      <AvatarFallback>
-                        <User className="h-6 w-6" />
-                      </AvatarFallback>
-                    </Avatar>
-                  ))}
-                </AvatarGroup>
+              <AvatarGroup
+                invertOverlap
+                className="h-16 -space-x-4.5 flex items-center justify-center"
+              >
+                {recentAvatars.map((avatar, index) => (
+                  <Avatar
+                    key={index}
+                    className="size-16 border-2 cursor-pointer hover:opacity-80 transition-opacity shrink-0 hover:scale-110 hover:z-10"
+                    onClick={() => handleSetRecentAvatar(avatar.filename)}
+                  >
+                    <AvatarImage src={avatar.src} />
+                    <AvatarFallback>
+                      <User className="h-6 w-6" />
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+              </AvatarGroup>
 
-                <p className="text-xs text-muted-foreground text-center">
-                  Click any avatar to set it as your current profile picture
-                  &bull; Last 5 avatars are shown here
-                </p>
+              <p className="text-xs text-muted-foreground text-center">
+                Click any avatar to set it as your current profile picture
+                &bull; Last 5 avatars are shown here
+              </p>
             </div>
           </div>
         )}
