@@ -109,10 +109,7 @@ export function AvatarCard() {
           <div className="space-y-3">
             <div className="space-y-2">
               <CardTitle>Recent Avatars</CardTitle>
-              <AvatarGroup
-                invertOverlap
-                className="h-16 -space-x-4.5 flex items-center justify-center"
-              >
+              <AvatarGroup invertOverlap className="h-16 -space-x-4.5 flex">
                 {recentAvatars.map((avatar, index) => (
                   <Avatar
                     key={index}
@@ -127,7 +124,7 @@ export function AvatarCard() {
                 ))}
               </AvatarGroup>
 
-              <p className="text-xs text-muted-foreground text-center">
+              <p className="text-xs text-muted-foreground">
                 Click any avatar to set it as your current profile picture
                 &bull; Last 5 avatars are shown here
               </p>
