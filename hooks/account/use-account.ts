@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-import { toastStyles } from "@/lib/utils"
+import { toastStyles } from "@/lib/toast-styles"
 
 interface RecentAvatar {
   src: string

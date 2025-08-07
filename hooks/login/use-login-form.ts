@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { toast } from "sonner"
-import { toastStyles } from "@/lib/utils"
+import { toastStyles } from "@/lib/toast-styles"
 
 export function useLoginForm() {
   const [email, setEmail] = useState("")

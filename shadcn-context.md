@@ -10,6 +10,8 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - Label (from shadcn/ui)
   - Breadcrumb (from shadcn/ui)
   - Separator (from shadcn/ui)
+  - Card, CardContent, CardDescription, CardHeader, CardTitle (from shadcn/ui)
+  - Avatar, AvatarFallback, AvatarImage (from shadcn/ui)
 
 - **Animate-UI Components**:
   - SidebarProvider, SidebarInset, SidebarTrigger (from animate-ui/radix/sidebar)
@@ -20,6 +22,15 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - LoginForm (custom implementation with shadcn/ui components)
   - Magic Link Authentication System (custom implementation)
   - Session Management System (custom implementation)
+  - PFQApiKeyCard (custom implementation for PokéFarm Q API key management)
+  - ProfileInformationCard (custom implementation for profile management)
+  - AvatarCard (custom implementation for avatar management)
+
+- **Custom Hooks Built**:
+  - useAccount (account management and session handling)
+  - usePFQApiKey (PFQ API key management)
+  - useProfileInformation (profile information management)
+  - useAvatar (avatar management and upload)
 
 ## Installation History
 
@@ -42,6 +53,8 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 - Gravatar integration for automatic avatar import from user's email address
 - Username validation with profanity filtering using bad-words-next library (server-side validation)
 - Recent avatars system with file modification time tracking (keeps last 10 avatars, auto-cleanup on upload/import)
+- PokéFarm Q API integration with secure API key storage and validation
+- PFQ API service with centralized API calls and error handling
 
 ## Potential Future ShadCN Components
 
