@@ -25,12 +25,14 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - PFQApiKeyCard (custom implementation for PokéFarm Q API key management)
   - ProfileInformationCard (custom implementation for profile management)
   - AvatarCard (custom implementation for avatar management)
+  - GameUIDsCard (custom implementation for game UID management)
 
 - **Custom Hooks Built**:
   - useAccount (account management and session handling)
   - usePFQApiKey (PFQ API key management)
   - useProfileInformation (profile information management)
   - useAvatar (avatar management and upload)
+  - useGameUIDs (game UID management for Hoyoverse games)
   - useNavMain (main navigation menu data)
   - useNavLinks (external links navigation data)
   - useNavSecondary (secondary navigation menu data)
@@ -58,6 +60,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 - Recent avatars system with file modification time tracking (keeps last 10 avatars, auto-cleanup on upload/import)
 - PokéFarm Q API integration with secure API key storage and validation
 - PFQ API service with centralized API calls and error handling
+- Game UID management system for Hoyoverse games (Genshin Impact, Honkai: Star Rail, Zenless Zone Zero, Wuthering Waves)
 - Discord webhook service for user activity notifications (avatar uploads, imports, username changes)
 - Global user context for real-time avatar updates across components
 

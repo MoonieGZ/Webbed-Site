@@ -81,8 +81,29 @@ export function PFQApiKeyCard() {
               </div>
             </div>
 
-            <div className="flex items-end justify-between">
-              <div className="space-y-2 flex-1">
+            <div className="relative">
+              <div className="absolute top-0 right-0 z-10">
+                <Button
+                  onClick={deleteApiKey}
+                  variant="outline"
+                  size="sm"
+                  className="hover:bg-destructive/10! text-destructive! border-destructive! focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
+                      Removing...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Remove
+                    </>
+                  )}
+                </Button>
+              </div>
+              <div className="space-y-2 pr-20">
                 <CardTitle className="flex items-center gap-2">
                   Connection Details
                 </CardTitle>
@@ -112,25 +133,6 @@ export function PFQApiKeyCard() {
                   )}
                 </div>
               </div>
-
-              <Button
-                onClick={deleteApiKey}
-                variant="outline"
-                className="hover:bg-destructive/10! text-destructive! border-destructive! focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40"
-                disabled={isDeleting}
-              >
-                {isDeleting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
-                    Removing...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Remove
-                  </>
-                )}
-              </Button>
             </div>
           </div>
         ) : (
