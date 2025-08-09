@@ -58,7 +58,8 @@ export function BadgesCard() {
       <CardHeader>
         <CardTitle>Badges</CardTitle>
         <CardDescription>
-          Use drag and drop to feature up to 3 badges on your public profile
+          Feature up to 3 badges on your public profile (drag and drop
+          available)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
