@@ -8,14 +8,7 @@ interface RecentAvatar {
   modifiedTime: Date
 }
 
-interface User {
-  id: number
-  email: string
-  name: string
-  rank?: string
-  avatar?: string
-  name_changed_at?: string
-}
+import type { AppUser as User } from "@/types/user"
 
 export function useAccount() {
   const [user, setUser] = useState<User | null>(null)

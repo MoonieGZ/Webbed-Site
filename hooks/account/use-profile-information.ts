@@ -2,14 +2,7 @@ import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
 
-interface User {
-  id: number
-  email: string
-  name: string
-  rank?: string
-  avatar?: string
-  name_changed_at?: string
-}
+import type { AppUser as User } from "@/types/user"
 
 export function useProfileInformation() {
   const [user, setUser] = useState<User | null>(null)

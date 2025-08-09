@@ -39,7 +39,6 @@ import Link from "next/link"
 function displayMenu(
   isGuest: boolean,
   isMobile: boolean,
-  user: { name: string; rank: string; avatar: string },
   handleLogoutClick: () => void,
 ) {
   if (!isGuest) {
@@ -58,10 +57,12 @@ function displayMenu(
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <User />
-            <Link href="/account">Account</Link>
-          </DropdownMenuItem>
+          <Link href="/account">
+            <DropdownMenuItem>
+              <User />
+              Account
+            </DropdownMenuItem>
+          </Link>
 
           <DropdownMenuItem>
             <Settings />
@@ -114,7 +115,7 @@ export function NavUser({
 }: {
   user: {
     name: string
-    rank: string
+    title: string
     avatar: string
   }
   loading?: boolean
@@ -152,8 +153,8 @@ export function NavUser({
                   <span className="truncate font-medium">
                     {loading ? "Loading..." : user.name}
                   </span>
-                  {user.rank && (
-                    <span className="truncate text-xs">{user.rank}</span>
+                  {user.title && (
+                    <span className="truncate text-xs">{user.title}</span>
                   )}
                 </div>
                 <ChevronsUpDown className="ml-auto size-4" />
@@ -162,7 +163,6 @@ export function NavUser({
             {displayMenu(
               user.name === "Guest",
               isMobile,
-              user,
               handleLogoutClick,
             )}
           </DropdownMenu>

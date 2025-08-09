@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.name || "User #" + user.id,
-        rank: user.rank,
+        title: user.title,
         avatar: user.avatar ?? null,
         name_changed_at: user.name_changed_at,
       },

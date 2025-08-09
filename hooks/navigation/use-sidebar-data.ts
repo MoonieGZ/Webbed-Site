@@ -1,17 +1,18 @@
 import { useUser } from "@/hooks/login/use-user"
+import type { AppUser } from "@/types/user"
 
 export function useSidebarData() {
   const { user, loading, error } = useUser()
 
-  const userData = user
+  const userData: Pick<AppUser, "name" | "title" | "avatar"> = user
     ? {
         name: user.name,
-        rank: user.rank || "",
+        title: user.title || "",
         avatar: user.avatar || "",
       }
     : {
         name: "Guest",
-        rank: "",
+        title: "",
         avatar: "",
       }
 

@@ -8,14 +8,7 @@ import React, {
   ReactNode,
 } from "react"
 
-interface User {
-  id: number
-  email: string
-  name: string
-  rank?: string
-  avatar?: string
-  name_changed_at?: string
-}
+import type { AppUser as User } from "@/types/user"
 
 interface UserContextType {
   user: User | null

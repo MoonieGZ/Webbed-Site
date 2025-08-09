@@ -163,10 +163,10 @@ export function ProfileInformationCard() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="rank">Rank</Label>
-          <Input id="rank" value={user?.rank || "User"} disabled />
+          <Label htmlFor="title">Title</Label>
+          <Input id="title" value={user?.title || "User"} disabled />
           <p className="text-xs text-muted-foreground">
-            Rank is managed by administrators
+            Titles are obtained with badges
           </p>
         </div>
       </CardContent>
