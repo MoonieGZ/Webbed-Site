@@ -1,6 +1,7 @@
 "use client"
 
 import type { DragEvent } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Card,
   CardContent,
@@ -12,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useBadges } from "@/hooks/account/use-badges"
 import * as LucideIcons from "lucide-react"
-import { Save } from "lucide-react"
+import { Award, Save } from "lucide-react"
 
 export function BadgesCard() {
   const {
@@ -39,14 +40,51 @@ export function BadgesCard() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Badges</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5" />
+            Badges
+          </CardTitle>
           <CardDescription>
             Manage and feature your profile badges
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+        <CardContent className="space-y-4">
+          <div>
+            <div className="text-sm font-medium mb-2">Featured Badges</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="rounded-md border p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <div className="flex-1 space-y-1">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-40" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-2">
+            <div className="text-sm font-medium">Your Badges</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {Array.from({ length: 6 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-md border p-3 flex items-center gap-3"
+                >
+                  <Skeleton className="h-8 w-8 rounded-md" />
+                  <div className="flex-1 space-y-1">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -56,7 +94,10 @@ export function BadgesCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Badges</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Award className="h-5 w-5" />
+          Badges
+        </CardTitle>
         <CardDescription>
           Feature up to 3 badges on your public profile (drag and drop
           available)

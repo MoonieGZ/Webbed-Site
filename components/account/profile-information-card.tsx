@@ -1,6 +1,6 @@
 "use client"
 
-import { User, Save } from "lucide-react"
+import { User, Save, Check, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,6 +11,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { useProfileInformation } from "@/hooks/account/use-profile-information"
 
 export function ProfileInformationCard() {
@@ -37,9 +43,21 @@ export function ProfileInformationCard() {
             Manage your account details and preferences
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-3 w-40 ms-auto" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-3 w-20" />
           </div>
         </CardContent>
       </Card>
@@ -71,6 +89,9 @@ export function ProfileInformationCard() {
               maxLength={32}
               className="-me-px rounded-e-none shadow-none focus-visible:z-1"
               disabled={!canChangeUsername()}
+              autoComplete="off"
+              spellCheck={false}
+              aria-describedby="username-help username-count"
             />
             <Button
               className="rounded-s-none"
@@ -95,14 +116,37 @@ export function ProfileInformationCard() {
               )}
             </Button>
           </div>
-
-          <p
-            className={`text-xs ${canChangeUsername() ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
-          >
-            {canChangeUsername()
-              ? "You can change your display name now"
-              : `You can change your display name again in ${getDaysUntilUsernameChange()} days`}
-          </p>
+          <div className="flex items-center justify-between">
+            <p
+              id="username-help"
+              aria-live="polite"
+              className="text-xs text-muted-foreground"
+            >
+              {canChangeUsername() ? (
+                <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-400">
+                  <Check className="h-3.5 w-3.5" /> You can change your display
+                  name now
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                  <Clock className="h-3.5 w-3.5" />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="underline underline-offset-2 decoration-dotted cursor-help">
+                        Available in {getDaysUntilUsernameChange()} days
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      You can change your display name once every 30 days.
+                    </TooltipContent>
+                  </Tooltip>
+                </span>
+              )}
+            </p>
+            <p id="username-count" className="text-xs text-muted-foreground">
+              {newUsername.trim().length}/32
+            </p>
+          </div>
         </div>
 
         <div className="space-y-2">

@@ -14,6 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { AvatarGroup } from "@/components/animate-ui/components/avatar-group"
 import { useAvatar } from "@/hooks/account/use-avatar"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function AvatarCard() {
   const {
@@ -36,9 +37,24 @@ export function AvatarCard() {
           </CardTitle>
           <CardDescription>Upload a new profile picture</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+        <CardContent className="space-y-6">
+          <div className="flex items-start gap-4">
+            <Skeleton className="h-20 w-20 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-9 w-full" />
+              <div className="flex gap-2">
+                <Skeleton className="h-9 w-40" />
+              </div>
+              <Skeleton className="h-3 w-52 ms-auto" />
+            </div>
+          </div>
+          <div>
+            <Skeleton className="h-4 w-28 mb-2" />
+            <div className="flex gap-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="size-16 rounded-full" />
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
