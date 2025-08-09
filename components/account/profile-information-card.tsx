@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useProfileInformation } from "@/hooks/account/use-profile-information"
+import Link from "next/link"
 
 export function ProfileInformationCard() {
   const {
@@ -154,9 +155,9 @@ export function ProfileInformationCard() {
           <Input id="email" value={user?.email} disabled />
           <p className="text-xs text-muted-foreground">
             Email address cannot be changed, contact{" "}
-            <a href="/feedback" className="text-primary hover:underline">
+            <Link href="/support" className="text-primary hover:underline">
               support
-            </a>{" "}
+            </Link>{" "}
             if you need to change it
           </p>
         </div>

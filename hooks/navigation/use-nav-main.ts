@@ -1,12 +1,4 @@
-import {
-  Moon,
-  Send,
-  Settings2,
-  Gamepad2,
-  Webhook,
-  MessageCircleHeart,
-  FishSymbol,
-} from "lucide-react"
+import { FishSymbol } from "lucide-react"
 
 export function useNavMain() {
   const navMain = [

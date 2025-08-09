@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Moon } from "lucide-react"
+import Link from "next/link"
 
 import { NavMain } from "@/components/navigation/nav-main"
 import { NavLinks } from "@/components/navigation/nav-links"
@@ -26,7 +27,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="/">
+              <Link href="/">
                 <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <Moon className="size-4" />
                 </div>
@@ -34,7 +35,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <span className="truncate font-medium">mnsy.dev</span>
                   <span className="truncate text-xs">a webbed site</span>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

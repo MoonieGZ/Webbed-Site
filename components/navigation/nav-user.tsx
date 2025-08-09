@@ -34,6 +34,7 @@ import {
 } from "@/components/animate-ui/radix/dialog"
 import { Button } from "@/components/ui/button"
 import { useLogout } from "@/hooks/login/use-logout"
+import Link from "next/link"
 
 export function NavUser({
   user,
@@ -101,11 +102,9 @@ export function NavUser({
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 {user.name !== "Guest" && (
-                  <DropdownMenuItem
-                    onClick={() => (window.location.href = "/account")}
-                  >
+                  <DropdownMenuItem asChild>
                     <User />
-                    Account
+                    <Link href="/account">Account</Link>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem>

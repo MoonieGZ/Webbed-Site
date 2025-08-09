@@ -1,7 +1,5 @@
 "use client"
 
-import { type LucideIcon } from "lucide-react"
-
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -10,6 +8,7 @@ import {
   SidebarMenuItem,
 } from "@/components/animate-ui/radix/sidebar"
 import { useNavLinks } from "@/hooks/navigation/use-nav-links"
+import Link from "next/link"
 
 export function NavLinks() {
   const { links } = useNavLinks()
@@ -21,10 +20,10 @@ export function NavLinks() {
         {links.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
-              <a href={item.url} target="_blank">
+              <Link href={item.url} target="_blank">
                 <item.icon />
                 <span>{item.name}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         ))}
