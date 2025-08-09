@@ -13,6 +13,7 @@ import { ProfileInformationCard } from "@/components/account/profile-information
 import { AvatarCard } from "@/components/account/avatar-card"
 import { PFQApiKeyCard } from "@/components/account/pfq-api-key-card"
 import { GameUIDsCard } from "@/components/account/game-uids-card"
+import { BadgesCard } from "@/components/account/badges-card"
 
 export default function AccountPage() {
   return (
@@ -47,6 +48,10 @@ export default function AccountPage() {
         <div className="grid gap-6 md:grid-cols-2">
           <PFQApiKeyCard />
           <GameUIDsCard />
+        </div>
+
+        <div className="grid gap-6">
+          <BadgesCard />
         </div>
       </div>
     </>

@@ -26,6 +26,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - ProfileInformationCard (custom implementation for profile management)
   - AvatarCard (custom implementation for avatar management)
   - GameUIDsCard (custom implementation for game UID management)
+  - BadgesCard (custom implementation for viewing and featuring badges)
 
 - **Custom Hooks Built**:
   - useAccount (account management and session handling)
@@ -33,6 +34,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - useProfileInformation (profile information management)
   - useAvatar (avatar management and upload)
   - useGameUIDs (game UID management for Hoyoverse games)
+  - useBadges (badge ownership and featured slots management)
   - useNavMain (main navigation menu data)
   - useNavLinks (external links navigation data)
   - useNavSecondary (secondary navigation menu data)
