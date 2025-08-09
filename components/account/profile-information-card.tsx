@@ -17,6 +17,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select"
 import { useProfileInformation } from "@/hooks/account/use-profile-information"
 import Link from "next/link"
 
@@ -30,6 +37,11 @@ export function ProfileInformationCard() {
     canChangeUsername,
     getDaysUntilUsernameChange,
     handleUsernameChange,
+    titles,
+    selectedTitle,
+    setSelectedTitle,
+    handleTitleSave,
+    isSavingTitle,
   } = useProfileInformation()
 
   if (loading) {
@@ -164,9 +176,52 @@ export function ProfileInformationCard() {
 
         <div className="space-y-2">
           <Label htmlFor="title">Title</Label>
-          <Input id="title" value={user?.title || "User"} disabled />
+          <div className="flex items-stretch gap-2">
+            <Select
+              value={selectedTitle ?? user?.title ?? undefined}
+              onValueChange={(v) => setSelectedTitle(v)}
+              disabled={titles.length === 0}
+            >
+              <SelectTrigger className="w-full" id="title">
+                <SelectValue placeholder="Select a title" />
+              </SelectTrigger>
+              <SelectContent className="data-[state=open]:slide-in-from-top-8 data-[state=open]:zoom-in-100 duration-400">
+                {titles.length === 0 ? (
+                  <SelectItem disabled value="__none__">
+                    No titles available
+                  </SelectItem>
+                ) : (
+                  titles.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={handleTitleSave}
+              disabled={
+                isSavingTitle ||
+                titles.length === 0 ||
+                (selectedTitle ?? user?.title ?? null) === (user?.title ?? null)
+              }
+            >
+              {isSavingTitle ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save
+                </>
+              )}
+            </Button>
+          </div>
           <p className="text-xs text-muted-foreground">
-            Titles are obtained with badges
+            Titles are obtained via badges
           </p>
         </div>
       </CardContent>
