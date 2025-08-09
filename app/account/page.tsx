@@ -45,13 +45,13 @@ export default function AccountPage() {
           <AvatarCard />
         </div>
 
+        <div className="grid gap-6">
+          <BadgesCard />
+        </div>
+
         <div className="grid gap-6 md:grid-cols-2">
           <PFQApiKeyCard />
           <GameUIDsCard />
-        </div>
-
-        <div className="grid gap-6">
-          <BadgesCard />
         </div>
       </div>
     </>

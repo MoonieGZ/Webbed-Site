@@ -83,7 +83,8 @@ export function BadgesCard() {
                   onDrop={(e: DragEvent<HTMLDivElement>) => {
                     const sourceType = e.dataTransfer.getData("text/source")
                     const badgeIdStr = e.dataTransfer.getData("text/badgeId")
-                    const fromIndexStr = e.dataTransfer.getData("text/fromIndex")
+                    const fromIndexStr =
+                      e.dataTransfer.getData("text/fromIndex")
                     if (sourceType === "owned" && badgeIdStr) {
                       const badgeId = Number(badgeIdStr)
                       assignBadgeToSlot(badgeId, idx)
@@ -153,7 +154,9 @@ export function BadgesCard() {
                         clearSlot(isFeaturedIndex)
                         return
                       }
-                      const emptyIndex = featuredSlots.findIndex((id) => id == null)
+                      const emptyIndex = featuredSlots.findIndex(
+                        (id) => id == null,
+                      )
                       if (emptyIndex >= 0) {
                         assignBadgeToSlot(b.id, emptyIndex)
                       }
