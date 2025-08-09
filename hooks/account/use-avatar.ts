@@ -2,12 +2,7 @@ import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
 import { useUserContext } from "@/contexts/user-context"
-
-interface RecentAvatar {
-  src: string
-  filename: string
-  modifiedTime: Date
-}
+import type { RecentAvatar } from "@/types/account"
 
 export function useAvatar() {
   const { user, updateUser, loading } = useUserContext()

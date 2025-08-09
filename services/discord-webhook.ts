@@ -1,25 +1,4 @@
-interface DiscordEmbed {
-  title?: string
-  description?: string
-  color?: number
-  fields?: Array<{
-    name: string
-    value: string
-    inline?: boolean
-  }>
-  thumbnail?: {
-    url: string
-  }
-  timestamp?: string
-  footer?: {
-    text: string
-  }
-}
-
-interface DiscordWebhookPayload {
-  content?: string
-  embeds: DiscordEmbed[]
-}
+import type { DiscordEmbed, DiscordWebhookPayload } from "@/types/discord"
 
 export class DiscordWebhookService {
   private static readonly webhookUrl = process.env.DISCORD_USERINFO

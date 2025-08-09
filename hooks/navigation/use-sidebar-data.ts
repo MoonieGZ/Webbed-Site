@@ -1,10 +1,9 @@
 import { useUser } from "@/hooks/login/use-user"
-import type { AppUser } from "@/types/user"
 
 export function useSidebarData() {
   const { user, loading, error } = useUser()
 
-  const userData: Pick<AppUser, "name" | "title" | "avatar"> = user
+  const userData: { name: string; title: string; avatar: string } = user
     ? {
         name: user.name,
         title: user.title || "",

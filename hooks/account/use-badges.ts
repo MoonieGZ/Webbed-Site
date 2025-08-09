@@ -1,21 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
-
-export type FeaturedSlots = [number | null, number | null, number | null]
-
-export interface Badge {
-  id: number
-  name: string
-  description: string
-  icon_url: string
-  earned_at: string
-}
-
-interface BadgesResponse {
-  ownedBadges: Badge[]
-  featuredSlots: FeaturedSlots
-}
+import type { Badge, BadgesResponse, FeaturedSlots } from "@/types/badge"
 
 export function useBadges() {
   const [ownedBadges, setOwnedBadges] = useState<Badge[]>([])

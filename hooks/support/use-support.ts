@@ -3,7 +3,8 @@ import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
 import { useUser } from "@/hooks/login/use-user"
 
-export type SupportCategory = "feature" | "bug" | "streamer" | undefined
+import type { SupportCategory as BaseCategory } from "@/types/support"
+export type SupportCategory = BaseCategory | undefined
 
 export function useSupport() {
   const { user, loading: userLoading } = useUser()

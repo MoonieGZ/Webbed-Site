@@ -1,16 +1,4 @@
-interface PFQUser {
-  name: string
-  displayname: string
-  isStaff: boolean
-  shortlink: string
-  avatar: string
-}
-
-interface PFQApiResponse<T> {
-  success: boolean
-  data?: T
-  error?: string
-}
+import type { PFQApiResponse, PFQUser } from "@/types/pfq"
 
 export class PFQApiService {
   private static readonly BASE_URL = "https://api.pokefarm.com/v1"

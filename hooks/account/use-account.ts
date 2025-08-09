@@ -1,12 +1,7 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
-
-interface RecentAvatar {
-  src: string
-  filename: string
-  modifiedTime: Date
-}
+import type { RecentAvatar } from "@/types/account"
 
 import type { AppUser as User } from "@/types/user"
 import { canChangeUsernameSince, daysUntilUsernameChange } from "@/lib/username"

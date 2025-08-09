@@ -1,13 +1,6 @@
 import crypto from "crypto"
 import { query, queryOne } from "./db"
-
-export interface UserSession {
-  id: number
-  user_id: number
-  token: string
-  created_at: Date
-  expires_at: Date
-}
+import type { UserSession } from "@/types/session"
 
 export function generateSessionToken(): string {
   return crypto.randomBytes(32).toString("hex")

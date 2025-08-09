@@ -1,24 +1,7 @@
 import crypto from "crypto"
 import { query, queryOne } from "./db"
 import sendEmail from "./email"
-
-export interface MagicLink {
-  id: number
-  token: string
-  email: string
-  user_id: number | null
-  expires_at: Date
-  used: boolean
-  created_at: Date
-}
-
-export interface User {
-  id: number
-  email: string
-  name: string | null
-  created_at: Date
-  updated_at: Date
-}
+import type { MagicLink, User } from "@/types/magic-link"
 
 export function generateMagicLinkToken(): string {
   return crypto.randomBytes(32).toString("hex")

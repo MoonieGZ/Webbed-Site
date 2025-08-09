@@ -1,11 +1,6 @@
 import { readdir, stat, unlink } from "fs/promises"
 import { join } from "path"
-
-export interface RecentAvatar {
-  src: string
-  filename: string
-  modifiedTime: Date
-}
+import type { RecentAvatar } from "@/types/account"
 
 export async function getRecentAvatars(
   userId: number,
@@ -127,8 +122,8 @@ export async function detectImageMime(buffer: Buffer): Promise<string | null> {
     if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46)
       return "image/gif"
     if (
-      buffer.slice(0, 4).toString("ascii") === "RIFF" &&
-      buffer.slice(8, 12).toString("ascii") === "WEBP"
+      buffer.subarray(0, 4).toString("ascii") === "RIFF" &&
+      buffer.subarray(8, 12).toString("ascii") === "WEBP"
     )
       return "image/webp"
   }

@@ -1,15 +1,7 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
-
-export type GameType = "gi" | "hsr" | "zzz" | "ww"
-
-export interface GameUID {
-  game: GameType
-  uid: string
-  created_at: string
-  updated_at: string
-}
+import type { GameUID, GameType } from "@/types/game-uid"
 
 export const GAME_INFO = {
   gi: {

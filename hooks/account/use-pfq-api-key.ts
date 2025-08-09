@@ -1,21 +1,7 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
-
-interface PFQUser {
-  name: string
-  displayname: string
-  isStaff: boolean
-  shortlink: string
-  avatar: string
-}
-
-interface PFQApiKeyInfo {
-  hasApiKey: boolean
-  created_at?: string
-  last_validated?: string
-  pfqUser?: PFQUser | null
-}
+import type { PFQApiKeyInfo } from "@/types/pfq"
 
 export function usePFQApiKey() {
   const [apiKeyInfo, setApiKeyInfo] = useState<PFQApiKeyInfo | null>(null)
