@@ -17,6 +17,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 
+    const recentCountResult = (await query(
+      "SELECT COUNT(*) AS cnt FROM user_avatar_changes WHERE user_id = ? AND created_at > (NOW() - INTERVAL 1 MINUTE)",
+      [user.id],
+    )) as Array<{ cnt: number }>
+    const recentCount = recentCountResult?.[0]?.cnt ?? 0
+    if (recentCount >= 3) {
+      return NextResponse.json(
+        { error: "You can change your avatar at most 3 times per minute. Please wait before trying again." },
+        { status: 429 },
+      )
+    }
+
     const { filename } = await request.json()
 
     if (!filename || typeof filename !== "string") {
@@ -43,6 +55,11 @@ export async function POST(request: NextRequest) {
       avatarPath,
       user.id,
     ])
+
+    await query(
+      "INSERT INTO user_avatar_changes (user_id, avatar_path) VALUES (?, ?)",
+      [user.id, avatarPath],
+    )
 
     return NextResponse.json({
       success: true,
