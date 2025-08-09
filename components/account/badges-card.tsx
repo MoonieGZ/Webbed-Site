@@ -50,7 +50,7 @@ export function BadgesCard() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <div className="text-sm font-medium mb-2">Featured Badges</div>
+            <CardTitle className="flex items-center gap-2">Featured Badges</CardTitle>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {[0, 1, 2].map((i) => (
                 <div key={i} className="rounded-md border p-3 space-y-2">
@@ -70,7 +70,7 @@ export function BadgesCard() {
           <Separator />
 
           <div className="space-y-2">
-            <div className="text-sm font-medium">Your Badges</div>
+            <CardTitle className="flex items-center gap-2">Your Badges</CardTitle>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {Array.from({ length: 6 }).map((_, idx) => (
                 <div
@@ -105,8 +105,8 @@ export function BadgesCard() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <div className="text-sm font-medium mb-2">Featured Badges</div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <CardTitle className="flex items-center gap-2">Featured Badges</CardTitle>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
             {([0, 1, 2] as const).map((idx) => {
               const badge = featuredBadges[idx]
               return (
@@ -172,7 +172,7 @@ export function BadgesCard() {
         <Separator />
 
         <div className="space-y-2">
-          <div className="text-sm font-medium">Your Badges</div>
+          <CardTitle className="flex items-center gap-2">Your Badges</CardTitle>
           {ownedBadges.length === 0 ? (
             <div className="text-sm text-muted-foreground">
               You haven't earned any badges yet.

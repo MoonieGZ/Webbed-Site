@@ -3,7 +3,7 @@
 import { User, Camera, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
 import {
   Card,
   CardContent,
@@ -48,6 +48,7 @@ export function AvatarCard() {
               <Skeleton className="h-3 w-52 ms-auto" />
             </div>
           </div>
+          <Separator className="mx-2" />
           <div>
             <Skeleton className="h-4 w-28 mb-2" />
             <div className="flex gap-2">
@@ -120,6 +121,8 @@ export function AvatarCard() {
             </p>
           </div>
         </div>
+
+        <Separator className="mx-2" />
 
         {recentAvatars.length > 0 && (
           <div className="space-y-3">
