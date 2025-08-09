@@ -220,9 +220,13 @@ export function ProfileInformationCard() {
               )}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Titles are obtained via badges.</p>
+          <p className="text-xs text-muted-foreground">
+            Titles are obtained via badges.
+          </p>
           {titles.length === 0 && (
-            <p className="text-xs text-muted-foreground">Earn titles by collecting badges.</p>
+            <p className="text-xs text-muted-foreground">
+              Earn titles by collecting badges.
+            </p>
           )}
         </div>
       </CardContent>

@@ -78,7 +78,17 @@ export async function POST(request: NextRequest) {
     const requester = sessionToken ? await getUserBySession(sessionToken) : null
 
     const attachmentUrls: string[] = []
-    const allowedExt = new Set(["png","jpg","jpeg","gif","webp","pdf","txt","md","log"])
+    const allowedExt = new Set([
+      "png",
+      "jpg",
+      "jpeg",
+      "gif",
+      "webp",
+      "pdf",
+      "txt",
+      "md",
+      "log",
+    ])
     if (attachments && attachments.length > 0) {
       const dir = join(
         process.cwd(),
@@ -91,7 +101,10 @@ export async function POST(request: NextRequest) {
         const buf = Buffer.from(await f.arrayBuffer())
         const ext = f.name.split(".").pop()?.toLowerCase() || "dat"
         if (!allowedExt.has(ext)) {
-          return NextResponse.json({ error: "Unsupported attachment type" }, { status: 400 })
+          return NextResponse.json(
+            { error: "Unsupported attachment type" },
+            { status: 400 },
+          )
         }
         const rand = crypto.randomBytes(8).toString("hex")
         const filename = `${Date.now()}-${rand}.${ext}`

@@ -86,7 +86,10 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes)
     const detected = await detectImageMime(buffer)
     if (!detected) {
-      return NextResponse.json({ error: "Unsupported image format" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Unsupported image format" },
+        { status: 400 },
+      )
     }
     await writeFile(filePath, buffer)
 

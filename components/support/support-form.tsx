@@ -118,6 +118,10 @@ export function SupportForm() {
               onChange={(e) => setFiles(e.target.files)}
               className="w-full text-muted-foreground file:border-input file:text-foreground p-0 pr-3 italic file:me-3 file:h-full file:border-0 file:border-e file:border-solid file:bg-primary file:text-primary-foreground file:px-3 file:text-sm file:font-medium file:not-italic file:leading-none file:py-2.5 file:hover:bg-primary/90 file:transition-colors"
             />
+            <div className="text-xs text-muted-foreground mb-2">
+              Attachments are privately stored and only visible to
+              administrators.
+            </div>
             {files.length > 0 && (
               <div className="grid gap-2">
                 {files.map((f, i) => (
@@ -140,7 +144,6 @@ export function SupportForm() {
             )}
           </div>
           <div className="flex justify-end">
-            <div className="text-xs text-muted-foreground mb-2">Attachments are privately stored and only visible to administrators.</div>
             <Button
               type="submit"
               disabled={
