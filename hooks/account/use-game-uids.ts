@@ -80,9 +80,9 @@ export function useGameUIDs() {
 
   const saveGameUID = async (game: GameType) => {
     const uid = uidInputs[game].trim()
-    
-    setSavingGames(prev => new Set(prev).add(game))
-    
+
+    setSavingGames((prev) => new Set(prev).add(game))
+
     try {
       if (!uid) {
         const response = await fetch(`/api/account/game-uids?game=${game}`, {
@@ -92,10 +92,16 @@ export function useGameUIDs() {
         const data = await response.json()
 
         if (response.ok) {
-          toast.success(`${GAME_INFO[game].name} UID deleted successfully!`, toastStyles.success)
+          toast.success(
+            `${GAME_INFO[game].name} UID deleted successfully!`,
+            toastStyles.success,
+          )
           await fetchGameUIDs()
         } else {
-          toast.error(data.error || `Failed to delete ${GAME_INFO[game].name} UID`, toastStyles.error)
+          toast.error(
+            data.error || `Failed to delete ${GAME_INFO[game].name} UID`,
+            toastStyles.error,
+          )
         }
       } else {
         const response = await fetch("/api/account/game-uids", {
@@ -109,17 +115,26 @@ export function useGameUIDs() {
         const data = await response.json()
 
         if (response.ok) {
-          toast.success(`${GAME_INFO[game].name} UID saved successfully!`, toastStyles.success)
+          toast.success(
+            `${GAME_INFO[game].name} UID saved successfully!`,
+            toastStyles.success,
+          )
           await fetchGameUIDs()
         } else {
-          toast.error(data.error || `Failed to save ${GAME_INFO[game].name} UID`, toastStyles.error)
+          toast.error(
+            data.error || `Failed to save ${GAME_INFO[game].name} UID`,
+            toastStyles.error,
+          )
         }
       }
     } catch (error) {
       console.error(`Error saving/deleting ${GAME_INFO[game].name} UID:`, error)
-      toast.error(`Failed to save ${GAME_INFO[game].name} UID`, toastStyles.error)
+      toast.error(
+        `Failed to save ${GAME_INFO[game].name} UID`,
+        toastStyles.error,
+      )
     } finally {
-      setSavingGames(prev => {
+      setSavingGames((prev) => {
         const newSet = new Set(prev)
         newSet.delete(game)
         return newSet
@@ -127,14 +142,12 @@ export function useGameUIDs() {
     }
   }
 
-
-
   const updateUidInput = (game: GameType, value: string) => {
-    setUidInputs(prev => ({ ...prev, [game]: value }))
+    setUidInputs((prev) => ({ ...prev, [game]: value }))
   }
 
   const getGameUID = (game: GameType) => {
-    return gameUIDs.find(uid => uid.game === game)
+    return gameUIDs.find((uid) => uid.game === game)
   }
 
   const isSaving = (game: GameType) => savingGames.has(game)

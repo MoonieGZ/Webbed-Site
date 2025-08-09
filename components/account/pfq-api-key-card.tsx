@@ -71,7 +71,8 @@ export function PFQApiKeyCard() {
                       ? new Date(apiKeyInfo.created_at).toLocaleDateString()
                       : "Unknown"}
                   </strong>{" "}
-                  <br />Last validated on{" "}
+                  <br />
+                  Last validated on{" "}
                   <strong>
                     {apiKeyInfo.last_validated
                       ? new Date(apiKeyInfo.last_validated).toLocaleDateString()

@@ -133,10 +133,10 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    await query(
-      "DELETE FROM user_game_uids WHERE user_id = ? AND game = ?",
-      [user.id, game],
-    )
+    await query("DELETE FROM user_game_uids WHERE user_id = ? AND game = ?", [
+      user.id,
+      game,
+    ])
 
     return NextResponse.json({ success: true })
   } catch (error) {

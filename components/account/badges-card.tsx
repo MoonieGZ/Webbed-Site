@@ -1,6 +1,5 @@
 "use client"
 
-import { useMemo } from "react"
 import {
   Card,
   CardContent,
@@ -13,6 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { useBadges } from "@/hooks/account/use-badges"
 import * as LucideIcons from "lucide-react"
 import { motion } from "motion/react"
+import { Save } from "lucide-react"
 
 export function BadgesCard() {
   const {
@@ -34,16 +34,14 @@ export function BadgesCard() {
     return <Icon className="h-4 w-4" />
   }
 
-  const ownedById = useMemo(() => new Map(ownedBadges.map((b) => [b.id, b])), [
-    ownedBadges,
-  ])
-
   if (loading) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Badges</CardTitle>
-          <CardDescription>Manage and feature your profile badges</CardDescription>
+          <CardDescription>
+            Manage and feature your profile badges
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
@@ -58,7 +56,9 @@ export function BadgesCard() {
     <Card>
       <CardHeader>
         <CardTitle>Badges</CardTitle>
-        <CardDescription>Choose up to 3 badges to feature on your public profile</CardDescription>
+        <CardDescription>
+          Choose up to 3 badges to feature on your public profile
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
@@ -95,7 +95,9 @@ export function BadgesCard() {
                       </Button>
                     ) : null}
                   </div>
-                  <div className="text-xs text-muted-foreground">Slot {idx + 1}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Slot {idx + 1}
+                  </div>
                 </div>
               )
             })}
@@ -113,13 +115,17 @@ export function BadgesCard() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {ownedBadges.map((b) => {
-                const isFeaturedIndex = featuredSlots.findIndex((id) => id === b.id)
+                const isFeaturedIndex = featuredSlots.findIndex(
+                  (id) => id === b.id,
+                )
                 return (
                   <motion.button
                     key={b.id}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      const emptyIndex = featuredSlots.findIndex((id) => id == null)
+                      const emptyIndex = featuredSlots.findIndex(
+                        (id) => id == null,
+                      )
                       const targetIndex =
                         isFeaturedIndex >= 0
                           ? (isFeaturedIndex + 1) % 3
@@ -137,7 +143,9 @@ export function BadgesCard() {
                       <div className="text-sm font-medium flex items-center gap-2">
                         {b.name}
                         {isFeaturedIndex >= 0 ? (
-                          <span className="text-xs text-muted-foreground">(Slot {isFeaturedIndex + 1})</span>
+                          <span className="text-xs text-muted-foreground">
+                            (Slot {isFeaturedIndex + 1})
+                          </span>
                         ) : null}
                       </div>
                       <div className="text-xs text-muted-foreground line-clamp-2">
@@ -152,16 +160,24 @@ export function BadgesCard() {
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
-          <Button variant="outline" onClick={() => window.location.reload()} disabled={saving || loading}>
-            Reset
-          </Button>
-          <Button onClick={saveFeatured} disabled={!hasUnsavedChanges || saving}>
-            {saving ? "Saving..." : "Save Featured"}
+          <Button
+            onClick={saveFeatured}
+            disabled={!hasUnsavedChanges || saving}
+          >
+            {saving ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save
+              </>
+            )}
           </Button>
         </div>
       </CardContent>
     </Card>
   )
 }
-
-

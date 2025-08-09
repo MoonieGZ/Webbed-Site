@@ -113,5 +113,3 @@ export function useBadges() {
     refresh: fetchBadges,
   }
 }
-
-

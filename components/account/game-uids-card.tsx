@@ -75,26 +75,26 @@ export function GameUIDsCard() {
                     placeholder={gameInfo.placeholder}
                     value={currentUid}
                     onChange={(e) => updateUidInput(game, e.target.value)}
-                                         className="-me-px rounded-e-none shadow-none focus-visible:z-1"
-                     disabled={isSaving(game)}
-                   />
-                   <Button
-                     className="rounded-s-none"
-                     onClick={() => saveGameUID(game)}
-                     disabled={isSaving(game)}
-                   >
-                     {isSaving(game) ? (
-                       <>
-                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
-                         Saving...
-                       </>
-                     ) : (
-                       <>
-                         <Save className="h-4 w-4 mr-2" />
-                         Save
-                       </>
-                     )}
-                   </Button>
+                    className="-me-px rounded-e-none shadow-none focus-visible:z-1"
+                    disabled={isSaving(game)}
+                  />
+                  <Button
+                    className="rounded-s-none"
+                    onClick={() => saveGameUID(game)}
+                    disabled={isSaving(game)}
+                  >
+                    {isSaving(game) ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             )
