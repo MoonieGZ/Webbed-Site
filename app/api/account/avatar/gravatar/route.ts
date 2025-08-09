@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { validateSession, getUserBySession } from "@/lib/session"
 import { query } from "@/lib/db"
-import { cleanupOldAvatars } from "@/lib/avatar-utils"
+import { cleanupOldAvatars, detectImageMime } from "@/lib/avatar-utils"
 import crypto from "crypto"
 import fs from "fs/promises"
 import path from "path"
@@ -79,6 +79,10 @@ export async function POST(request: NextRequest) {
     await fs.mkdir(avatarDir, { recursive: true })
 
     const filePath = path.join(avatarDir, fileName)
+    const detected = await detectImageMime(imageData)
+    if (!detected) {
+      return NextResponse.json({ error: "Unsupported image format" }, { status: 400 })
+    }
     await fs.writeFile(filePath, imageData)
 
     const avatarPath = `/avatars/${user.id}/${fileName}`

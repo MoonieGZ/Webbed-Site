@@ -18,13 +18,13 @@ export function useLoginForm() {
 
   useEffect(() => {
     if (!cooldownUntil) return
-    const msRemaining = cooldownUntil - Date.now()
-    if (msRemaining <= 0) {
-      setCooldownUntil(null)
-      return
-    }
-    const id = window.setTimeout(() => setCooldownUntil(null), msRemaining)
-    return () => window.clearTimeout(id)
+    const interval = window.setInterval(() => {
+      if (Date.now() >= cooldownUntil) {
+        setCooldownUntil(null)
+        window.clearInterval(interval)
+      }
+    }, 1000)
+    return () => window.clearInterval(interval)
   }, [cooldownUntil])
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
 import sendEmail from "@/lib/email"
+import { escapeHtml } from "@/lib/utils"
 import { getUserBySession } from "@/lib/session"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
     const requester = sessionToken ? await getUserBySession(sessionToken) : null
 
     const attachmentUrls: string[] = []
+    const allowedExt = new Set(["png","jpg","jpeg","gif","webp","pdf","txt","md","log"])
     if (attachments && attachments.length > 0) {
       const dir = join(
         process.cwd(),
@@ -88,6 +90,9 @@ export async function POST(request: NextRequest) {
       for (const f of attachments) {
         const buf = Buffer.from(await f.arrayBuffer())
         const ext = f.name.split(".").pop()?.toLowerCase() || "dat"
+        if (!allowedExt.has(ext)) {
+          return NextResponse.json({ error: "Unsupported attachment type" }, { status: 400 })
+        }
         const rand = crypto.randomBytes(8).toString("hex")
         const filename = `${Date.now()}-${rand}.${ext}`
         const filePath = join(dir, filename)
@@ -108,12 +113,17 @@ export async function POST(request: NextRequest) {
             ? "Streamer Badge Request"
             : "Support"
 
+    const safeUsername = escapeHtml(username)
+    const safeEmail = escapeHtml(email)
+    const safeSubject = escapeHtml(subject)
+    const safeMessage = escapeHtml(message).replace(/\n/g, "<br/>")
+
     const html = `
-      <h2>Support Request: ${prettyCategory}</h2>
-      <p><strong>From:</strong> ${username} &lt;${email}&gt;</p>
-      <p><strong>Subject:</strong> ${subject}</p>
-      <p><strong>Message:</strong><br/>${message.replace(/\n/g, "<br/>")}</p>
-      <p><small>IP: ${ip}</small></p>
+      <h2>Support Request: ${escapeHtml(prettyCategory)}</h2>
+      <p><strong>From:</strong> ${safeUsername} &lt;${safeEmail}&gt;</p>
+      <p><strong>Subject:</strong> ${safeSubject}</p>
+      <p><strong>Message:</strong><br/>${safeMessage}</p>
+      <p><small>IP: ${escapeHtml(ip)}</small></p>
       ${attachmentUrls.length ? `<p><strong>Attachments:</strong><br/>${attachmentUrls.map((u) => `<a href="${u}">${u}</a>`).join("<br/>")}</p>` : ""}
     `
     const text = `Support Request: ${prettyCategory}\nFrom: ${username} <${email}>\nSubject: ${subject}\n\n${message}\n\nIP: ${ip}${attachmentUrls.length ? `\nAttachments:\n${attachmentUrls.join("\n")}` : ""}`

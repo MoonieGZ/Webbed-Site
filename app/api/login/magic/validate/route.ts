@@ -20,21 +20,20 @@ export async function POST(request: NextRequest) {
     }
 
     let userId: number
+    let userPayload: { id: number; email: string } | null = null
 
     if (result.shouldCreateUser) {
       const newUser = await createUser(result.email)
       userId = newUser.id
+      userPayload = { id: newUser.id, email: newUser.email }
     } else {
       userId = result.user!.id
+      userPayload = { id: result.user!.id, email: result.user!.email }
     }
 
     const sessionToken = await createSession(userId)
 
-    const response = NextResponse.json({
-      success: true,
-      user: result.shouldCreateUser ? result.user : result.user,
-      shouldCreateUser: result.shouldCreateUser,
-    })
+    const response = NextResponse.json({ success: true, user: userPayload })
 
     const expiresDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     response.cookies.set("session", sessionToken, {

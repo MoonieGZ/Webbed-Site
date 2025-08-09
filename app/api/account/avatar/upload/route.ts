@@ -4,7 +4,7 @@ import { join } from "path"
 import crypto from "crypto"
 import { getUserBySession } from "@/lib/session"
 import { query } from "@/lib/db"
-import { cleanupOldAvatars } from "@/lib/avatar-utils"
+import { cleanupOldAvatars, detectImageMime } from "@/lib/avatar-utils"
 import { DiscordWebhookService } from "@/services/discord-webhook"
 
 export async function POST(request: NextRequest) {
@@ -84,6 +84,10 @@ export async function POST(request: NextRequest) {
     const filePath = join(userAvatarDir, filename)
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
+    const detected = await detectImageMime(buffer)
+    if (!detected) {
+      return NextResponse.json({ error: "Unsupported image format" }, { status: 400 })
+    }
     await writeFile(filePath, buffer)
 
     const avatarPath = `/avatars/${user.id}/${filename}`

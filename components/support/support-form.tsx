@@ -140,7 +140,18 @@ export function SupportForm() {
             )}
           </div>
           <div className="flex justify-end">
-            <Button type="submit" disabled={submitting}>
+            <div className="text-xs text-muted-foreground mb-2">Attachments are privately stored and only visible to administrators.</div>
+            <Button
+              type="submit"
+              disabled={
+                submitting ||
+                !username.trim() ||
+                !email.trim() ||
+                !subject.trim() ||
+                !message.trim() ||
+                !category
+              }
+            >
               <Send className="h-4 w-4 mr-2" />
               {submitting ? "Sending..." : "Send"}
             </Button>

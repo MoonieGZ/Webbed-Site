@@ -30,9 +30,10 @@ export function BadgesCard() {
   } = useBadges()
 
   const iconFor = (iconName?: string) => {
-    if (!iconName) return null
+    const Fallback = (LucideIcons as any)["Award"]
+    if (!iconName) return <Fallback className="h-4 w-4" />
     const Icon = (LucideIcons as any)[iconName]
-    if (!Icon) return null
+    if (!Icon) return <Fallback className="h-4 w-4" />
     return <Icon className="h-4 w-4" />
   }
 

@@ -42,12 +42,14 @@ export async function POST(request: NextRequest) {
       [ip],
     )) as { cnt: number } | null
 
-    if ((hourlyCount?.cnt ?? 0) >= 3) {
+    const perEmailHourly = (await queryOne(
+      "SELECT COUNT(*) AS cnt FROM magic_links WHERE email = ? AND created_at > (NOW() - INTERVAL 1 HOUR)",
+      [email],
+    )) as { cnt: number } | null
+
+    if ((hourlyCount?.cnt ?? 0) >= 3 || (perEmailHourly?.cnt ?? 0) >= 3) {
       return NextResponse.json(
-        {
-          error:
-            "Too many requests for this email in the last hour. Please try again later.",
-        },
+        { error: "Too many requests for this email in the last hour. Please try again later." },
         { status: 429 },
       )
     }

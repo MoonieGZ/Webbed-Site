@@ -1,27 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getUserBySession } from "@/lib/session"
+import { ADMIN_USER_ID } from "@/lib/admin"
 import { readFile } from "fs/promises"
+
 import { join, normalize } from "path"
 
 function getContentType(filename: string): string {
   const ext = filename.split(".").pop()?.toLowerCase()
-  switch (ext) {
-    case "png":
-      return "image/png"
-    case "jpg":
-    case "jpeg":
-      return "image/jpeg"
-    case "gif":
-      return "image/gif"
-    case "webp":
-      return "image/webp"
-    case "pdf":
-      return "application/pdf"
-    case "txt":
-      return "text/plain; charset=utf-8"
-    default:
-      return "application/octet-stream"
+  const map: Record<string, string> = {
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    gif: "image/gif",
+    webp: "image/webp",
+    pdf: "application/pdf",
+    txt: "text/plain; charset=utf-8",
+    md: "text/markdown; charset=utf-8",
+    log: "text/plain; charset=utf-8",
+    m4a: "audio/mp4",
   }
+  return (ext && map[ext]) || "application/octet-stream"
 }
 
 export async function GET(
@@ -31,7 +29,7 @@ export async function GET(
   try {
     const sessionToken = request.cookies.get("session")?.value
     const user = sessionToken ? await getUserBySession(sessionToken) : null
-    if (!user || user.id !== 1) {
+    if (!user || user.id !== ADMIN_USER_ID) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 

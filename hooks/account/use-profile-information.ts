@@ -4,6 +4,7 @@ import { toastStyles } from "@/lib/toast-styles"
 import { useUserContext } from "@/contexts/user-context"
 
 import type { AppUser as User } from "@/types/user"
+import { canChangeUsernameSince, daysUntilUsernameChange } from "@/lib/username"
 
 export function useProfileInformation() {
   const { updateUser } = useUserContext()
@@ -53,29 +54,10 @@ export function useProfileInformation() {
     setLoading(false)
   }
 
-  const canChangeUsername = () => {
-    if (!user?.name_changed_at) return true
+  const canChangeUsername = () => canChangeUsernameSince(user?.name_changed_at)
 
-    const lastChanged = new Date(user.name_changed_at)
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-
-    return lastChanged < thirtyDaysAgo
-  }
-
-  const getDaysUntilUsernameChange = () => {
-    if (!user?.name_changed_at) return 0
-
-    const lastChanged = new Date(user.name_changed_at)
-    const nextAllowed = new Date(
-      lastChanged.getTime() + 30 * 24 * 60 * 60 * 1000,
-    )
-    const now = new Date()
-
-    const diffTime = nextAllowed.getTime() - now.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-    return Math.max(0, diffDays)
-  }
+  const getDaysUntilUsernameChange = () =>
+    daysUntilUsernameChange(user?.name_changed_at)
 
   const handleUsernameChange = async () => {
     if (!user || !newUsername.trim()) return
@@ -83,7 +65,7 @@ export function useProfileInformation() {
     setIsChangingUsername(true)
     try {
       const response = await fetch("/api/account/username", {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
