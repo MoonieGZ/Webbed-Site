@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
-
-interface SessionUser {
-  id: number
-  email: string
-}
+import { SessionUser } from "@/types/session-user"
 
 async function requireUser(request: NextRequest): Promise<SessionUser | null> {
   const sessionToken = request.cookies.get("session")?.value

@@ -65,7 +65,10 @@ export async function POST(request: NextRequest) {
     const recentCount = recentCountResult?.[0]?.cnt ?? 0
     if (recentCount >= 3) {
       return NextResponse.json(
-        { error: "You can change your avatar at most 3 times per minute. Please wait before trying again." },
+        {
+          error:
+            "You can change your avatar at most 3 times per minute. Please wait before trying again.",
+        },
         { status: 429 },
       )
     }
