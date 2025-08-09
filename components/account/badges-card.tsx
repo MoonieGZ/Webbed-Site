@@ -1,5 +1,6 @@
 "use client"
 
+import type { DragEvent } from "react"
 import {
   Card,
   CardContent,
@@ -11,7 +12,6 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useBadges } from "@/hooks/account/use-badges"
 import * as LucideIcons from "lucide-react"
-import { motion } from "motion/react"
 import { Save } from "lucide-react"
 
 export function BadgesCard() {
@@ -24,6 +24,7 @@ export function BadgesCard() {
     hasUnsavedChanges,
     assignBadgeToSlot,
     clearSlot,
+    moveFeaturedBadge,
     saveFeatured,
   } = useBadges()
 
@@ -57,30 +58,51 @@ export function BadgesCard() {
       <CardHeader>
         <CardTitle>Badges</CardTitle>
         <CardDescription>
-          Choose up to 3 badges to feature on your public profile
+          Use drag and drop to feature up to 3 badges on your public profile
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
           <div className="text-sm font-medium mb-2">Featured Badges</div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {([0, 1, 2] as const).map((idx) => {
               const badge = featuredBadges[idx]
               return (
                 <div
                   key={idx}
                   className="rounded-md border p-3 flex flex-col gap-2"
+                  draggable={!!badge}
+                  onDragStart={(e: DragEvent<HTMLDivElement>) => {
+                    if (!badge) return
+                    e.dataTransfer.setData("text/source", "slot")
+                    e.dataTransfer.setData("text/fromIndex", String(idx))
+                  }}
+                  onDragOver={(e: DragEvent<HTMLDivElement>) => {
+                    e.preventDefault()
+                  }}
+                  onDrop={(e: DragEvent<HTMLDivElement>) => {
+                    const sourceType = e.dataTransfer.getData("text/source")
+                    const badgeIdStr = e.dataTransfer.getData("text/badgeId")
+                    const fromIndexStr = e.dataTransfer.getData("text/fromIndex")
+                    if (sourceType === "owned" && badgeIdStr) {
+                      const badgeId = Number(badgeIdStr)
+                      assignBadgeToSlot(badgeId, idx)
+                    } else if (sourceType === "slot" && fromIndexStr) {
+                      const fromIndex = Number(fromIndexStr)
+                      moveFeaturedBadge(fromIndex, idx)
+                    }
+                  }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-2 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
                       <div className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-muted">
                         {badge ? iconFor(badge.icon_url) : null}
                       </div>
-                      <div className="text-sm">
-                        <div className="font-medium">
+                      <div className="text-sm min-w-0">
+                        <div className="font-medium truncate">
                           {badge ? badge.name : `Empty Slot ${idx + 1}`}
                         </div>
-                        <div className="text-muted-foreground text-xs">
+                        <div className="text-muted-foreground text-xs line-clamp-2">
                           {badge ? badge.description : "Select a badge below"}
                         </div>
                       </div>
@@ -113,37 +135,39 @@ export function BadgesCard() {
               You haven't earned any badges yet.
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {ownedBadges.map((b) => {
                 const isFeaturedIndex = featuredSlots.findIndex(
                   (id) => id === b.id,
                 )
                 return (
-                  <motion.button
+                  <button
                     key={b.id}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      const emptyIndex = featuredSlots.findIndex(
-                        (id) => id == null,
-                      )
-                      const targetIndex =
-                        isFeaturedIndex >= 0
-                          ? (isFeaturedIndex + 1) % 3
-                          : emptyIndex >= 0
-                            ? emptyIndex
-                            : 0
-                      assignBadgeToSlot(b.id, targetIndex)
+                    draggable
+                    onDragStart={(e: DragEvent<HTMLButtonElement>) => {
+                      e.dataTransfer.setData("text/source", "owned")
+                      e.dataTransfer.setData("text/badgeId", String(b.id))
                     }}
-                    className="rounded-md border p-3 text-left hover:bg-accent/50 flex items-center gap-3"
+                    onClick={() => {
+                      if (isFeaturedIndex >= 0) {
+                        clearSlot(isFeaturedIndex)
+                        return
+                      }
+                      const emptyIndex = featuredSlots.findIndex((id) => id == null)
+                      if (emptyIndex >= 0) {
+                        assignBadgeToSlot(b.id, emptyIndex)
+                      }
+                    }}
+                    className="rounded-md border p-3 text-left hover:bg-accent/50 flex items-center gap-3 active:scale-[0.98] transition-transform min-w-0"
                   >
                     <div className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-muted">
                       {iconFor(b.icon_url)}
                     </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium flex items-center gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium flex items-center gap-2 truncate">
                         {b.name}
                         {isFeaturedIndex >= 0 ? (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
                             (Slot {isFeaturedIndex + 1})
                           </span>
                         ) : null}
@@ -152,7 +176,7 @@ export function BadgesCard() {
                         {b.description}
                       </div>
                     </div>
-                  </motion.button>
+                  </button>
                 )
               })}
             </div>

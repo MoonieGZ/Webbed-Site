@@ -59,7 +59,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate game enum
     const validGames = ["gi", "hsr", "zzz", "ww"]
     if (!validGames.includes(game)) {
       return NextResponse.json(
@@ -74,13 +73,11 @@ export async function POST(request: NextRequest) {
     )
 
     if (existingUID) {
-      // Update existing UID
       await query(
         "UPDATE user_game_uids SET uid = ?, updated_at = NOW() WHERE user_id = ? AND game = ?",
         [uid.trim(), user.id, game],
       )
     } else {
-      // Insert new UID
       await query(
         "INSERT INTO user_game_uids (user_id, game, uid, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())",
         [user.id, game, uid.trim()],
@@ -124,7 +121,6 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Validate game enum
     const validGames = ["gi", "hsr", "zzz", "ww"]
     if (!validGames.includes(game)) {
       return NextResponse.json(

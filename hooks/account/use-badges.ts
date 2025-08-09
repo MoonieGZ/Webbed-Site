@@ -72,6 +72,19 @@ export function useBadges() {
     setHasUnsavedChanges(true)
   }
 
+  const moveFeaturedBadge = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return
+    setFeaturedSlots((prev) => {
+      const updated: FeaturedSlots = [...prev] as FeaturedSlots
+      const from = updated[fromIndex]
+      const to = updated[toIndex]
+      updated[fromIndex] = to ?? null
+      updated[toIndex] = from ?? null
+      return updated
+    })
+    setHasUnsavedChanges(true)
+  }
+
   const saveFeatured = async () => {
     setSaving(true)
     try {
@@ -109,6 +122,7 @@ export function useBadges() {
     hasUnsavedChanges,
     assignBadgeToSlot,
     clearSlot,
+    moveFeaturedBadge,
     saveFeatured,
     refresh: fetchBadges,
   }

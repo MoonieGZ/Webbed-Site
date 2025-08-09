@@ -46,7 +46,6 @@ export async function GET(request: NextRequest) {
       [user.id],
     )) as Array<{ slot: number; badge_id: number }>
 
-    // Normalize to fixed 3 slots
     const slots: Array<number | null> = [null, null, null]
     for (const f of featured) {
       if (f.slot >= 1 && f.slot <= 3) slots[f.slot - 1] = f.badge_id
@@ -78,7 +77,6 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Validate uniqueness of non-null badge ids across slots
     const nonNullIds = slots.filter((v) => v != null) as number[]
     const uniqueIds = new Set(nonNullIds)
     if (uniqueIds.size !== nonNullIds.length) {
@@ -88,7 +86,6 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Validate that provided badges belong to the user
     let owns: Array<{ badge_id: number }> = []
     if (nonNullIds.length > 0) {
       owns = (await query(
@@ -108,7 +105,6 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    // Apply updates per slot
     for (let i = 0; i < 3; i++) {
       const slot = i + 1
       const badgeId = slots[i]
@@ -118,7 +114,6 @@ export async function PUT(request: NextRequest) {
           [user.id, slot],
         )
       } else {
-        // Ensure row exists or update. Primary key is (user_id, slot)
         await query(
           `INSERT INTO user_featured_badges (user_id, badge_id, slot)
            VALUES (?, ?, ?)
