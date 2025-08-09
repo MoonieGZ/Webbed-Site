@@ -50,9 +50,7 @@ export function BadgesCard() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              Featured Badges
-            </CardTitle>
+            <Skeleton className="h-4 w-28 mb-2" />
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               {[0, 1, 2].map((i) => (
                 <div key={i} className="rounded-md border p-3 space-y-2">
@@ -72,11 +70,9 @@ export function BadgesCard() {
           <Separator />
 
           <div className="space-y-2">
-            <CardTitle className="flex items-center gap-2">
-              Your Badges
-            </CardTitle>
+            <Skeleton className="h-4 w-28" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {Array.from({ length: 6 }).map((_, idx) => (
+              {Array.from({ length: 3 }).map((_, idx) => (
                 <div
                   key={idx}
                   className="rounded-md border p-3 flex items-center gap-3"
