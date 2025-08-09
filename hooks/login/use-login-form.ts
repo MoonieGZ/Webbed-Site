@@ -1,10 +1,31 @@
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
 
 export function useLoginForm() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [cooldownMessage, setCooldownMessage] = useState<string>("")
+  const [lastSentEmail, setLastSentEmail] = useState<string>("")
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null)
+
+  const isSameAsLast = email.trim() !== "" && email.trim() === lastSentEmail
+  const isCooldownActive = useMemo(() => {
+    if (!cooldownUntil) return false
+    if (!isSameAsLast) return false
+    return Date.now() < cooldownUntil
+  }, [cooldownUntil, isSameAsLast])
+
+  useEffect(() => {
+    if (!cooldownUntil) return
+    const msRemaining = cooldownUntil - Date.now()
+    if (msRemaining <= 0) {
+      setCooldownUntil(null)
+      return
+    }
+    const id = window.setTimeout(() => setCooldownUntil(null), msRemaining)
+    return () => window.clearTimeout(id)
+  }, [cooldownUntil])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,12 +50,25 @@ export function useLoginForm() {
 
       if (response.ok) {
         toast.success("Email sent, check your inbox!", toastStyles.success)
-        setEmail("")
-      } else {
-        toast.error(
-          data.error || "Failed to send magic link",
-          toastStyles.error,
+
+        const trimmed = email.trim()
+        setLastSentEmail(trimmed)
+        setCooldownUntil(Date.now() + 2 * 60 * 1000)
+        setCooldownMessage(
+          "Email sent! If you have not received it, you can try again in 2 minutes.",
         )
+      } else {
+        const message = data.error || "Failed to send magic link"
+        setCooldownMessage(message)
+
+        const match = /wait\s+(\d+)s/i.exec(message)
+        if (match) {
+          const seconds = Number(match[1])
+          const trimmed = email.trim()
+          setLastSentEmail(trimmed)
+          setCooldownUntil(Date.now() + seconds * 1000)
+        }
+        toast.error(message, toastStyles.error)
       }
     } catch (error) {
       toast.error(
@@ -50,6 +84,9 @@ export function useLoginForm() {
     email,
     setEmail,
     isLoading,
+    cooldownMessage,
+    isCooldownActive,
+    buttonLabel: isSameAsLast ? "Re-send" : "Login",
     handleSubmit,
   }
 }

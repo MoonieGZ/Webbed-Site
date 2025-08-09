@@ -10,7 +10,15 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const { email, setEmail, isLoading, handleSubmit } = useLoginForm()
+  const {
+    email,
+    setEmail,
+    isLoading,
+    cooldownMessage,
+    isCooldownActive,
+    buttonLabel,
+    handleSubmit,
+  } = useLoginForm()
 
   return (
     <form
@@ -37,11 +45,24 @@ export function LoginForm({
             disabled={isLoading}
           />
         </div>
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Sending..." : "Login"}
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isLoading || isCooldownActive}
+        >
+          {isLoading ? "Sending..." : buttonLabel}
         </Button>
       </div>
       <div className="text-center text-sm">
+        {cooldownMessage && (
+          <>
+            <span className="text-amber-600 dark:text-amber-400">
+              {cooldownMessage}
+            </span>
+            <br />
+            <br />
+          </>
+        )}
         We&apos;ll send you a magic link to sign in.
         <br />
         Don&apos;t have an account? We&apos;ll create one for you.

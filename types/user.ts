@@ -7,5 +7,3 @@ export interface AppUser {
   avatar?: string
   name_changed_at?: string
 }
-
-

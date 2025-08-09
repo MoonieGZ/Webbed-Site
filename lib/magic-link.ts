@@ -27,13 +27,22 @@ export function generateMagicLinkToken(): string {
 export async function createMagicLink(
   email: string,
   userId?: number,
+  ipAddress?: string | null,
+  userAgent?: string | null,
 ): Promise<string> {
   const token = generateMagicLinkToken()
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
 
   await query(
-    "INSERT INTO magic_links (token, email, user_id, expires_at, used) VALUES (?, ?, ?, ?, 0)",
-    [token, email, userId || null, expiresAt],
+    "INSERT INTO magic_links (token, email, user_id, ip_address, user_agent, expires_at, used) VALUES (?, ?, ?, ?, ?, ?, 0)",
+    [
+      token,
+      email,
+      userId || null,
+      ipAddress || null,
+      userAgent || null,
+      expiresAt,
+    ],
   )
 
   return token

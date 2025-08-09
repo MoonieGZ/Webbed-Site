@@ -97,14 +97,14 @@ function displayMenu(
         </DropdownMenuItem>
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <Link href="/login">
-            <DropdownMenuItem asChild>
-              <User />
-              Login
-            </DropdownMenuItem>
-          </Link>
-        </DropdownMenuGroup>
+      <DropdownMenuGroup>
+        <Link href="/login">
+          <DropdownMenuItem asChild>
+            <User />
+            Login
+          </DropdownMenuItem>
+        </Link>
+      </DropdownMenuGroup>
     </DropdownMenuContent>
   )
 }
@@ -160,11 +160,7 @@ export function NavUser({
                 <ChevronsUpDown className="ml-auto size-4" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
-            {displayMenu(
-              user.name === "Guest",
-              isMobile,
-              handleLogoutClick,
-            )}
+            {displayMenu(user.name === "Guest", isMobile, handleLogoutClick)}
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
