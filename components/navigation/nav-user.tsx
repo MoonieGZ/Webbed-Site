@@ -36,6 +36,78 @@ import { Button } from "@/components/ui/button"
 import { useLogout } from "@/hooks/login/use-logout"
 import Link from "next/link"
 
+function displayMenu(
+  isGuest: boolean,
+  isMobile: boolean,
+  user: { name: string; rank: string; avatar: string },
+  handleLogoutClick: () => void,
+) {
+  if (!isGuest) {
+    return (
+      <DropdownMenuContent
+        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+        side={isMobile ? "bottom" : "right"}
+        align="end"
+        sideOffset={4}
+      >
+        <DropdownMenuGroup>
+          <DropdownMenuItem>
+            <Sparkles />
+            Become a Supporter
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <User />
+            <Link href="/account">Account</Link>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem>
+            <Settings />
+            Preferences
+          </DropdownMenuItem>
+
+          <DropdownMenuItem>
+            <Bell />
+            Notifications
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuItem variant="destructive" onClick={handleLogoutClick}>
+          <LogOut />
+          Log out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    )
+  }
+  return (
+    <DropdownMenuContent
+      className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+      side={isMobile ? "bottom" : "right"}
+      align="end"
+      sideOffset={4}
+    >
+      <DropdownMenuGroup>
+        <DropdownMenuItem>
+          <Sparkles />
+          Become a Supporter
+        </DropdownMenuItem>
+      </DropdownMenuGroup>
+      <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <Link href="/login">
+            <DropdownMenuItem asChild>
+              <User />
+              Login
+            </DropdownMenuItem>
+          </Link>
+        </DropdownMenuGroup>
+    </DropdownMenuContent>
+  )
+}
+
 export function NavUser({
   user,
   loading = false,
@@ -87,50 +159,12 @@ export function NavUser({
                 <ChevronsUpDown className="ml-auto size-4" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-              side={isMobile ? "bottom" : "right"}
-              align="end"
-              sideOffset={4}
-            >
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <Sparkles />
-                  Become a Supporter
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                {user.name !== "Guest" && (
-                  <DropdownMenuItem asChild>
-                    <User />
-                    <Link href="/account">Account</Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem>
-                  <Settings />
-                  Preferences
-                </DropdownMenuItem>
-                {user.name !== "Guest" && (
-                  <DropdownMenuItem>
-                    <Bell />
-                    Notifications
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuGroup>
-              {user.name !== "Guest" && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={handleLogoutClick}
-                  >
-                    <LogOut />
-                    Log out
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
+            {displayMenu(
+              user.name === "Guest",
+              isMobile,
+              user,
+              handleLogoutClick,
+            )}
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
