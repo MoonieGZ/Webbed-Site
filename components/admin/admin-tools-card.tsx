@@ -19,7 +19,9 @@ export function AdminToolsCard() {
           <Wrench className="h-5 w-5" />
           Admin Tools
         </CardTitle>
-        <CardDescription>Navigate to administrative tools and panels.</CardDescription>
+        <CardDescription>
+          Navigate to administrative tools and panels.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
