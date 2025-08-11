@@ -1,8 +1,11 @@
 import { FishSymbol, Users } from "lucide-react"
 import { useFriendRealtime } from "@/hooks/account/use-friend-realtime"
+import { useSidebarData } from "@/hooks/navigation/use-sidebar-data"
 
 export function useNavMain() {
   const { pendingCount } = useFriendRealtime()
+  const { user } = useSidebarData()
+  const isAuthenticated = !!user && user.id !== null
   const navMain = [
     {
       title: "Fimsh 1",
@@ -47,9 +50,25 @@ export function useNavMain() {
       title: "Friends",
       url: "/friends",
       icon: Users,
-      badgeCount: pendingCount,
+      badgeCount: isAuthenticated ? pendingCount : undefined,
+      requiresAccount: true,
     },
   ]
 
-  return { navMain }
+  const filtered = navMain
+    .filter((item) => !item.requiresAccount || isAuthenticated)
+    .map((item) =>
+      item.items
+        ? {
+            ...item,
+            items: item.items.filter(
+              // Support requiresAccount on subitems in the future
+              // @ts-ignore optional property
+              (sub) => !sub.requiresAccount || isAuthenticated,
+            ),
+          }
+        : item,
+    )
+
+  return { navMain: filtered }
 }
