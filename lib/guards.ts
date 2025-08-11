@@ -41,5 +41,3 @@ export async function requiresAdmin() {
   }
   return { user }
 }
-
-

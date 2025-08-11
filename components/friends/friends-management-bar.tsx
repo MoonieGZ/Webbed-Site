@@ -76,7 +76,7 @@ export function FriendsManagementBar({
       </div>
       {(onAddFriend || onRemoveSelected) && (
         <>
-              <div className="mx-3 h-6 w-px bg-border/60 rounded-full" />
+          <div className="mx-3 h-6 w-px bg-border/60 rounded-full" />
           <motion.div
             layout
             layoutRoot
