@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { AdminUsersTable } from "@/components/admin/admin-users-table"
 
 export default function AdminUsersPage() {
   return (
@@ -47,19 +48,7 @@ export default function AdminUsersPage() {
 
       <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
         <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>All Users</CardTitle>
-              <CardDescription>
-                Coming soon: user list, filters, and actions.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-sm text-muted-foreground">
-                This page will allow browsing and managing user accounts.
-              </div>
-            </CardContent>
-          </Card>
+          <AdminUsersTable />
         </div>
       </div>
     </>
