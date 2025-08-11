@@ -48,3 +48,5 @@ next-env.d.ts
 
 # support attachments
 /private/support/*
+
+/database/

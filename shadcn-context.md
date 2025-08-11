@@ -28,6 +28,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - GameUIDsCard (custom implementation for game UID management)
   - BadgesCard (custom implementation for viewing and featuring badges)
   - SupportForm (custom support request form)
+  - SupporterCard (custom VIP supporter form and CTA)
 
 - **Custom Hooks Built**:
   - useAccount (account management and session handling)
@@ -40,6 +41,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - useNavLinks (external links navigation data)
   - useNavSecondary (secondary navigation menu data)
   - useSupport (support form state and submission)
+  - useVIPSupport (VIP supporter details state and submission)
 
 ## Installation History
 

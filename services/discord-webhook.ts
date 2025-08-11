@@ -1,7 +1,8 @@
 import type { DiscordEmbed, DiscordWebhookPayload } from "@/types/discord"
 
 export class DiscordWebhookService {
-  private static readonly webhookUrl = process.env.DISCORD_USERINFO
+  private static readonly userinfoWebhookUrl = process.env.DISCORD_USERINFO
+  private static readonly donationWebhookUrl = process.env.DISCORD_DONATION
 
   /**
    * Sends a Discord webhook notification with an embed
@@ -9,8 +10,21 @@ export class DiscordWebhookService {
   static async sendWebhook(
     content: string = "",
     embed: DiscordEmbed,
+    type: "userinfo" | "donation",
   ): Promise<boolean> {
-    if (!this.webhookUrl) {
+    if (type === "userinfo" && !this.userinfoWebhookUrl) {
+      console.warn("Discord webhook URL not configured")
+      return false
+    }
+    if (type === "donation" && !this.donationWebhookUrl) {
+      console.warn("Discord webhook URL not configured")
+      return false
+    }
+
+    const webhookUrl =
+      type === "userinfo" ? this.userinfoWebhookUrl : this.donationWebhookUrl
+
+    if (!webhookUrl) {
       console.warn("Discord webhook URL not configured")
       return false
     }
@@ -21,7 +35,7 @@ export class DiscordWebhookService {
         embeds: [embed],
       }
 
-      const response = await fetch(this.webhookUrl, {
+      const response = await fetch(webhookUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,7 +96,7 @@ export class DiscordWebhookService {
       },
     }
 
-    await this.sendWebhook("<" + avatarUrl + ">", embed)
+    await this.sendWebhook("<" + avatarUrl + ">", embed, "userinfo")
   }
 
   /**
@@ -122,7 +136,7 @@ export class DiscordWebhookService {
       },
     }
 
-    await this.sendWebhook("<" + avatarUrl + ">", embed)
+    await this.sendWebhook("<" + avatarUrl + ">", embed, "userinfo")
   }
 
   /**
@@ -170,6 +184,47 @@ export class DiscordWebhookService {
       },
     }
 
-    await this.sendWebhook("", embed)
+    await this.sendWebhook("", embed, "userinfo")
+  }
+
+  static async notifyDonationRequest(
+    user: { id: number; name: string; email: string },
+    donationId: string,
+    paypalEmail: string,
+    discordUsername: string,
+  ): Promise<void> {
+    const embed: DiscordEmbed = {
+      title: "💰 Donation Validation Request",
+      description: `User **${user.name}** has requested a donation validation`,
+      color: 0xffd700, // Gold
+      fields: [
+        {
+          name: "User ID",
+          value: user.id.toString(),
+          inline: true,
+        },
+        {
+          name: "Donation ID",
+          value: donationId,
+          inline: true,
+        },
+        {
+          name: "PayPal Email",
+          value: paypalEmail,
+          inline: true,
+        },
+        {
+          name: "Discord Username",
+          value: discordUsername,
+          inline: true,
+        },
+      ],
+      timestamp: new Date().toISOString(),
+      footer: {
+        text: "VIP Donation System",
+      },
+    }
+
+    await this.sendWebhook("", embed, "donation")
   }
 }

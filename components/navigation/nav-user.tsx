@@ -50,10 +50,12 @@ function displayMenu(
         sideOffset={4}
       >
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <Sparkles />
-            Become a Supporter
-          </DropdownMenuItem>
+          <Link href="/vip">
+            <DropdownMenuItem>
+              <Sparkles />
+              Become a Supporter
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -91,10 +93,12 @@ function displayMenu(
       sideOffset={4}
     >
       <DropdownMenuGroup>
-        <DropdownMenuItem>
-          <Sparkles />
-          Become a Supporter
-        </DropdownMenuItem>
+        <Link href="/vip">
+          <DropdownMenuItem>
+            <Sparkles />
+            Become a Supporter
+          </DropdownMenuItem>
+        </Link>
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
