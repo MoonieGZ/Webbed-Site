@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { validateSession, extendSession, getUserBySession } from "@/lib/session"
+import { ADMIN_USER_ID } from "@/lib/admin"
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
         title: user.title,
         avatar: user.avatar ?? null,
         name_changed_at: user.name_changed_at,
+        isAdmin: user.id === ADMIN_USER_ID,
       },
     })
 
