@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getUserBySession } from "@/lib/session"
 import { ADMIN_USER_ID } from "@/lib/admin"
 import { query } from "@/lib/db"
+import { rm } from "fs/promises"
+import { join } from "path"
 
 export async function GET(request: NextRequest) {
   try {
@@ -116,19 +118,37 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Unsupported action" }, { status: 400 })
     }
 
-    // Ensure rows exist, then update
-    // Insert default rows for any missing users
     const values = userIds.map(() => "(?)").join(",")
     await query(
       `INSERT IGNORE INTO user_permissions (user_id) VALUES ${values}`,
       userIds,
     )
 
-    // Bulk update selected field
     await query(
       `UPDATE user_permissions SET ${setClause} WHERE user_id IN (${userIds.map(() => "?").join(",")})`,
       userIds,
     )
+
+    if (action === "restrict_user") {
+      await query(
+        `UPDATE users SET name = NULL WHERE id IN (${userIds.map(() => "?").join(",")})`,
+        userIds,
+      )
+    }
+
+    if (action === "restrict_avatar") {
+      await query(
+        `UPDATE users SET avatar = NULL WHERE id IN (${userIds.map(() => "?").join(",")})`,
+        userIds,
+      )
+
+      const baseDir = join(process.cwd(), "public", "avatars")
+      await Promise.allSettled(
+        userIds.map((id) =>
+          rm(join(baseDir, String(id)), { recursive: true, force: true }),
+        ),
+      )
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

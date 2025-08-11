@@ -8,16 +8,18 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { useAdminTools } from "@/hooks/admin/use-admin-tools"
+import { Wrench } from "lucide-react"
 
 export function AdminToolsCard() {
   const { tools } = useAdminTools()
   return (
-    <Card className="relative overflow-hidden">
+    <Card>
       <CardHeader>
-        <CardTitle>Admin Tools</CardTitle>
-        <CardDescription>
-          Navigate to administrative tools and panels.
-        </CardDescription>
+        <CardTitle className="flex items-center gap-2">
+          <Wrench className="h-5 w-5" />
+          Admin Tools
+        </CardTitle>
+        <CardDescription>Navigate to administrative tools and panels.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

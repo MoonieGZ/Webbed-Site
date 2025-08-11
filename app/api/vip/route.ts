@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
           discord,
         )
       } catch (err) {
-        // ignore if method not present or webhook not configured
+        console.error("Error notifying Discord:", err)
       }
     }
 
