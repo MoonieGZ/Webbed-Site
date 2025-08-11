@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     const user = await getUserBySession(sessionToken)
 
-    if (!user) {
+    if (!user || user.permissions?.is_banned) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 

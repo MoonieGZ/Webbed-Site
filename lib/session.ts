@@ -1,5 +1,6 @@
 import crypto from "crypto"
 import { query, queryOne } from "./db"
+import { defaultPermissions, type UserPermissions } from "@/lib/admin"
 import type { UserSession } from "@/types/session"
 
 export function generateSessionToken(): string {
@@ -50,5 +51,10 @@ export async function getUserBySession(token: string): Promise<any> {
     session.user_id,
   ])
 
-  return user
+  const perms = (await queryOne(
+    "SELECT can_change_user, can_change_avatar, is_banned FROM user_permissions WHERE user_id = ?",
+    [session.user_id],
+  )) as UserPermissions | null
+
+  return { ...user, permissions: perms ?? defaultPermissions }
 }

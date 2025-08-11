@@ -1,6 +1,6 @@
 "use client"
 
-import { User, Save, Check, Clock } from "lucide-react"
+import { User, Save, Check, Clock, TriangleAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -88,6 +88,22 @@ export function ProfileInformationCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {user &&
+        (user as any).permissions &&
+        !(user as any).permissions.can_change_user ? (
+          <div className="rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm flex items-center text-amber-500">
+            <TriangleAlert className="h-4 w-4 mr-2 text-amber-500" />
+            <span>
+              Changing display name has been restricted for your account.
+              <br />
+              If you think this is an error, please contact{" "}
+              <Link href="/support" className="text-primary hover:underline">
+                support
+              </Link>
+              .
+            </span>
+          </div>
+        ) : null}
         <div className="space-y-2">
           <Label htmlFor="username">Display Name</Label>
           <div className="flex rounded-md shadow-xs">
@@ -101,7 +117,10 @@ export function ProfileInformationCard() {
               }
               maxLength={32}
               className="-me-px rounded-e-none shadow-none focus-visible:z-1"
-              disabled={!canChangeUsername()}
+              disabled={
+                !canChangeUsername() ||
+                !(user as any)?.permissions?.can_change_user
+              }
               autoComplete="off"
               spellCheck={false}
               aria-describedby="username-help username-count"
@@ -112,6 +131,8 @@ export function ProfileInformationCard() {
               disabled={
                 isChangingUsername ||
                 !canChangeUsername() ||
+                (user as any)?.permissions?.is_banned ||
+                !(user as any)?.permissions?.can_change_user ||
                 newUsername.trim() === user?.name ||
                 newUsername.trim() === ""
               }

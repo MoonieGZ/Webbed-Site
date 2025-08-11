@@ -54,7 +54,9 @@ export function useProfileInformation() {
     setLoading(false)
   }
 
-  const canChangeUsername = () => canChangeUsernameSince(user?.name_changed_at)
+  const canChangeUsername = () =>
+    canChangeUsernameSince(user?.name_changed_at) &&
+    (user as any).permissions?.can_change_user
 
   const getDaysUntilUsernameChange = () =>
     daysUntilUsernameChange(user?.name_changed_at)

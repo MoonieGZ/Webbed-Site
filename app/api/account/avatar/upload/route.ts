@@ -17,8 +17,15 @@ export async function POST(request: NextRequest) {
 
     const user = await getUserBySession(sessionToken)
 
-    if (!user) {
+    if (!user || user.permissions?.is_banned) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
+    }
+
+    if (!user.permissions?.can_change_avatar) {
+      return NextResponse.json(
+        { error: "Changing avatar is restricted" },
+        { status: 403 },
+      )
     }
 
     const formData = await request.formData()

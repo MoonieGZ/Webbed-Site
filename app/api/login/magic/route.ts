@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createMagicLink, sendMagicLinkEmail, queryOne } from "@/lib/magic-link"
+import { User } from "@/types/magic-link"
+import { defaultPermissions, UserPermissions } from "@/lib/admin"
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,6 +64,16 @@ export async function POST(request: NextRequest) {
       [email],
     )) as { id: number } | null
 
+    if (existingUser?.id) {
+      const user = await getUserById(existingUser.id)
+      if (user?.permissions?.is_banned) {
+        return NextResponse.json(
+          { error: "Account is banned" },
+          { status: 403 },
+        )
+      }
+    }
+
     const token = await createMagicLink(
       email,
       existingUser?.id || undefined,
@@ -79,4 +91,15 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     )
   }
+}
+
+async function getUserById(id: number) {
+  const user = (await queryOne("SELECT * FROM users WHERE id = ?", [
+    id,
+  ])) as User | null
+  const perms = (await queryOne(
+    "SELECT * FROM user_permissions WHERE user_id = ?",
+    [id],
+  )) as UserPermissions | null
+  return { ...user, permissions: perms ?? defaultPermissions }
 }

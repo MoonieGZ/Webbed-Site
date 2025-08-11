@@ -23,8 +23,15 @@ export async function POST(request: NextRequest) {
 
     const user = await getUserBySession(sessionToken)
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    if (!user || user.permissions?.is_banned) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    if (!user.permissions?.can_change_avatar) {
+      return NextResponse.json(
+        { error: "Changing avatar is restricted" },
+        { status: 403 },
+      )
     }
 
     const { email } = await request.json()

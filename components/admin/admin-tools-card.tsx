@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { MotionEffect } from "@/components/animate-ui/effects/motion-effect"
 import { useAdminTools } from "@/hooks/admin/use-admin-tools"
 
 export function AdminToolsCard() {
@@ -39,10 +38,7 @@ export function AdminToolsCard() {
                   </div>
                 </div>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-              >
+              <Button size="sm" variant="outline">
                 Open
               </Button>
             </Link>

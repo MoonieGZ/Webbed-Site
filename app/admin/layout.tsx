@@ -1,7 +1,6 @@
 import type { ReactNode } from "react"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { headers } from "next/headers"
 
 export default async function AdminLayout({
   children,
@@ -27,5 +26,3 @@ export default async function AdminLayout({
 
   return <>{children}</>
 }
-
-

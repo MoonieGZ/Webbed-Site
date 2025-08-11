@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
     const user = await getUserBySession(sessionToken)
 
-    if (!user) {
+    if (!user || user.permissions?.is_banned) {
       return NextResponse.json({ authenticated: false })
     }
 
@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
         avatar: user.avatar ?? null,
         name_changed_at: user.name_changed_at,
         isAdmin: user.id === ADMIN_USER_ID,
+        permissions: user.permissions || undefined,
       },
     })
 

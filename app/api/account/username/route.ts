@@ -61,6 +61,13 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 
+    if (!user.permissions?.can_change_user) {
+      return NextResponse.json(
+        { error: "Changing user details is restricted" },
+        { status: 403 },
+      )
+    }
+
     const { name } = await request.json()
 
     if (!name || typeof name !== "string") {

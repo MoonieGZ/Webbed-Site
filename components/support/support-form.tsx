@@ -87,6 +87,8 @@ export function SupportForm() {
                 <SelectItem value="feature">Feature request</SelectItem>
                 <SelectItem value="bug">Bug report</SelectItem>
                 <SelectItem value="streamer">Streamer badge request</SelectItem>
+                <SelectItem value="restriction">Restriction appeal</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
