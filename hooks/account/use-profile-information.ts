@@ -71,7 +71,7 @@ export function useProfileInformation() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username: newUsername.trim() }),
+        body: JSON.stringify({ name: newUsername.trim() }),
       })
 
       const data = await response.json()
