@@ -29,6 +29,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - BadgesCard (custom implementation for viewing and featuring badges)
   - SupportForm (custom support request form)
   - SupporterCard (custom VIP supporter form and CTA)
+  - AdminToolsCard (admin dashboard card listing tools)
 
 - **Custom Hooks Built**:
   - useAccount (account management and session handling)
@@ -42,6 +43,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - useNavSecondary (secondary navigation menu data)
   - useSupport (support form state and submission)
   - useVIPSupport (VIP supporter details state and submission)
+  - useAdminTools (admin tool metadata & navigation)
 
 ## Installation History
 

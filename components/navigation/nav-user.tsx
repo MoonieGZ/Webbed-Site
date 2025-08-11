@@ -8,6 +8,7 @@ import {
   Settings,
   User,
   Loader2,
+  ShieldUser,
 } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -35,9 +36,11 @@ import {
 import { Button } from "@/components/ui/button"
 import { useLogout } from "@/hooks/login/use-logout"
 import Link from "next/link"
+import { ADMIN_USER_ID } from "@/lib/admin"
 
 function displayMenu(
   isGuest: boolean,
+  isAdmin: boolean,
   isMobile: boolean,
   handleLogoutClick: () => void,
 ) {
@@ -50,6 +53,17 @@ function displayMenu(
         sideOffset={4}
       >
         <DropdownMenuGroup>
+          {isAdmin && (
+            <>
+              <Link href="/admin">
+                <DropdownMenuItem>
+                  <ShieldUser />
+                  Admin Tools
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuSeparator />
+            </>
+          )}
           <Link href="/vip">
             <DropdownMenuItem>
               <Sparkles />
@@ -118,6 +132,7 @@ export function NavUser({
   loading = false,
 }: {
   user: {
+    id: number | null
     name: string
     title: string
     avatar: string
@@ -164,7 +179,12 @@ export function NavUser({
                 <ChevronsUpDown className="ml-auto size-4" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
-            {displayMenu(user.name === "Guest", isMobile, handleLogoutClick)}
+            {displayMenu(
+              user.name === "Guest",
+              (user.id ?? null) === ADMIN_USER_ID,
+              isMobile,
+              handleLogoutClick,
+            )}
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
