@@ -1,6 +1,6 @@
 "use client"
 
-import { Gamepad2, Save, Trash2 } from "lucide-react"
+import { Gamepad2, Save } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,11 +12,8 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  useGameUIDs,
-  GAME_INFO,
-  type GameType,
-} from "@/hooks/account/use-game-uids"
+import { useGameUIDs, GAME_INFO } from "@/hooks/account/use-game-uids"
+import type { GameType } from "@/types/game-uid"
 
 export function GameUIDsCard() {
   const {

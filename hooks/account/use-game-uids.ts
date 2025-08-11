@@ -3,7 +3,14 @@ import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
 import type { GameUID, GameType } from "@/types/game-uid"
 
-export const GAME_INFO = {
+type GameInfo = {
+  name: string
+  shortName: string
+  description: string
+  placeholder: string
+}
+
+export const GAME_INFO: Record<GameType, GameInfo> = {
   gi: {
     name: "Genshin Impact",
     shortName: "GI",
@@ -28,7 +35,7 @@ export const GAME_INFO = {
     description: "Enter your Wuthering Waves UID",
     placeholder: "e.g., 123456789",
   },
-} as const
+}
 
 export function useGameUIDs() {
   const [gameUIDs, setGameUIDs] = useState<GameUID[]>([])
@@ -53,7 +60,12 @@ export function useGameUIDs() {
       if (response.ok) {
         setGameUIDs(data)
 
-        const initialInputs = { gi: "", hsr: "", zzz: "", ww: "" }
+        const initialInputs: Record<GameType, string> = {
+          gi: "",
+          hsr: "",
+          zzz: "",
+          ww: "",
+        }
         data.forEach((uid: GameUID) => {
           initialInputs[uid.game] = uid.uid
         })
