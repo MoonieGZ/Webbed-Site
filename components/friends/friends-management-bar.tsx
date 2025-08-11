@@ -49,7 +49,7 @@ export function FriendsManagementBar({
   onRemoveSelected,
 }: FriendsManagementBarProps) {
   return (
-    <div className="flex w-fit flex-wrap items-center gap-y-2 rounded-2xl border border-border bg-background p-2 shadow-lg">
+    <div className="flex w-fit flex-wrap items-center gap-y-2 rounded-2xl border border-border bg-card p-2 shadow-lg">
       <div className="mx-auto flex shrink-0 items-center">
         <button
           disabled={currentPage <= 1}
@@ -76,7 +76,7 @@ export function FriendsManagementBar({
       </div>
       {(onAddFriend || onRemoveSelected) && (
         <>
-          <div className="mx-3 h-6 w-px bg-border rounded-full" />
+              <div className="mx-3 h-6 w-px bg-border/60 rounded-full" />
           <motion.div
             layout
             layoutRoot
@@ -85,7 +85,7 @@ export function FriendsManagementBar({
             {onAddFriend && (
               <motion.button
                 {...BUTTON_MOTION_CONFIG}
-                className="flex h-10 items-center space-x-2 overflow-hidden whitespace-nowrap rounded-lg bg-green-200/60 dark:bg-green-800/60 px-2.5 py-2 text-green-700 dark:text-green-200 disabled:opacity-50"
+                className="flex h-9 items-center space-x-2 overflow-hidden whitespace-nowrap rounded-lg bg-green-200/60 dark:bg-green-800/60 px-2.5 py-2 text-green-700 dark:text-green-300 disabled:opacity-50"
                 aria-label="Add Friend"
                 onClick={onAddFriend}
               >
@@ -102,7 +102,7 @@ export function FriendsManagementBar({
             {onRemoveSelected && (
               <motion.button
                 {...BUTTON_MOTION_CONFIG}
-                className="flex h-10 items-center space-x-2 overflow-hidden whitespace-nowrap rounded-lg bg-red-200/60 dark:bg-red-800/80 px-2.5 py-2 text-red-700 dark:text-red-300 disabled:opacity-50"
+                className="flex h-9 items-center space-x-2 overflow-hidden whitespace-nowrap rounded-lg bg-amber-200/60 dark:bg-amber-700/60 px-2.5 py-2 text-amber-700 dark:text-amber-200 disabled:opacity-50"
                 aria-label="Remove Selected"
                 onClick={onRemoveSelected}
               >

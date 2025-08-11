@@ -125,7 +125,7 @@ export function FriendsRequestsCard() {
                         aria-label="Accept"
                         onClick={() => respondToRequest(r.id, "accept")}
                       >
-                        <Check size={18} className="shrink-0" />
+                        <Check size={20} className="shrink-0" />
                         <motion.span
                           variants={LABEL_VARIANTS}
                           transition={LABEL_TRANSITION}
@@ -141,7 +141,7 @@ export function FriendsRequestsCard() {
                         aria-label="Decline"
                         onClick={() => respondToRequest(r.id, "decline")}
                       >
-                        <X size={18} className="shrink-0" />
+                        <X size={20} className="shrink-0" />
                         <motion.span
                           variants={LABEL_VARIANTS}
                           transition={LABEL_TRANSITION}
@@ -153,11 +153,11 @@ export function FriendsRequestsCard() {
 
                       <motion.button
                         {...BUTTON_MOTION_CONFIG}
-                        className="flex h-9 items-center space-x-2 overflow-hidden whitespace-nowrap rounded-lg bg-red-200/60 dark:bg-red-800/80 px-2.5 py-2 text-red-700 dark:text-red-300 disabled:opacity-50"
+                        className="flex h-9 items-center space-x-2 overflow-hidden whitespace-nowrap rounded-lg bg-red-200/60 dark:bg-red-800/60 px-2.5 py-2 text-red-700 dark:text-red-300 disabled:opacity-50"
                         aria-label="Block"
                         onClick={() => respondToRequest(r.id, "block")}
                       >
-                        <ShieldBan size={18} className="shrink-0" />
+                        <ShieldBan size={20} className="shrink-0" />
                         <motion.span
                           variants={LABEL_VARIANTS}
                           transition={LABEL_TRANSITION}
@@ -206,7 +206,7 @@ export function FriendsRequestsCard() {
                         aria-label="Cancel"
                         onClick={() => respondToRequest(r.id, "cancel")}
                       >
-                        <X size={18} className="shrink-0" />
+                        <X size={20} className="shrink-0" />
                         <motion.span
                           variants={LABEL_VARIANTS}
                           transition={LABEL_TRANSITION}
@@ -222,7 +222,7 @@ export function FriendsRequestsCard() {
                         aria-label="Block"
                         onClick={() => respondToRequest(r.id, "block")}
                       >
-                        <ShieldBan size={18} className="shrink-0" />
+                        <ShieldBan size={20} className="shrink-0" />
                         <motion.span
                           variants={LABEL_VARIANTS}
                           transition={LABEL_TRANSITION}
@@ -272,7 +272,7 @@ export function FriendsRequestsCard() {
                         onClick={() => unblockUser(r.id)}
                       >
                         <CircleSlash
-                          size={18}
+                          size={20}
                           className="shrink-0 rotate-180"
                         />
                         <motion.span
