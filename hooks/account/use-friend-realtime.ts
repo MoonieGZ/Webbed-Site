@@ -49,7 +49,9 @@ export function useFriendRealtime() {
           if (next > lastCount) {
             const diff = next - lastCount
             toast.info(
-              diff === 1 ? "New friend request!" : `${diff} new friend requests!`,
+              diff === 1
+                ? "New friend request!"
+                : `${diff} new friend requests!`,
               {
                 ...toastStyles.info,
                 duration: 10000,
