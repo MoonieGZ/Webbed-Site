@@ -121,7 +121,6 @@ export function useFriendsList() {
       body: JSON.stringify({ userId }),
     })
     if (res.ok) {
-      // Optimistically remove from results
       setSearchResults((prev) => prev.filter((u) => u.id !== userId))
     }
     return res.ok

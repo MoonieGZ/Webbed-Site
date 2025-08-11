@@ -17,7 +17,9 @@ export function useFriendRequests() {
       if (res.ok) {
         const data = (await res.json()) as { requests: FriendRequestItem[] }
         const all = data.requests
-        setReceived(all.filter((r) => r.type === "received" && r.status === "pending"))
+        setReceived(
+          all.filter((r) => r.type === "received" && r.status === "pending"),
+        )
         setSent(all.filter((r) => r.type === "sent" && r.status === "pending"))
         setBlocked(all.filter((r) => r.type === "blocked"))
       }
@@ -28,6 +30,26 @@ export function useFriendRequests() {
 
   useEffect(() => {
     void fetchAll()
+  }, [fetchAll])
+
+  useEffect(() => {
+    const onRealtime = () => void fetchAll()
+    const onFocus = () => void fetchAll()
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void fetchAll()
+    }
+    if (typeof window !== "undefined") {
+      window.addEventListener("friend-requests:refresh", onRealtime)
+      window.addEventListener("focus", onFocus)
+      document.addEventListener("visibilitychange", onVisible)
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("friend-requests:refresh", onRealtime)
+        window.removeEventListener("focus", onFocus)
+        document.removeEventListener("visibilitychange", onVisible)
+      }
+    }
   }, [fetchAll])
 
   const sendRequest = async (userId: number) => {

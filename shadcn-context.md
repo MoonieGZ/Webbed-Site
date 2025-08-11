@@ -12,6 +12,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - Separator (from shadcn/ui)
   - Card, CardContent, CardDescription, CardHeader, CardTitle (from shadcn/ui)
   - Avatar, AvatarFallback, AvatarImage (from shadcn/ui)
+  - Badge (from shadcn/ui)
   - Tabs, TabsList, TabsTrigger, TabsContent (custom export wrapping Radix Tabs)
 
 - **Animate-UI Components**:
@@ -49,6 +50,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - useVIPSupport (VIP supporter details state and submission)
   - useAdminTools (admin tool metadata & navigation)
   - useFriends (friends and friend-requests state management)
+  - useFriendRealtime (websocket client for pending friend request count)
 
 ## Installation History
 

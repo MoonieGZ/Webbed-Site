@@ -78,7 +78,10 @@ export function AddFriendDialog({ open, onOpenChange }: AddFriendDialogProps) {
                       onOpenChange(false)
                       toast.success("Friend request sent", toastStyles.success)
                     } else {
-                      toast.error("Failed to send friend request", toastStyles.error)
+                      toast.error(
+                        "Failed to send friend request",
+                        toastStyles.error,
+                      )
                     }
                   }}
                 >

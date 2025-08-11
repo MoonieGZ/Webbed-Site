@@ -4,10 +4,12 @@ import { useUser } from "@/hooks/login/use-user"
 export function useSidebarData() {
   const { user, loading, error } = useUser()
 
-  type SidebarUser = { id: number | null } & Pick<
-    AppUser,
-    "name" | "title" | "avatar"
-  >
+  type SidebarUser = {
+    id: number | null
+    name: string
+    title: string
+    avatar: string
+  }
 
   const raw = (user as AppUser | null) || null
   const userData: SidebarUser = raw

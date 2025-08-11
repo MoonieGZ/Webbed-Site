@@ -31,3 +31,7 @@ export interface FriendRequestItem {
   user: FriendUserSummary
   type?: "accepted" | "received" | "sent" | "blocked"
 }
+
+export interface FriendRequestCountResponse {
+  pendingCount: number
+}

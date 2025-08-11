@@ -30,7 +30,8 @@ export const toastStyles = {
     style: {
       "--normal-bg": "var(--background)",
       "--normal-text": "light-dark(var(--color-sky-600), var(--color-sky-400))",
-      "--normal-border": "light-dark(var(--color-sky-600), var(--color-sky-400))",
+      "--normal-border":
+        "light-dark(var(--color-sky-600), var(--color-sky-400))",
     } as React.CSSProperties,
   },
 } as const

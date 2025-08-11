@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
+import { emitFriendPendingCount } from "@/lib/realtime"
 
 async function requireUser(
   request: NextRequest,
@@ -22,7 +23,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const typeParam = (searchParams.get("type") || "").toLowerCase()
     const filter =
-      typeParam === "received" || typeParam === "sent" || typeParam === "blocked"
+      typeParam === "received" ||
+      typeParam === "sent" ||
+      typeParam === "blocked"
         ? typeParam
         : "all"
 
@@ -35,7 +38,8 @@ export async function GET(request: NextRequest) {
           : filter === "blocked"
             ? "(f.requester_id = ? OR f.addressee_id = ?) AND f.status = 'blocked'"
             : "(f.requester_id = ? OR f.addressee_id = ?)"
-    const whereParams = filter === "blocked" || filter === "all" ? [me.id, me.id] : [me.id]
+    const whereParams =
+      filter === "blocked" || filter === "all" ? [me.id, me.id] : [me.id]
     const rows = (await query(
       `SELECT 
          f.id, f.requester_id, f.addressee_id, f.status, f.created_at, f.updated_at,
@@ -78,7 +82,9 @@ export async function GET(request: NextRequest) {
         r.status === "blocked"
           ? ("blocked" as const)
           : r.status === "pending"
-            ? (r.addressee_id === me.id ? ("received" as const) : ("sent" as const))
+            ? r.addressee_id === me.id
+              ? ("received" as const)
+              : ("sent" as const)
             : ("accepted" as const),
     }))
 
@@ -128,11 +134,15 @@ export async function POST(request: NextRequest) {
         )
       }
       if (existing.status === "declined") {
-        // Allow resending by updating to pending if direction is me -> other
         await query(
           `UPDATE user_friends SET requester_id = ?, addressee_id = ?, status = 'pending', updated_at = NOW() WHERE id = ?`,
           [me.id, otherId, existing.id],
         )
+        const row = (await queryOne(
+          "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
+          [otherId],
+        )) as { cnt: number } | null
+        await emitFriendPendingCount(otherId, row?.cnt ?? 0)
         return NextResponse.json({ success: true })
       }
     }
@@ -141,6 +151,12 @@ export async function POST(request: NextRequest) {
       `INSERT INTO user_friends (requester_id, addressee_id, status) VALUES (?, ?, 'pending')`,
       [me.id, otherId],
     )
+
+    const row = (await queryOne(
+      "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
+      [otherId],
+    )) as { cnt: number } | null
+    await emitFriendPendingCount(otherId, row?.cnt ?? 0)
 
     return NextResponse.json({ success: true })
   } catch (error) {

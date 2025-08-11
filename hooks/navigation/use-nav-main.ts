@@ -1,6 +1,8 @@
 import { FishSymbol, Users } from "lucide-react"
+import { useFriendRealtime } from "@/hooks/account/use-friend-realtime"
 
 export function useNavMain() {
+  const { pendingCount } = useFriendRealtime()
   const navMain = [
     {
       title: "Fimsh 1",
@@ -45,6 +47,7 @@ export function useNavMain() {
       title: "Friends",
       url: "/friends",
       icon: Users,
+      badgeCount: pendingCount,
     },
   ]
 

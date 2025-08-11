@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
+import { emitFriendPendingCount } from "@/lib/realtime"
 
 async function requireUser(
   request: NextRequest,
@@ -50,6 +51,20 @@ export async function PUT(
         `UPDATE user_friends SET status = 'accepted', updated_at = NOW() WHERE id = ?`,
         [id],
       )
+
+      const addresseeRow = (await queryOne(
+        "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
+        [me.id],
+      )) as { cnt: number } | null
+      await emitFriendPendingCount(me.id, addresseeRow?.cnt ?? 0)
+      const requesterRow = (await queryOne(
+        "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
+        [existing.requester_id],
+      )) as { cnt: number } | null
+      await emitFriendPendingCount(
+        existing.requester_id,
+        requesterRow?.cnt ?? 0,
+      )
       return NextResponse.json({ success: true })
     }
 
@@ -60,6 +75,19 @@ export async function PUT(
         `UPDATE user_friends SET status = 'declined', updated_at = NOW() WHERE id = ?`,
         [id],
       )
+      const myRow = (await queryOne(
+        "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
+        [me.id],
+      )) as { cnt: number } | null
+      await emitFriendPendingCount(me.id, myRow?.cnt ?? 0)
+      const requesterRow = (await queryOne(
+        "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
+        [existing.requester_id],
+      )) as { cnt: number } | null
+      await emitFriendPendingCount(
+        existing.requester_id,
+        requesterRow?.cnt ?? 0,
+      )
       return NextResponse.json({ success: true })
     }
 
@@ -67,17 +95,43 @@ export async function PUT(
       if (existing.requester_id !== me.id || existing.status !== "pending")
         return NextResponse.json({ error: "Forbidden" }, { status: 403 })
       await query(`DELETE FROM user_friends WHERE id = ?`, [id])
+      const requesterRow = (await queryOne(
+        "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
+        [me.id],
+      )) as { cnt: number } | null
+      await emitFriendPendingCount(me.id, requesterRow?.cnt ?? 0)
+      const addresseeRow = (await queryOne(
+        "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
+        [existing.addressee_id],
+      )) as { cnt: number } | null
+      await emitFriendPendingCount(
+        existing.addressee_id,
+        addresseeRow?.cnt ?? 0,
+      )
       return NextResponse.json({ success: true })
     }
 
     if (action === "block") {
-      // Allow either side to block
       if (existing.requester_id !== me.id && existing.addressee_id !== me.id)
         return NextResponse.json({ error: "Forbidden" }, { status: 403 })
       await query(
         `UPDATE user_friends SET status = 'blocked', updated_at = NOW() WHERE id = ?`,
         [id],
       )
+      const myRow = (await queryOne(
+        "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
+        [me.id],
+      )) as { cnt: number } | null
+      await emitFriendPendingCount(me.id, myRow?.cnt ?? 0)
+      const otherId =
+        existing.requester_id === me.id
+          ? existing.addressee_id
+          : existing.requester_id
+      const otherRow = (await queryOne(
+        "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
+        [otherId],
+      )) as { cnt: number } | null
+      await emitFriendPendingCount(otherId, otherRow?.cnt ?? 0)
       return NextResponse.json({ success: true })
     }
 
@@ -88,6 +142,11 @@ export async function PUT(
         `DELETE FROM user_friends WHERE id = ? AND status = 'blocked'`,
         [id],
       )
+      const myRow = (await queryOne(
+        "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
+        [me.id],
+      )) as { cnt: number } | null
+      await emitFriendPendingCount(me.id, myRow?.cnt ?? 0)
       return NextResponse.json({ success: true })
     }
 
