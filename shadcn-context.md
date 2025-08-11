@@ -12,6 +12,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - Separator (from shadcn/ui)
   - Card, CardContent, CardDescription, CardHeader, CardTitle (from shadcn/ui)
   - Avatar, AvatarFallback, AvatarImage (from shadcn/ui)
+  - Tabs, TabsList, TabsTrigger, TabsContent (custom export wrapping Radix Tabs)
 
 - **Animate-UI Components**:
   - SidebarProvider, SidebarInset, SidebarTrigger (from animate-ui/radix/sidebar)
@@ -30,6 +31,9 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - SupportForm (custom support request form)
   - SupporterCard (custom VIP supporter form and CTA)
   - AdminToolsCard (admin dashboard card listing tools)
+  - FriendsListCard (friends list with mutual badges)
+  - FriendsRequestsCard (tabs for received/sent/blocked requests)
+  - FriendsManagementBar (pagination-only variant of management bar)
 
 - **Custom Hooks Built**:
   - useAccount (account management and session handling)
@@ -44,6 +48,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - useSupport (support form state and submission)
   - useVIPSupport (VIP supporter details state and submission)
   - useAdminTools (admin tool metadata & navigation)
+  - useFriends (friends and friend-requests state management)
 
 ## Installation History
 

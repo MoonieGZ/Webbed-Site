@@ -150,3 +150,5 @@ function ManagementBar({
 }
 
 export { ManagementBar }
+
+export type { ManagementBarProps }

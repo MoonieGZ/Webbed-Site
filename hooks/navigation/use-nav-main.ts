@@ -1,4 +1,4 @@
-import { FishSymbol } from "lucide-react"
+import { FishSymbol, Users } from "lucide-react"
 
 export function useNavMain() {
   const navMain = [
@@ -42,27 +42,9 @@ export function useNavMain() {
       ],
     },
     {
-      title: "Fimsh 3",
-      url: "#",
-      icon: FishSymbol,
-      items: [
-        {
-          title: "Fimsh 3.1",
-          url: "#",
-        },
-        {
-          title: "Fimsh 3.2",
-          url: "#",
-        },
-        {
-          title: "Fimsh 3.3",
-          url: "#",
-        },
-        {
-          title: "Fimsh 3.4",
-          url: "#",
-        },
-      ],
+      title: "Friends",
+      url: "/friends",
+      icon: Users,
     },
   ]
 

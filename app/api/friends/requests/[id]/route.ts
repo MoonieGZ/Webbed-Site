@@ -1,0 +1,102 @@
+import { NextRequest, NextResponse } from "next/server"
+import { query, queryOne } from "@/lib/db"
+
+async function requireUser(
+  request: NextRequest,
+): Promise<{ id: number } | null> {
+  const sessionToken = request.cookies.get("session")?.value
+  if (!sessionToken) return null
+  const user = (await queryOne(
+    "SELECT u.id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+    [sessionToken],
+  )) as { id: number } | null
+  return user
+}
+
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
+  try {
+    const me = await requireUser(request)
+    if (!me)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+    const { id: idParam } = await context.params
+    const id = parseInt(idParam, 10)
+    if (!Number.isFinite(id)) {
+      return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+    }
+
+    const body = (await request.json()) as { action?: string }
+    const action = (body.action || "").toLowerCase()
+
+    const existing = (await queryOne(
+      `SELECT id, requester_id, addressee_id, status FROM user_friends WHERE id = ?`,
+      [id],
+    )) as {
+      id: number
+      requester_id: number
+      addressee_id: number
+      status: string
+    } | null
+    if (!existing)
+      return NextResponse.json({ error: "Not found" }, { status: 404 })
+
+    if (action === "accept") {
+      if (existing.addressee_id !== me.id || existing.status !== "pending")
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      await query(
+        `UPDATE user_friends SET status = 'accepted', updated_at = NOW() WHERE id = ?`,
+        [id],
+      )
+      return NextResponse.json({ success: true })
+    }
+
+    if (action === "decline") {
+      if (existing.addressee_id !== me.id || existing.status !== "pending")
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      await query(
+        `UPDATE user_friends SET status = 'declined', updated_at = NOW() WHERE id = ?`,
+        [id],
+      )
+      return NextResponse.json({ success: true })
+    }
+
+    if (action === "cancel") {
+      if (existing.requester_id !== me.id || existing.status !== "pending")
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      await query(`DELETE FROM user_friends WHERE id = ?`, [id])
+      return NextResponse.json({ success: true })
+    }
+
+    if (action === "block") {
+      // Allow either side to block
+      if (existing.requester_id !== me.id && existing.addressee_id !== me.id)
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      await query(
+        `UPDATE user_friends SET status = 'blocked', updated_at = NOW() WHERE id = ?`,
+        [id],
+      )
+      return NextResponse.json({ success: true })
+    }
+
+    if (action === "unblock") {
+      if (existing.requester_id !== me.id && existing.addressee_id !== me.id)
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+      await query(
+        `DELETE FROM user_friends WHERE id = ? AND status = 'blocked'`,
+        [id],
+      )
+      return NextResponse.json({ success: true })
+    }
+
+    return NextResponse.json({ error: "Unsupported action" }, { status: 400 })
+  } catch (error) {
+    console.error("Friend request update error:", error)
+    return NextResponse.json(
+      { error: "Failed to update request" },
+      { status: 500 },
+    )
+  }
+}

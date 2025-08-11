@@ -65,6 +65,7 @@ export function useProfileInformation() {
     if (!user || !newUsername.trim()) return
 
     setIsChangingUsername(true)
+    toast.info("Saving username...", toastStyles.info)
     try {
       const response = await fetch("/api/account/username", {
         method: "PUT",

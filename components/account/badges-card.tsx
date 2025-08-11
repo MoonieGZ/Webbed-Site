@@ -12,8 +12,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useBadges } from "@/hooks/account/use-badges"
-import * as LucideIcons from "lucide-react"
 import { Award, Save } from "lucide-react"
+import { iconForBadge } from "@/lib/icon-utils"
 
 export function BadgesCard() {
   const {
@@ -29,13 +29,7 @@ export function BadgesCard() {
     saveFeatured,
   } = useBadges()
 
-  const iconFor = (iconName?: string) => {
-    const Fallback = (LucideIcons as any)["Award"]
-    if (!iconName) return <Fallback className="h-4 w-4" />
-    const Icon = (LucideIcons as any)[iconName]
-    if (!Icon) return <Fallback className="h-4 w-4" />
-    return <Icon className="h-4 w-4" />
-  }
+  const iconFor = (iconName?: string) => iconForBadge(iconName)
 
   if (loading) {
     return (
@@ -142,7 +136,7 @@ export function BadgesCard() {
                   <div className="flex items-center justify-between gap-2 min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-muted">
-                        {badge ? iconFor(badge.icon_url) : null}
+                        {badge ? iconForBadge(badge.icon_url) : null}
                       </div>
                       <div className="text-sm min-w-0">
                         <div className="font-medium truncate">
@@ -209,7 +203,7 @@ export function BadgesCard() {
                     className="rounded-md border p-3 text-left hover:bg-accent/50 flex items-center gap-3 active:scale-[0.98] transition-transform min-w-0"
                   >
                     <div className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-muted">
-                      {iconFor(b.icon_url)}
+                      {iconForBadge(b.icon_url)}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium flex items-center gap-2 truncate">

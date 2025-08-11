@@ -26,4 +26,11 @@ export const toastStyles = {
       "--normal-border": "var(--destructive)",
     } as React.CSSProperties,
   },
+  info: {
+    style: {
+      "--normal-bg": "var(--background)",
+      "--normal-text": "light-dark(var(--color-sky-600), var(--color-sky-400))",
+      "--normal-border": "light-dark(var(--color-sky-600), var(--color-sky-400))",
+    } as React.CSSProperties,
+  },
 } as const
