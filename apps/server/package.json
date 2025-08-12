@@ -1,12 +1,12 @@
 {
-  "name": "Website-Socket.IO",
+  "name": "server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "ws:dev": "nodemon --watch realtime --ext js,json --exec node realtime/server.js",
-    "ws:start": "node realtime/server.js"
+    "dev": "nodemon --watch realtime --ext js,json --exec node realtime/server.js",
+    "start": "node realtime/server.js"
   },
   "keywords": [],
   "author": "",

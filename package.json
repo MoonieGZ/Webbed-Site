@@ -9,7 +9,9 @@
     "web:lint": "pnpm --filter web lint",
     "web:lint:fix": "pnpm --filter web lint:fix",
     "web:format": "pnpm --filter web format",
-    "web:format:check": "pnpm --filter web format:check"
+    "web:format:check": "pnpm --filter web format:check",
+    "server:dev": "pnpm --filter server dev",
+    "server:start": "pnpm --filter server start"
   },
   "workspaces": [
     "apps/*"
