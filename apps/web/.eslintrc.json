@@ -1,0 +1,33 @@
+{
+  "root": true,
+  "extends": ["next/core-web-vitals", "next/typescript", "prettier"],
+  "plugins": ["prettier"],
+  "rules": {
+    "prettier/prettier": "error",
+    "@typescript-eslint/consistent-type-imports": "error",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "prefer-const": "error",
+    "no-var": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.{ts,tsx}"],
+      "excludedFiles": ["types/**"],
+      "rules": {
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "TSInterfaceDeclaration",
+            "message": "Interfaces must be declared in the repo-root types/ directory."
+          }
+        ]
+      }
+    }
+  ]
+}
