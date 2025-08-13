@@ -2,22 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react"
 import type { GiCharacter } from "@/types"
-
-type SortKey = "name" | "rarity" | "element" | "origin" | "weapon"
+import type { GiCharacterProfile } from "@/types/gi/profile"
 
 export function useGiSettingsCharacters() {
   const [characters, setCharacters] = useState<GiCharacter[]>([])
   const [loading, setLoading] = useState(true)
-  const [sortKey, setSortKey] = useState<SortKey>("element")
-  const [ascending, setAscending] = useState(true)
   const [enabledMap, setEnabledMap] = useState<Record<string, boolean>>({})
-  const [profiles, setProfiles] = useState<
-    Array<{
-      profileIndex: number
-      name: string | null
-      enabledMap: Record<string, boolean>
-    }>
-  >([])
+  const [profiles, setProfiles] = useState<GiCharacterProfile[]>([])
   const [selectedProfile, setSelectedProfile] = useState<number | null>(null)
 
   useEffect(() => {
@@ -37,11 +28,40 @@ export function useGiSettingsCharacters() {
   }, [])
 
   useEffect(() => {
+    if (characters.length === 0) return
+    try {
+      const cache = localStorage.getItem("gi_enabled_map_v1")
+      if (cache) {
+        const parsed = JSON.parse(cache) as Record<string, boolean>
+        const merged: Record<string, boolean> = {}
+        characters.forEach((c) => {
+          merged[c.name] = parsed[c.name] ?? true
+        })
+        setEnabledMap(merged)
+        return
+      }
+    } catch {}
+    const allTrue: Record<string, boolean> = {}
+    characters.forEach((c) => {
+      allTrue[c.name] = true
+    })
+    setEnabledMap(allTrue)
+  }, [characters])
+
+  useEffect(() => {
     fetch("/api/minigames/gi/profiles")
       .then((r) => r.json())
-      .then((p) => setProfiles(p))
+      .then((p: GiCharacterProfile[]) => setProfiles(Array.isArray(p) ? p : []))
       .catch(() => {})
   }, [])
+
+  const refreshRemoteProfiles = async () => {
+    try {
+      const res = await fetch("/api/minigames/gi/profiles")
+      const p = await res.json()
+      setProfiles(Array.isArray(p) ? p : [])
+    } catch {}
+  }
 
   const grouped = useMemo(() => {
     const temp: Record<string, GiCharacter[]> = {}
@@ -61,28 +81,87 @@ export function useGiSettingsCharacters() {
     return map
   }, [characters])
 
-  const toggleEnabled = (name: string, value: boolean) => {
-    setEnabledMap((prev) => ({ ...prev, [name]: value }))
+  const persistEnabledMap = (map: Record<string, boolean>) => {
+    try {
+      localStorage.setItem("gi_enabled_map_v1", JSON.stringify(map))
+    } catch {}
   }
 
+  const toggleEnabled = (name: string, value: boolean) => {
+    setEnabledMap((prev) => {
+      const next = { ...prev, [name]: value }
+      persistEnabledMap(next)
+      return next
+    })
+  }
+
+  const buildFullEnabledMap = (): Record<string, boolean> => {
+    const full: Record<string, boolean> = {}
+    characters.forEach((c) => {
+      full[c.name] = enabledMap[c.name] ?? true
+    })
+    return full
+  }
   const saveProfile = async (profileIndex: number, name?: string) => {
+    const fullMap = buildFullEnabledMap()
     await fetch("/api/minigames/gi/profiles", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ profileIndex, name: name ?? null, enabledMap }),
-    })
+      body: JSON.stringify({ profileIndex, name: name ?? null, enabledMap: fullMap }),
+    }).catch(() => {})
     const updated = await fetch("/api/minigames/gi/profiles").then((r) =>
       r.json(),
     )
-    setProfiles(updated)
+    setProfiles(Array.isArray(updated) ? updated : [])
     setSelectedProfile(profileIndex)
   }
 
+  const normalizeEnabledMapForCharacters = (map: Record<string, boolean>) => {
+    const merged: Record<string, boolean> = {}
+    characters.forEach((c) => {
+      merged[c.name] = map[c.name] ?? true
+    })
+    return merged
+  }
   const loadProfile = (profileIndex: number) => {
     const prof = profiles.find((p) => p.profileIndex === profileIndex)
-    if (prof) setEnabledMap(prof.enabledMap)
+    if (prof) {
+      const normalized = normalizeEnabledMapForCharacters(prof.enabledMap)
+      setEnabledMap(normalized)
+      persistEnabledMap(normalized)
+    }
     setSelectedProfile(profileIndex)
   }
+
+  const toggleAll = (value: boolean) => {
+    const next: Record<string, boolean> = {}
+    characters.forEach((c) => {
+      next[c.name] = value
+    })
+    persistEnabledMap(next)
+    setEnabledMap(next)
+  }
+
+  const toggleByRarity = (fiveStar: boolean, value: boolean) => {
+    const next: Record<string, boolean> = { ...enabledMap }
+    characters.forEach((c) => {
+      if (c.fiveStar === fiveStar) next[c.name] = value
+    })
+    persistEnabledMap(next)
+    setEnabledMap(next)
+  }
+
+  const usedProfileIndices = useMemo(
+    () => new Set(profiles.map((p) => p.profileIndex)),
+    [profiles],
+  )
+
+  const nextAvailableProfileIndex = useMemo(() => {
+    for (let i = 1; i <= 10; i += 1) {
+      if (!usedProfileIndices.has(i)) return i
+    }
+    return null
+  }, [usedProfileIndices])
 
   return {
     loading,
@@ -94,5 +173,10 @@ export function useGiSettingsCharacters() {
     selectedProfile,
     loadProfile,
     saveProfile,
+    toggleAll,
+    toggleByRarity,
+    usedProfileIndices,
+    nextAvailableProfileIndex,
+    refreshRemoteProfiles,
   }
 }

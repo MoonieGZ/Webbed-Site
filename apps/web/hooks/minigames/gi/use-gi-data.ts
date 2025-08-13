@@ -37,7 +37,6 @@ export function useGiData() {
   const [loading, setLoading] = useState(true)
   const settingsDirty = useRef(false)
 
-  // Initial load from cache
   useEffect(() => {
     const c = readCache<GiCharacter[]>(CHARACTERS_KEY, ONE_HOUR_MS)
     const b = readCache<GiBoss[]>(BOSSES_KEY, ONE_HOUR_MS)
@@ -47,7 +46,6 @@ export function useGiData() {
     if (s) setSettings(s)
   }, [])
 
-  // Fetch fresh data
   useEffect(() => {
     let cancelled = false
     async function load() {
@@ -74,13 +72,12 @@ export function useGiData() {
     }
   }, [])
 
-  // Persist settings on change (debounced-ish by ref)
   useEffect(() => {
     if (!settingsDirty.current) return
     settingsDirty.current = false
     const toSave = settings
     writeCache(SETTINGS_KEY, toSave)
-    // Fire-and-forget PUT; errors can be ignored (cache keeps state)
+    
     fetch("/api/minigames/gi/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },

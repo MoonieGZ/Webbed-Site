@@ -10,16 +10,31 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/animate-ui/radix/switch"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { useGiSettingsCharacters } from "@/hooks/minigames/gi/use-gi-settings-characters"
 import { buildCharacterIconPath } from "@/lib/minigames/gi/icon-path"
-import { Users } from "lucide-react"
+import { ChevronDown, Users } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/animate-ui/radix/dialog"
+import { Label } from "@/components/ui/label"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/animate-ui/radix/dropdown-menu"
+import {
+  Select as ProfileSelect,
+  SelectTrigger as ProfileSelectTrigger,
+  SelectValue as ProfileSelectValue,
+  SelectContent as ProfileSelectContent,
+  SelectItem as ProfileSelectItem,
+} from "@/components/ui/select"
+ 
 
 export default function GICharactersSettings() {
   const {
@@ -28,10 +43,18 @@ export default function GICharactersSettings() {
     enabledMap,
     toggleEnabled,
     profiles,
-    selectedProfile,
     loadProfile,
     saveProfile,
+    toggleAll,
+    toggleByRarity,
+    usedProfileIndices,
+    nextAvailableProfileIndex,
   } = useGiSettingsCharacters()
+  const [showSave, setShowSave] = React.useState(false)
+  const [showLoad, setShowLoad] = React.useState(false)
+  const hasLoadableProfiles = React.useMemo(() => {
+    return (profiles?.length ?? 0) > 0
+  }, [profiles])
 
   if (loading) return null
 
@@ -45,33 +68,71 @@ export default function GICharactersSettings() {
               Characters
             </div>
           </CardTitle>
-          <CardDescription>
-            Manage enabled characters in your profile
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-2">
-            <div className="ml-auto flex items-center gap-2">
-              <Select
-                value={selectedProfile?.toString() ?? ""}
-                onValueChange={(v) => loadProfile(parseInt(v))}
-              >
-                <SelectTrigger className="w-[220px]">
-                  <SelectValue placeholder="Load profile" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <SelectItem key={i + 1} value={(i + 1).toString()}>
-                      Profile {(i + 1).toString()}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button onClick={() => saveProfile(selectedProfile ?? 1)}>
-                Save
-              </Button>
+          <div className="flex items-center justify-between">
+            <CardDescription>
+              Manage enabled characters in your profile
+            </CardDescription>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="inline-flex items-center gap-1"
+                  >
+                    Profiles
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setShowLoad(true)}>
+                    Load...
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowSave(true)}>
+                    Save...
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="inline-flex items-center gap-1"
+                  >
+                    Toggles
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => toggleAll(true)}>
+                    Enable All
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toggleAll(false)}>
+                    Disable All
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => toggleByRarity(false, true)}>
+                    Enable All 4★
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => toggleByRarity(false, false)}
+                  >
+                    Disable All 4★
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => toggleByRarity(true, true)}>
+                    Enable All 5★
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toggleByRarity(true, false)}>
+                    Disable All 5★
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="space-y-6">
             {Array.from(grouped.entries()).map(([element, chars]) => (
               <div key={element} className="space-y-2">
@@ -134,6 +195,162 @@ export default function GICharactersSettings() {
           </div>
         </CardContent>
       </Card>
+
+      <SaveProfileDialog
+        open={showSave}
+        onOpenChange={setShowSave}
+        profiles={profiles}
+        onSave={saveProfile}
+        nextIndex={nextAvailableProfileIndex}
+        used={usedProfileIndices}
+      />
+      <LoadProfileDialog
+        open={showLoad}
+        onOpenChange={setShowLoad}
+        profiles={profiles}
+        onLoad={loadProfile}
+      />
     </div>
+  )
+}
+
+function SaveProfileDialog({
+  open,
+  onOpenChange,
+  profiles,
+  onSave,
+  nextIndex,
+  used,
+}: {
+  open?: boolean
+  onOpenChange?: (o: boolean) => void
+  profiles?: Array<{ profileIndex: number; name: string | null }>
+  onSave?: (i: number, name?: string) => Promise<void>
+  nextIndex?: number | null
+  used?: Set<number>
+}) {
+  const [selected, setSelected] = React.useState<string>("")
+  const [name, setName] = React.useState("")
+  const canCreate = used && used.size < 10 && !!nextIndex
+  const options = (profiles ?? []).map((p) => ({
+    value: String(p.profileIndex),
+    label: p.name ? `${p.profileIndex} — ${p.name}` : `Profile ${p.profileIndex}`,
+  }))
+  if (canCreate) options.push({ value: "new", label: "Create new" })
+  const handleSave = async () => {
+    if (!onSave) return
+    if (selected === "new" && nextIndex) await onSave(nextIndex, name || undefined)
+    else if (selected) await onSave(parseInt(selected), undefined)
+    onOpenChange?.(false)
+  }
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Save to profile</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <ProfileSelect value={selected} onValueChange={setSelected}>
+            <ProfileSelectTrigger className="w-full">
+              <ProfileSelectValue placeholder="Select profile" />
+            </ProfileSelectTrigger>
+            <ProfileSelectContent>
+              {options.map((o) => (
+                <ProfileSelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </ProfileSelectItem>
+              ))}
+            </ProfileSelectContent>
+          </ProfileSelect>
+          {selected === "new" && (
+            <div className="space-y-2">
+              <Label htmlFor="profile-name">Profile name (optional)</Label>
+              <input
+                id="profile-name"
+                className="w-full rounded-md border px-3 py-2 bg-background"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+          )}
+          {!canCreate && (
+            <p className="text-sm text-muted-foreground">
+              Maximum of 10 profiles reached. Overwrite an existing profile to
+              save.
+            </p>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => onOpenChange?.(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={!selected}>
+              Save
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function LoadProfileDialog({
+  open,
+  onOpenChange,
+  profiles,
+  onLoad,
+}: {
+  open?: boolean
+  onOpenChange?: (o: boolean) => void
+  profiles?: Array<{
+    profileIndex: number
+    name: string | null
+    enabledMap?: Record<string, boolean>
+  }>
+  onLoad?: (i: number) => void
+}) {
+  const [selected, setSelected] = React.useState<string>("")
+  const options = React.useMemo(() => {
+    return (profiles ?? []).map((p) => ({
+      value: String(p.profileIndex),
+      label: p.name ? `${p.profileIndex} — ${p.name}` : `Profile ${p.profileIndex}`,
+    }))
+  }, [profiles])
+  React.useEffect(() => {
+    if (!selected && options.length > 0) setSelected(options[0].value)
+  }, [options, selected])
+  const handleLoad = () => {
+    if (onLoad && selected) onLoad(parseInt(selected))
+    onOpenChange?.(false)
+  }
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Load profile</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <ProfileSelect value={selected} onValueChange={setSelected}>
+            <ProfileSelectTrigger className="w-full">
+              <ProfileSelectValue placeholder="Select profile" />
+            </ProfileSelectTrigger>
+            <ProfileSelectContent>
+              {options.map((o) => (
+                <ProfileSelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </ProfileSelectItem>
+              ))}
+            </ProfileSelectContent>
+          </ProfileSelect>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => onOpenChange?.(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleLoad} disabled={!selected}>
+              Load
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
