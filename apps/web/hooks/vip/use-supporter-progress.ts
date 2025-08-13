@@ -31,8 +31,17 @@ export function useSupporterProgress() {
     const eurosPerGiveaway = 20
     const afterHosting = Math.max(0, totalEuros - hostingGoalEuros)
     const giveawaysAchieved = Math.floor(afterHosting / eurosPerGiveaway)
-    const nextGiveawayAt = hostingGoalEuros + (giveawaysAchieved + 1) * eurosPerGiveaway
-    const progressToNextGiveawayPct = Math.min(100, Math.max(0, ((totalEuros - (nextGiveawayAt - eurosPerGiveaway)) / eurosPerGiveaway) * 100))
+    const nextGiveawayAt =
+      hostingGoalEuros + (giveawaysAchieved + 1) * eurosPerGiveaway
+    const progressToNextGiveawayPct = Math.min(
+      100,
+      Math.max(
+        0,
+        ((totalEuros - (nextGiveawayAt - eurosPerGiveaway)) /
+          eurosPerGiveaway) *
+          100,
+      ),
+    )
 
     return {
       totalEuros,
@@ -46,5 +55,3 @@ export function useSupporterProgress() {
 
   return { loading, error, ...computed, refresh: fetchDonations }
 }
-
-

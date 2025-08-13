@@ -13,14 +13,21 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - Card, CardContent, CardDescription, CardHeader, CardTitle (from shadcn/ui)
   - Avatar, AvatarFallback, AvatarImage (from shadcn/ui)
   - Badge (from shadcn/ui)
-  - Tabs, TabsList, TabsTrigger, TabsContent (custom export wrapping Radix Tabs)
+  - Tabs, TabsList, TabsTrigger, TabsContent (animate-ui Tabs)
+  - Dialog (for modals)
+  - Dropdown Menu (for menus)
+  - Switch (for toggles)
+  - Select (for dropdowns)
 
 - **Animate-UI Components**:
   - SidebarProvider, SidebarInset, SidebarTrigger (from animate-ui/radix/sidebar)
   - MotionEffect (from animate-ui/effects/motion-effect)
   - Progress (from animate-ui/radix/progress)
+  - Tabs (from animate-ui/components/tabs)
+  - Tooltip (from animate-ui/components/tooltip)
 
 - **Custom Components Built**:
+  - GI Randomizer (self-contained minigame UI for Genshin Impact)
   - AppSidebar (custom implementation)
   - LoginForm (custom implementation with shadcn/ui components)
   - Magic Link Authentication System (custom implementation)
@@ -39,6 +46,8 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - FriendsManagementBar (pagination-only variant of management bar)
 
 - **Custom Hooks Built**:
+  - useGiData (GI data fetch + local caching + persistence)
+  - useGiRandomizer (GI randomization and rules logic)
   - useAccount (account management and session handling)
   - usePFQApiKey (PFQ API key management)
   - useProfileInformation (profile information management)

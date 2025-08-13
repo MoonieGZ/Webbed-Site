@@ -1,6 +1,12 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Progress } from "@/components/animate-ui/radix/progress"
 import { Button } from "@/components/ui/button"
 import { useSupporterProgress } from "@/hooks/vip/use-supporter-progress"
@@ -36,11 +42,16 @@ export function SupporterProgressCard() {
               <Server className="h-4 w-4" />
               Hosting costs
             </div>
-            <div>€{totalEuros.toFixed(2)} / €{hostingGoalEuros}</div>
+            <div>
+              €{totalEuros.toFixed(2)} / €{hostingGoalEuros}
+            </div>
           </div>
-          <Progress value={Math.min(100, (totalEuros / hostingGoalEuros) * 100)} />
+          <Progress
+            value={Math.min(100, (totalEuros / hostingGoalEuros) * 100)}
+          />
           <p className="text-xs text-muted-foreground">
-            First goal: keep the lights on. Every additional €{eurosPerGiveaway} triggers a community giveaway.
+            First goal: keep the lights on. Every additional €{eurosPerGiveaway}{" "}
+            triggers a community giveaway.
           </p>
         </div>
 
@@ -54,16 +65,15 @@ export function SupporterProgressCard() {
           </div>
           <Progress value={progressToNextGiveawayPct} />
           <p className="text-xs text-muted-foreground">
-            Next giveaway at €{nextGiveawayAt}. Join our Discord for announcements.
+            Next giveaway at €{nextGiveawayAt}. Join our Discord for
+            announcements.
           </p>
         </div>
 
         {loading && (
           <p className="text-xs text-muted-foreground">Loading progress…</p>
         )}
-        {error && (
-          <p className="text-xs text-destructive">{error}</p>
-        )}
+        {error && <p className="text-xs text-destructive">{error}</p>}
 
         <div className="mt-auto flex justify-end">
           <Button
