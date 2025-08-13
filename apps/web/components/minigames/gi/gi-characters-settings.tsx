@@ -34,6 +34,8 @@ import {
   SelectContent as ProfileSelectContent,
   SelectItem as ProfileSelectItem,
 } from "@/components/ui/select"
+import { toast } from "sonner"
+import { toastStyles } from "@/lib/toast-styles"
  
 
 export default function GICharactersSettings() {
@@ -55,8 +57,6 @@ export default function GICharactersSettings() {
   const hasLoadableProfiles = React.useMemo(() => {
     return (profiles?.length ?? 0) > 0
   }, [profiles])
-
-  if (loading) return null
 
   return (
     <div className="space-y-4">
@@ -133,7 +133,13 @@ export default function GICharactersSettings() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent"></div>
+              <span className="ml-2 text-sm text-muted-foreground">Loading characters...</span>
+            </div>
+          ) : (
+            <div className="space-y-6">
             {Array.from(grouped.entries()).map(([element, chars]) => (
               <div key={element} className="space-y-2">
                 <h3 className="text-lg font-medium flex items-center gap-2">
@@ -192,7 +198,8 @@ export default function GICharactersSettings() {
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -239,9 +246,14 @@ function SaveProfileDialog({
   if (canCreate) options.push({ value: "new", label: "Create new" })
   const handleSave = async () => {
     if (!onSave) return
-    if (selected === "new" && nextIndex) await onSave(nextIndex, name || undefined)
-    else if (selected) await onSave(parseInt(selected), undefined)
-    onOpenChange?.(false)
+    try {
+      if (selected === "new" && nextIndex) await onSave(nextIndex, name || undefined)
+      else if (selected) await onSave(parseInt(selected), undefined)
+      toast("Profile saved!", toastStyles.success)
+      onOpenChange?.(false)
+    } catch (e) {
+      toast("Failed to save profile.", toastStyles.error)
+    }
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -319,8 +331,15 @@ function LoadProfileDialog({
     if (!selected && options.length > 0) setSelected(options[0].value)
   }, [options, selected])
   const handleLoad = () => {
-    if (onLoad && selected) onLoad(parseInt(selected))
-    onOpenChange?.(false)
+    if (onLoad && selected) {
+      try {
+        onLoad(parseInt(selected))
+        toast("Profile loaded!", toastStyles.success)
+        onOpenChange?.(false)
+      } catch (e) {
+        toast("Failed to load profile.", toastStyles.error)
+      }
+    }
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
