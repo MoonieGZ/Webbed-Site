@@ -18,6 +18,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 - **Animate-UI Components**:
   - SidebarProvider, SidebarInset, SidebarTrigger (from animate-ui/radix/sidebar)
   - MotionEffect (from animate-ui/effects/motion-effect)
+  - Progress (from animate-ui/radix/progress)
 
 - **Custom Components Built**:
   - AppSidebar (custom implementation)
@@ -31,6 +32,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - BadgesCard (custom implementation for viewing and featuring badges)
   - SupportForm (custom support request form)
   - SupporterCard (custom VIP supporter form and CTA)
+  - SupporterProgressCard (custom cumulative donations & giveaways progress)
   - AdminToolsCard (admin dashboard card listing tools)
   - FriendsListCard (friends list with mutual badges)
   - FriendsRequestsCard (tabs for received/sent/blocked requests)
@@ -48,6 +50,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - useNavSecondary (secondary navigation menu data)
   - useSupport (support form state and submission)
   - useVIPSupport (VIP supporter details state and submission)
+  - useSupporterProgress (VIP donations progress state)
   - useAdminTools (admin tool metadata & navigation)
   - useFriends (friends and friend-requests state management)
   - useFriendRealtime (websocket client for pending friend request count)

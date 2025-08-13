@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { SupporterCard } from "@/components/vip/supporter-card"
 import { SupporterIntroCard } from "@/components/vip/supporter-intro-card"
+import { SupporterProgressCard } from "@/components/vip/supporter-progress-card"
 
 export default function VIPPage() {
   return (
@@ -40,9 +41,12 @@ export default function VIPPage() {
         <div className="grid gap-6">
           <SupporterIntroCard />
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="md:col-span-2 lg:col-span-1">
+        <div className="grid gap-6 md:grid-cols-2 items-stretch">
+          <div className="md:col-span-2 lg:col-span-1 h-full">
             <SupporterCard />
+          </div>
+          <div className="md:col-span-2 lg:col-span-1 h-full">
+            <SupporterProgressCard />
           </div>
         </div>
       </div>

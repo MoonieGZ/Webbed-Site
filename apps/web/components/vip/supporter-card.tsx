@@ -24,7 +24,7 @@ export function SupporterCard() {
   } = useVIPSupport()
 
   return (
-    <Card className="border-amber-500/30">
+    <Card className="border-amber-500/30 h-full flex flex-col">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-amber-400">
           <HeartHandshake className="h-4 w-4" />
@@ -35,9 +35,9 @@ export function SupporterCard() {
           to the VIP area.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 flex flex-col">
         <form
-          className="space-y-4"
+          className="flex flex-1 flex-col space-y-4"
           onSubmit={(e) => {
             e.preventDefault()
             void submit()
@@ -76,7 +76,7 @@ export function SupporterCard() {
             Once submitted, we&apos;ll validate your donation and manually
             assign your Supporter badge. This can take up to 24 hours.
           </p>
-          <div className="flex justify-end">
+          <div className="mt-auto flex justify-end">
             <Button
               type="submit"
               disabled={submitting || !donationId || !paypalEmail}
