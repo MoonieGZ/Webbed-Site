@@ -109,11 +109,17 @@ export function useGiLobby() {
             if (!p?.ok) return
             setCurrentLobby((prev) =>
               prev && (!p?.lobbyId || p.lobbyId === prev.lobbyId)
-                ? { ...prev, hostId: p?.hostId ? String(p.hostId) : prev?.hostId }
+                ? {
+                    ...prev,
+                    hostId: p?.hostId ? String(p.hostId) : prev?.hostId,
+                  }
                 : prev,
             )
             // Show warning to all remaining members
-            toast.warning("Host left. A new host has been assigned.", toastStyles.warning)
+            toast.warning(
+              "Host left. A new host has been assigned.",
+              toastStyles.warning,
+            )
           },
         )
 
