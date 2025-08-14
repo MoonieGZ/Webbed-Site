@@ -141,7 +141,15 @@ export default function GIBossesSettings() {
             return (
               <div key={region} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">{region}</h3>
+                  <h3 className="text-lg font-medium flex items-center gap-2">
+                    <img
+                      src={`/minigames/gi/locations/${region}.webp`}
+                      alt={region}
+                      className="h-5 w-5 rounded-sm"
+                      loading="lazy"
+                    />
+                    {region}
+                  </h3>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
                   {bosses.map((b) => (
