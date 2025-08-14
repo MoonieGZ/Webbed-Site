@@ -22,6 +22,20 @@ import { useGiSettingsBosses } from "../../../hooks/minigames/gi/use-gi-settings
 import { ChevronDown, ShieldUser } from "lucide-react"
 import type { GiBoss } from "@/types"
 import { buildBossIconPath } from "@/lib/minigames/gi/icon-path"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/animate-ui/radix/dialog"
+import { Label } from "@/components/ui/label"
+import {
+  Select as ProfileSelect,
+  SelectTrigger as ProfileSelectTrigger,
+  SelectValue as ProfileSelectValue,
+  SelectContent as ProfileSelectContent,
+  SelectItem as ProfileSelectItem,
+} from "@/components/ui/select"
 
 export default function GIBossesSettings() {
   const {
@@ -34,7 +48,15 @@ export default function GIBossesSettings() {
     setEnabled,
     toggleLegendBosses,
     toggleAll,
+    profiles,
+    selectedProfile,
+    saveProfile,
+    loadProfile,
+    usedProfileIndices,
+    nextAvailableProfileIndex,
   } = useGiSettingsBosses()
+  const [showSave, setShowSave] = React.useState(false)
+  const [showLoad, setShowLoad] = React.useState(false)
 
   return (
     <div className="space-y-4">
@@ -79,6 +101,26 @@ export default function GIBossesSettings() {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => toggleLegendBosses(false)}>
                     Disable Legends
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="inline-flex items-center gap-1"
+                  >
+                    Profiles
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setShowLoad(true)}>
+                    Load...
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowSave(true)}>
+                    Save...
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -146,6 +188,173 @@ export default function GIBossesSettings() {
           })}
         </CardContent>
       </Card>
+
+      <SaveProfileDialog
+        open={showSave}
+        onOpenChange={setShowSave}
+        profiles={profiles}
+        onSave={saveProfile}
+        nextIndex={nextAvailableProfileIndex}
+        used={usedProfileIndices}
+      />
+      <LoadProfileDialog
+        open={showLoad}
+        onOpenChange={setShowLoad}
+        profiles={profiles}
+        onLoad={loadProfile}
+      />
     </div>
+  )
+}
+
+function SaveProfileDialog({
+  open,
+  onOpenChange,
+  profiles,
+  onSave,
+  nextIndex,
+  used,
+}: {
+  open?: boolean
+  onOpenChange?: (o: boolean) => void
+  profiles?: Array<{ profileIndex: number; name: string | null }>
+  onSave?: (i: number, name?: string) => Promise<void>
+  nextIndex?: number | null
+  used?: Set<number>
+}) {
+  const [selected, setSelected] = React.useState<string>("")
+  const [name, setName] = React.useState("")
+  const canCreate = used && used.size < 10 && !!nextIndex
+  const options = (profiles ?? []).map((p) => ({
+    value: String(p.profileIndex),
+    label: p.name
+      ? `${p.profileIndex} — ${p.name}`
+      : `Profile ${p.profileIndex}`,
+  }))
+  if (canCreate) options.push({ value: "new", label: "Create new" })
+  const handleSave = async () => {
+    if (!onSave) return
+    try {
+      if (selected === "new" && nextIndex)
+        await onSave(nextIndex, name || undefined)
+      else if (selected) await onSave(parseInt(selected), undefined)
+      onOpenChange?.(false)
+    } catch (e) {}
+  }
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Save to profile</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <ProfileSelect value={selected} onValueChange={setSelected}>
+            <ProfileSelectTrigger className="w-full">
+              <ProfileSelectValue placeholder="Select profile" />
+            </ProfileSelectTrigger>
+            <ProfileSelectContent>
+              {options.map((o) => (
+                <ProfileSelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </ProfileSelectItem>
+              ))}
+            </ProfileSelectContent>
+          </ProfileSelect>
+          {selected === "new" && (
+            <div className="space-y-2">
+              <Label htmlFor="boss-profile-name">Profile name (optional)</Label>
+              <input
+                id="boss-profile-name"
+                className="w-full rounded-md border px-3 py-2 bg-background"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+          )}
+          {!canCreate && (
+            <p className="text-sm text-muted-foreground">
+              Maximum of 10 profiles reached. Overwrite an existing profile to
+              save.
+            </p>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => onOpenChange?.(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={!selected}>
+              Save
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function LoadProfileDialog({
+  open,
+  onOpenChange,
+  profiles,
+  onLoad,
+}: {
+  open?: boolean
+  onOpenChange?: (o: boolean) => void
+  profiles?: Array<{
+    profileIndex: number
+    name: string | null
+    enabledMap?: Record<string, boolean>
+  }>
+  onLoad?: (i: number) => void
+}) {
+  const [selected, setSelected] = React.useState<string>("")
+  const options = React.useMemo(() => {
+    return (profiles ?? []).map((p) => ({
+      value: String(p.profileIndex),
+      label: p.name
+        ? `${p.profileIndex} — ${p.name}`
+        : `Profile ${p.profileIndex}`,
+    }))
+  }, [profiles])
+  React.useEffect(() => {
+    if (!selected && options.length > 0) setSelected(options[0].value)
+  }, [options, selected])
+  const handleLoad = () => {
+    if (onLoad && selected) {
+      try {
+        onLoad(parseInt(selected))
+        onOpenChange?.(false)
+      } catch (e) {}
+    }
+  }
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Load profile</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <ProfileSelect value={selected} onValueChange={setSelected}>
+            <ProfileSelectTrigger className="w-full">
+              <ProfileSelectValue placeholder="Select profile" />
+            </ProfileSelectTrigger>
+            <ProfileSelectContent>
+              {options.map((o) => (
+                <ProfileSelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </ProfileSelectItem>
+              ))}
+            </ProfileSelectContent>
+          </ProfileSelect>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => onOpenChange?.(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleLoad} disabled={!selected}>
+              Load
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
