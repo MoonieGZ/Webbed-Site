@@ -34,6 +34,8 @@ import {
   PencilRuler,
 } from "lucide-react"
 import React from "react"
+import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
+import { useGiData } from "@/hooks/minigames/gi/use-gi-data"
 
 function MetricStat({ title, value }: { title: string; value: number }) {
   return (
@@ -97,6 +99,32 @@ export default function GIRandomizer() {
     handleRandomize,
     acceptSelected,
   } = useGiRandomizer()
+  const { lobby, isHost, rollCharacters, rollBoss } = useGiLobbyContext()
+  const { characters, bosses } = useGiData()
+
+  React.useEffect(() => {
+    // Sync server roll results into local result state
+    if (!lobby) return
+    const names = lobby.currentRoll?.characters || null
+    const bossName = lobby.currentRoll?.boss || null
+    if (!names && !bossName) return
+    const charObjs = Array.isArray(names)
+      ? (characters || [])
+          .filter((c) => names.includes(c.name))
+          .map((c) => ({ ...c, selected: false, visible: false }))
+      : []
+    const bossObjs = bossName
+      ? (bosses || [])
+          .filter((b) => b.name === bossName)
+          .map((b) => ({ ...b, visible: false }))
+      : []
+    if (charObjs.length > 0 || bossObjs.length > 0) {
+      // @ts-expect-error setResult type compatible
+      typeof result !== "undefined" &&
+        setResult &&
+        setResult({ characters: charObjs, bosses: bossObjs })
+    }
+  }, [lobby?.currentRoll, characters, bosses])
 
   if (loading) return null
 
@@ -178,24 +206,60 @@ export default function GIRandomizer() {
                 <div className="flex flex-col sm:flex-row gap-4 mt-4">
                   <Button
                     className="flex-1"
-                    onClick={() => handleRandomize("characters")}
+                    disabled={!!lobby && !isHost}
+                    onClick={async () => {
+                      if (lobby && isHost && characters)
+                        await rollCharacters({
+                          lobbyId: lobby.lobbyId,
+                          characters,
+                          settings,
+                        })
+                      else handleRandomize("characters")
+                    }}
                   >
                     <Dice5 className="h-4 w-4 mr-2" />
-                    Roll Characters
+                    {lobby && !isHost
+                      ? "Waiting for host..."
+                      : "Roll Characters"}
                   </Button>
                   <Button
                     className="flex-1"
-                    onClick={() => handleRandomize("bosses")}
+                    disabled={!!lobby && !isHost}
+                    onClick={async () => {
+                      if (lobby && isHost && bosses)
+                        await rollBoss({
+                          lobbyId: lobby.lobbyId,
+                          bosses,
+                          settings,
+                        })
+                      else handleRandomize("bosses")
+                    }}
                   >
                     <Dice5 className="h-4 w-4 mr-2" />
-                    Roll Bosses
+                    {lobby && !isHost ? "Waiting for host..." : "Roll Bosses"}
                   </Button>
                   <Button
                     className="flex-1"
-                    onClick={() => handleRandomize("combined")}
+                    disabled={!!lobby && !isHost}
+                    onClick={async () => {
+                      if (lobby && isHost && characters && bosses) {
+                        await rollCharacters({
+                          lobbyId: lobby.lobbyId,
+                          characters,
+                          settings,
+                        })
+                        await rollBoss({
+                          lobbyId: lobby.lobbyId,
+                          bosses,
+                          settings,
+                        })
+                      } else {
+                        handleRandomize("combined")
+                      }
+                    }}
                   >
                     <Dices className="h-4 w-4 mr-2" />
-                    Roll Both
+                    {lobby && !isHost ? "Waiting for host..." : "Roll Both"}
                   </Button>
                 </div>
               </CardContent>

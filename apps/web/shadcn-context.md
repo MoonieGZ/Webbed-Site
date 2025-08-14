@@ -48,6 +48,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 - **Custom Hooks Built**:
   - useGiData (GI data fetch + local caching + persistence)
   - useGiRandomizer (GI randomization and rules logic)
+  - useGiLobby (GI multiplayer lobby lifecycle and rolling)
   - useAccount (account management and session handling)
   - usePFQApiKey (PFQ API key management)
   - useProfileInformation (profile information management)
