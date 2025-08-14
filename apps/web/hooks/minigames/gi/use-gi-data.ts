@@ -77,7 +77,7 @@ export function useGiData() {
     settingsDirty.current = false
     const toSave = settings
     writeCache(SETTINGS_KEY, toSave)
-    
+
     fetch("/api/minigames/gi/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },

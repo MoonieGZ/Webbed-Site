@@ -1,5 +1,5 @@
 export function toIconFileFromName(name: string): string {
-  return `${name.replace(/\s+/g, "_")}_Icon.webp`
+  return `${name.replace(/&/g, "").replace(/\s+/g, "_").replace(/'/g, "").replace(/[()]/g, "").replace(/,/g, "")}_Icon.webp`
 }
 
 export function buildCharacterIconPath(name: string, element: string): string {

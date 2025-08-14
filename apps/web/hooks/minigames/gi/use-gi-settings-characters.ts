@@ -10,6 +10,7 @@ export function useGiSettingsCharacters() {
   const [enabledMap, setEnabledMap] = useState<Record<string, boolean>>({})
   const [profiles, setProfiles] = useState<GiCharacterProfile[]>([])
   const [selectedProfile, setSelectedProfile] = useState<number | null>(null)
+  const [filter, setFilter] = useState("")
 
   useEffect(() => {
     const cached = localStorage.getItem("gi_characters_v1")
@@ -81,6 +82,18 @@ export function useGiSettingsCharacters() {
     return map
   }, [characters])
 
+  const filteredGroups = useMemo(() => {
+    if (!filter) return grouped
+    const map = new Map<string, GiCharacter[]>()
+    Array.from(grouped.keys()).forEach((k) => {
+      const arr = (grouped.get(k) ?? []).filter((i) =>
+        i.name.toLowerCase().includes(filter.toLowerCase()),
+      )
+      if (arr.length > 0) map.set(k, arr)
+    })
+    return map
+  }, [filter, grouped])
+
   const persistEnabledMap = (map: Record<string, boolean>) => {
     try {
       localStorage.setItem("gi_enabled_map_v1", JSON.stringify(map))
@@ -107,7 +120,11 @@ export function useGiSettingsCharacters() {
     await fetch("/api/minigames/gi/profiles", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ profileIndex, name: name ?? null, enabledMap: fullMap }),
+      body: JSON.stringify({
+        profileIndex,
+        name: name ?? null,
+        enabledMap: fullMap,
+      }),
     }).catch(() => {})
     const updated = await fetch("/api/minigames/gi/profiles").then((r) =>
       r.json(),
@@ -167,6 +184,7 @@ export function useGiSettingsCharacters() {
     loading,
     characters,
     grouped,
+    filteredGroups,
     enabledMap,
     toggleEnabled,
     profiles,
@@ -178,5 +196,7 @@ export function useGiSettingsCharacters() {
     usedProfileIndices,
     nextAvailableProfileIndex,
     refreshRemoteProfiles,
+    filter,
+    setFilter,
   }
 }

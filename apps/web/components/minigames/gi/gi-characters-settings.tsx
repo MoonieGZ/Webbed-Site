@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/animate-ui/radix/switch"
+import { Input } from "@/components/ui/input"
 import { useGiSettingsCharacters } from "@/hooks/minigames/gi/use-gi-settings-characters"
 import { buildCharacterIconPath } from "@/lib/minigames/gi/icon-path"
 import { ChevronDown, Users } from "lucide-react"
@@ -36,12 +37,12 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
- 
 
 export default function GICharactersSettings() {
   const {
     loading,
     grouped,
+    filteredGroups,
     enabledMap,
     toggleEnabled,
     profiles,
@@ -51,12 +52,11 @@ export default function GICharactersSettings() {
     toggleByRarity,
     usedProfileIndices,
     nextAvailableProfileIndex,
+    filter,
+    setFilter,
   } = useGiSettingsCharacters()
   const [showSave, setShowSave] = React.useState(false)
   const [showLoad, setShowLoad] = React.useState(false)
-  const hasLoadableProfiles = React.useMemo(() => {
-    return (profiles?.length ?? 0) > 0
-  }, [profiles])
 
   return (
     <div className="space-y-4">
@@ -73,26 +73,12 @@ export default function GICharactersSettings() {
               Manage enabled characters in your profile
             </CardDescription>
             <div className="flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="inline-flex items-center gap-1"
-                  >
-                    Profiles
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setShowLoad(true)}>
-                    Load...
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setShowSave(true)}>
-                    Save...
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Input
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                placeholder="Search characters"
+                className="h-8 w-[200px]"
+              />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -129,6 +115,26 @@ export default function GICharactersSettings() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="inline-flex items-center gap-1"
+                  >
+                    Profiles
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setShowLoad(true)}>
+                    Load...
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowSave(true)}>
+                    Save...
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </CardHeader>
@@ -136,68 +142,70 @@ export default function GICharactersSettings() {
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent"></div>
-              <span className="ml-2 text-sm text-muted-foreground">Loading characters...</span>
+              <span className="ml-2 text-sm text-muted-foreground">
+                Loading characters...
+              </span>
             </div>
           ) : (
             <div className="space-y-6">
-            {Array.from(grouped.entries()).map(([element, chars]) => (
-              <div key={element} className="space-y-2">
-                <h3 className="text-lg font-medium flex items-center gap-2">
-                  <img
-                    src={`/minigames/gi/elements/${element}.webp`}
-                    alt={element}
-                    className="h-5 w-5 rounded-sm"
-                    loading="lazy"
-                  />
-                  {element}
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                  {chars.map((c) => (
-                    <div
-                      key={c.name}
-                      className={`flex items-center justify-between p-2 rounded-lg border bg-background/50 cursor-pointer ${
-                        c.fiveStar
-                          ? "ring-1 ring-yellow-500/40"
-                          : "ring-1 ring-purple-500/30"
-                      } ${(enabledMap[c.name] ?? true) ? "" : "opacity-75 grayscale"}`}
-                      onClick={() =>
-                        toggleEnabled(c.name, !(enabledMap[c.name] ?? true))
-                      }
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={`h-8 w-8 rounded-full overflow-hidden ring-2 ${
-                            c.fiveStar
-                              ? "ring-yellow-500/60 bg-yellow-500/10"
-                              : "ring-purple-500/50 bg-purple-500/10"
-                          }`}
-                          title={c.name}
-                        >
-                          <img
-                            src={buildCharacterIconPath(c.name, c.element)}
-                            alt={c.name}
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium truncate">
-                            {c.name}
+              {Array.from(filteredGroups.entries()).map(([element, chars]) => (
+                <div key={element} className="space-y-2">
+                  <h3 className="text-lg font-medium flex items-center gap-2">
+                    <img
+                      src={`/minigames/gi/elements/${element}.webp`}
+                      alt={element}
+                      className="h-5 w-5 rounded-sm"
+                      loading="lazy"
+                    />
+                    {element}
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {chars.map((c) => (
+                      <div
+                        key={c.name}
+                        className={`flex items-center justify-between p-2 rounded-lg border bg-background/50 cursor-pointer ${
+                          c.fiveStar
+                            ? "ring-1 ring-yellow-500/40"
+                            : "ring-1 ring-purple-500/30"
+                        } ${(enabledMap[c.name] ?? true) ? "" : "opacity-75 grayscale"}`}
+                        onClick={() =>
+                          toggleEnabled(c.name, !(enabledMap[c.name] ?? true))
+                        }
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`h-8 w-8 shrink-0 rounded overflow-hidden ring-2 ${
+                              c.fiveStar
+                                ? "ring-yellow-500/60 bg-yellow-500/10"
+                                : "ring-purple-500/50 bg-purple-500/10"
+                            }`}
+                            title={c.name}
+                          >
+                            <img
+                              src={buildCharacterIconPath(c.name, c.element)}
+                              alt={c.name}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
                           </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {c.weaponType} &bull; {c.fiveStar ? "5★" : "4★"}
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">
+                              {c.name}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {c.weaponType} &bull; {c.fiveStar ? "5★" : "4★"}
+                            </div>
                           </div>
                         </div>
+                        <Switch
+                          checked={enabledMap[c.name] ?? true}
+                          className="pointer-events-none"
+                        />
                       </div>
-                      <Switch
-                        checked={enabledMap[c.name] ?? true}
-                        className="pointer-events-none"
-                      />
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
             </div>
           )}
         </CardContent>
@@ -241,13 +249,16 @@ function SaveProfileDialog({
   const canCreate = used && used.size < 10 && !!nextIndex
   const options = (profiles ?? []).map((p) => ({
     value: String(p.profileIndex),
-    label: p.name ? `${p.profileIndex} — ${p.name}` : `Profile ${p.profileIndex}`,
+    label: p.name
+      ? `${p.profileIndex} — ${p.name}`
+      : `Profile ${p.profileIndex}`,
   }))
   if (canCreate) options.push({ value: "new", label: "Create new" })
   const handleSave = async () => {
     if (!onSave) return
     try {
-      if (selected === "new" && nextIndex) await onSave(nextIndex, name || undefined)
+      if (selected === "new" && nextIndex)
+        await onSave(nextIndex, name || undefined)
       else if (selected) await onSave(parseInt(selected), undefined)
       toast("Profile saved!", toastStyles.success)
       onOpenChange?.(false)
@@ -324,7 +335,9 @@ function LoadProfileDialog({
   const options = React.useMemo(() => {
     return (profiles ?? []).map((p) => ({
       value: String(p.profileIndex),
-      label: p.name ? `${p.profileIndex} — ${p.name}` : `Profile ${p.profileIndex}`,
+      label: p.name
+        ? `${p.profileIndex} — ${p.name}`
+        : `Profile ${p.profileIndex}`,
     }))
   }, [profiles])
   React.useEffect(() => {

@@ -89,7 +89,7 @@ export function useGiSettingsForm(type: "characters" | "bosses") {
     setSettings((prev) => {
       const updated = { ...prev.bosses.enabled }
       ;(items as GiBoss[]).forEach((b) => {
-        if (b.name.startsWith("⭐ - ")) updated[b.name] = false
+        if (b.legendary) updated[b.name] = false
       })
       return { ...prev, bosses: { ...prev.bosses, enabled: updated } }
     })

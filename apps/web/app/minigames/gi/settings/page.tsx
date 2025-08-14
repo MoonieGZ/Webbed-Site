@@ -9,6 +9,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import GICharactersSettings from "@/components/minigames/gi/gi-characters-settings"
+import GIBossesSettings from "@/components/minigames/gi/gi-bosses-settings"
 import {
   TabsContent,
   TabsList,
@@ -66,7 +67,7 @@ export default function GISettingsPage() {
               <GICharactersSettings />
             </TabsContent>
             <TabsContent value="bosses" className="space-y-4">
-              <GICharactersSettings />
+              <GIBossesSettings />
             </TabsContent>
           </TabsContents>
         </Tabs>
