@@ -1,4 +1,4 @@
-import { FishSymbol, Users } from "lucide-react"
+import { Dices, FishSymbol, Users } from "lucide-react"
 import { useFriendRealtime } from "@/hooks/account/use-friend-realtime"
 import { useSidebarData } from "@/hooks/navigation/use-sidebar-data"
 
@@ -28,23 +28,9 @@ export function useNavMain() {
       ],
     },
     {
-      title: "Fimsh 2",
-      url: "#",
-      icon: FishSymbol,
-      items: [
-        {
-          title: "Fimsh 2.1",
-          url: "#",
-        },
-        {
-          title: "Fimsh 2.2",
-          url: "#",
-        },
-        {
-          title: "Fimsh 2.3",
-          url: "#",
-        },
-      ],
+      title: "Echovia",
+      url: "/genshin",
+      icon: Dices,
     },
     {
       title: "Friends",

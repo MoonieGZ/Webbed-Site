@@ -19,7 +19,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/animate-ui/radix/dropdown-menu"
 import { useGiSettingsBosses } from "../../../hooks/minigames/gi/use-gi-settings-bosses"
-import { ChevronDown, Search, ShieldUser, ToggleRight, UserPen } from "lucide-react"
+import {
+  ChevronDown,
+  Search,
+  ShieldUser,
+  ToggleRight,
+  UserPen,
+} from "lucide-react"
 import type { GiBoss } from "@/types"
 import { buildBossIconPath } from "@/lib/minigames/gi/icon-path"
 import {
