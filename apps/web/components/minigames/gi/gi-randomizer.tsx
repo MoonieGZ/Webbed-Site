@@ -21,8 +21,6 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/animate-ui/radix/switch"
 import {
-  Minus,
-  Plus,
   Dices,
   Dice5,
   Users,
@@ -96,8 +94,6 @@ export default function GIRandomizer() {
     toggleExclusion,
     includeCharacter,
     result,
-    handleRandomize,
-    acceptSelected,
   } = useGiRandomizer()
   const { lobby, isHost, rollCharacters, rollBoss } = useGiLobbyContext()
   const { characters, bosses } = useGiData()
@@ -214,7 +210,6 @@ export default function GIRandomizer() {
                           characters,
                           settings,
                         })
-                      else handleRandomize("characters")
                     }}
                   >
                     <Dice5 className="h-4 w-4 mr-2" />
@@ -232,7 +227,6 @@ export default function GIRandomizer() {
                           bosses,
                           settings,
                         })
-                      else handleRandomize("bosses")
                     }}
                   >
                     <Dice5 className="h-4 w-4 mr-2" />
@@ -253,8 +247,6 @@ export default function GIRandomizer() {
                           bosses,
                           settings,
                         })
-                      } else {
-                        handleRandomize("combined")
                       }
                     }}
                   >
