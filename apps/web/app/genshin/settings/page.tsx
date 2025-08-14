@@ -41,7 +41,9 @@ export default function GISettingsPage() {
                 <BreadcrumbLink href="/genshin">Echovia</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>Genshin Impact</BreadcrumbItem>
+              <BreadcrumbItem>
+                <BreadcrumbLink href="/genshin">Genshin Impact</BreadcrumbLink>
+              </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
                 <BreadcrumbLink href="/genshin/settings">

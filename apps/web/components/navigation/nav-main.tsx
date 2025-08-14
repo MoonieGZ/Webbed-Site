@@ -35,17 +35,13 @@ export function NavMain() {
               <SidebarMenuButton asChild tooltip={item.title}>
                 <Link href={item.url} className="relative">
                   <item.icon />
-                  <span className="flex items-center gap-2">
-                    {item.title}
-                    {!!(item as any).badgeCount && (
-                      <Badge className="bg-destructive/10 [a&]:hover:bg-destructive/5 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 text-destructive rounded-full border-none focus-visible:outline-none">
-                        <span
-                          className="bg-destructive size-1.5 rounded-full mt-1 mb-1"
-                          aria-hidden="true"
-                        />
-                      </Badge>
-                    )}
-                  </span>
+                  {!!(item as any).badgeCount && (
+                    <>
+                      <span className="pointer-events-none absolute inline-flex top-1 left-5 h-2 w-2 rounded-full bg-destructive/80 animate-ping" />
+                      <span className="pointer-events-none absolute inline-flex top-1 left-5 h-2 w-2 rounded-full bg-destructive ring-2 ring-background" />
+                    </>
+                  )}
+                  <span className="flex items-center gap-2">{item.title}</span>
                 </Link>
               </SidebarMenuButton>
               {item.items?.length ? (
