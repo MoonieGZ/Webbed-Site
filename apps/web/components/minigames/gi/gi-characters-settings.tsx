@@ -13,7 +13,7 @@ import { Switch } from "@/components/animate-ui/radix/switch"
 import { Input } from "@/components/ui/input"
 import { useGiSettingsCharacters } from "@/hooks/minigames/gi/use-gi-settings-characters"
 import { buildCharacterIconPath } from "@/lib/minigames/gi/icon-path"
-import { ChevronDown, Users } from "lucide-react"
+import { ChevronDown, Search, ToggleRight, UserPen, Users } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -41,7 +41,6 @@ import { toastStyles } from "@/lib/toast-styles"
 export default function GICharactersSettings() {
   const {
     loading,
-    grouped,
     filteredGroups,
     enabledMap,
     toggleEnabled,
@@ -73,12 +72,18 @@ export default function GICharactersSettings() {
               Manage enabled characters in your profile
             </CardDescription>
             <div className="flex items-center gap-2">
-              <Input
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="Search characters"
-                className="h-8 w-[200px]"
-              />
+              <div className="relative">
+                <div className="text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-end ps-3 peer-disabled:opacity-50">
+                  <Search className="size-4" />
+                </div>
+                <Input
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  placeholder="Search Characters"
+                  className="h-8 w-[200px] peer ps-9 placeholder:text-muted-foreground"
+                />
+              </div>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -86,6 +91,7 @@ export default function GICharactersSettings() {
                     size="sm"
                     className="inline-flex items-center gap-1"
                   >
+                    <ToggleRight className="h-4 w-4" />
                     Toggles
                     <ChevronDown className="h-4 w-4" />
                   </Button>
@@ -122,6 +128,7 @@ export default function GICharactersSettings() {
                     size="sm"
                     className="inline-flex items-center gap-1"
                   >
+                    <UserPen className="h-4 w-4" />
                     Profiles
                     <ChevronDown className="h-4 w-4" />
                   </Button>

@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/animate-ui/radix/dropdown-menu"
 import { useGiSettingsBosses } from "../../../hooks/minigames/gi/use-gi-settings-bosses"
-import { ChevronDown, ShieldUser } from "lucide-react"
+import { ChevronDown, Search, ShieldUser, ToggleRight, UserPen } from "lucide-react"
 import type { GiBoss } from "@/types"
 import { buildBossIconPath } from "@/lib/minigames/gi/icon-path"
 import {
@@ -71,12 +71,17 @@ export default function GIBossesSettings() {
           <div className="flex items-center justify-between">
             <CardDescription>Manage enabled bosses by region</CardDescription>
             <div className="flex items-center gap-2">
-              <Input
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="Search bosses"
-                className="h-8 w-[200px]"
-              />
+              <div className="relative">
+                <div className="text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-end ps-3 peer-disabled:opacity-50">
+                  <Search className="size-4" />
+                </div>
+                <Input
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  placeholder="Search Bosses"
+                  className="h-8 w-[200px] peer ps-9 placeholder:text-muted-foreground"
+                />
+              </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -84,6 +89,7 @@ export default function GIBossesSettings() {
                     size="sm"
                     className="inline-flex items-center gap-1"
                   >
+                    <ToggleRight className="h-4 w-4" />
                     Toggles
                     <ChevronDown className="h-4 w-4" />
                   </Button>
@@ -111,6 +117,7 @@ export default function GIBossesSettings() {
                     size="sm"
                     className="inline-flex items-center gap-1"
                   >
+                    <UserPen className="h-4 w-4" />
                     Profiles
                     <ChevronDown className="h-4 w-4" />
                   </Button>

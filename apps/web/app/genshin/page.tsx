@@ -9,6 +9,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import GIRandomizer from "@/components/minigames/gi/gi-randomizer"
+import { Button } from "@/components/ui/button"
+import { Settings } from "lucide-react"
+import Link from "next/link"
 
 export default function GIPage() {
   return (
@@ -27,14 +30,19 @@ export default function GIPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/minigames/gi">Echovia</BreadcrumbLink>
+                <BreadcrumbLink href="/genshin">Echovia</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <span>Genshin Impact</span>
-              </BreadcrumbItem>
+              <BreadcrumbItem>Genshin Impact</BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+        </div>
+        <div className="flex items-center justify-end gap-2 ml-auto px-4">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/genshin/settings">
+              <Settings className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </header>
 

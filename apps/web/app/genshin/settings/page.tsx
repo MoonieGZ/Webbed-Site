@@ -17,7 +17,9 @@ import {
   TabsTrigger,
   Tabs,
 } from "@/components/animate-ui/components/tabs"
-import { ShieldUser, Users } from "lucide-react"
+import { ShieldUser, Undo2, Users } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function GISettingsPage() {
   return (
@@ -36,16 +38,25 @@ export default function GISettingsPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/minigames/gi">Echovia</BreadcrumbLink>
+                <BreadcrumbLink href="/genshin">Echovia</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>Genshin Impact</BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbLink href="/minigames/gi/settings">
+                <BreadcrumbLink href="/genshin/settings">
                   Settings
                 </BreadcrumbLink>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
+        </div>
+        <div className="flex items-center justify-end gap-2 ml-auto px-4">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/genshin">
+              <Undo2 className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </header>
 
