@@ -128,7 +128,8 @@ export function useGiLobby() {
           (p: { ok: boolean; lobbyId?: string; memberUserId?: string }) => {
             if (!p?.ok) return
             setCurrentLobby((prev) => {
-              if (!prev || (p?.lobbyId && prev.lobbyId !== p.lobbyId)) return prev
+              if (!prev || (p?.lobbyId && prev.lobbyId !== p.lobbyId))
+                return prev
               const mid = String(p?.memberUserId || "")
               if (!mid) return prev
               if (prev.members?.includes(mid)) return prev
