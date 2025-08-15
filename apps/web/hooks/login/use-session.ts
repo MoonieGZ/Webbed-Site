@@ -5,7 +5,7 @@ export function useSession() {
 
   const checkSession = async () => {
     try {
-      const response = await fetch("/api/auth/session")
+      const response = await fetch("/api/auth/session", { cache: "no-store" })
       const data = await response.json()
 
       if (data.authenticated) {

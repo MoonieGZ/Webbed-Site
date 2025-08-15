@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
+import { useUser } from "@/hooks/login/use-user"
 
 type Status = "loading" | "success" | "error" | "invalid"
 
@@ -8,6 +9,20 @@ export function useMagicLink() {
   const router = useRouter()
   const [status, setStatus] = useState<Status>("loading")
   const [message, setMessage] = useState("")
+  const { refetch } = useUser()
+
+  const ensureSessionReady = async (): Promise<void> => {
+    // Poll session endpoint briefly to ensure cookie/user are ready
+    const maxAttempts = 5
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const r = await fetch("/api/auth/session", { cache: "no-store" })
+        const d = await r.json()
+        if (d?.authenticated && d?.user?.id) return
+      } catch {}
+      await new Promise((res) => setTimeout(res, 250))
+    }
+  }
 
   const validateToken = async (token: string) => {
     try {
@@ -29,9 +44,10 @@ export function useMagicLink() {
           setMessage("Login successful! Redirecting...")
         }
 
-        setTimeout(() => {
-          router.push("/account")
-        }, 2000)
+        // Ensure the session cookie is applied and user context is fresh
+        await ensureSessionReady()
+        await refetch()
+        router.push("/account")
       } else {
         setStatus("error")
         setMessage(data.error || "Invalid or expired token")

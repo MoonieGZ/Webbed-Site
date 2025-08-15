@@ -28,14 +28,14 @@ export function useProfileInformation() {
 
   const fetchUserData = async () => {
     try {
-      const response = await fetch("/api/auth/session")
+      const response = await fetch("/api/auth/session", { cache: "no-store" })
       const data = await response.json()
 
       if (data.authenticated) {
         setUser(data.user)
 
         try {
-          const r = await fetch("/api/account/title")
+          const r = await fetch("/api/account/title", { cache: "no-store" })
           const t = await r.json()
           if (r.ok) {
             setTitles(t.titles || [])
