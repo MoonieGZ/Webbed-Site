@@ -203,7 +203,6 @@ io.on("connection", (socket) => {
       if (!Array.isArray(result))
         return cb?.({ ok: false, error: "Not enough characters or invalid settings" })
       lobby.currentRoll = { ...(lobby.currentRoll || {}), characters: result }
-      // Track host's effective enabled map so other members can compute availability similarly
       try {
         if (Array.isArray(candidates)) {
           const map = Object.create(null)

@@ -82,7 +82,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
 - Current approach: Mix of shadcn/ui components and custom implementations
 - Magic link system uses existing UI components (Button, Input, Label) from shadcn/ui
 - Animate-UI provides advanced animation and interaction components
-- Toast styling centralized in `lib/utils.ts` with `toastStyles` utility for consistent sonner notifications
+- Toast styling centralized in `apps/web/lib/toast-styles.ts` with `toastStyles` utility for consistent sonner notifications
 - Gravatar integration for automatic avatar import from user's email address
 - Username validation with profanity filtering using bad-words-next library (server-side validation)
 - Recent avatars system with file modification time tracking (keeps last 10 avatars, auto-cleanup on upload/import)

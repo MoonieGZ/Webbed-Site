@@ -30,7 +30,6 @@ function selectRandomCharacters(characters, settings) {
 
 	if (enabled.length < settings.characters.count) return null
 
-	// Traveler handling (allow max one if coopMode is off)
 	const travelers = enabled.filter((c) => typeof c.name === 'string' && c.name.startsWith('Traveler ('))
 	const nonTravelers = enabled.filter((c) => !(typeof c.name === 'string' && c.name.startsWith('Traveler (')))
 	const pool = [...nonTravelers]

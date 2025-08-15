@@ -237,7 +237,7 @@ export function useGiLobbyStatus() {
 
   const availableCharacters = useMemo(() => {
     if (!characters) return 0
-    // If I'm the host, use my local map; otherwise, prefer host's map if provided
+
     const enabledMap = isHost
       ? settings.characters.enabled
       : lobby?.hostEnabledMap || settings.characters.enabled
@@ -257,12 +257,10 @@ export function useGiLobbyStatus() {
     lobby?.hostEnabledMap,
   ])
 
-  // On mount/join or whenever local enabled map changes and I'm host, sync to server so others can reflect my pool
   useEffect(() => {
     if (!isHost) return
     const lobbyId = lobby?.lobbyId
     if (!lobbyId) return
-    // build current enabled set without exclusions
     const map: Record<string, boolean> = {}
     for (const c of characters || []) {
       const enabled = settings.characters.enabled[c.name] ?? true
@@ -272,7 +270,6 @@ export function useGiLobbyStatus() {
       map[c.name] = enabled && !excluded
     }
     syncHostEnabledMap(map)
-    // build boss enabled map respecting co-op
     const bossMap: Record<string, boolean> = {}
     for (const b of bosses || []) {
       const enabled = settings.bosses.enabled[b.name] ?? true

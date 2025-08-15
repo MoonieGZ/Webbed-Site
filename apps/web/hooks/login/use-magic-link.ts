@@ -12,7 +12,6 @@ export function useMagicLink() {
   const { refetch } = useUser()
 
   const ensureSessionReady = async (): Promise<void> => {
-    // Poll session endpoint briefly to ensure cookie/user are ready
     const maxAttempts = 5
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
@@ -44,7 +43,6 @@ export function useMagicLink() {
           setMessage("Login successful! Redirecting...")
         }
 
-        // Ensure the session cookie is applied and user context is fresh
         await ensureSessionReady()
         await refetch()
         router.push("/account")

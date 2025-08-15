@@ -276,7 +276,7 @@ function SaveProfileDialog({
       if (selected === "new" && nextIndex)
         await onSave(nextIndex, name || undefined)
       else if (selected) await onSave(parseInt(selected), undefined)
-      toast("Profile saved!", toastStyles.success)
+      toast.success("Profile saved!", toastStyles.success)
       onOpenChange?.(false)
     } catch (e) {
       toast("Failed to save profile.", toastStyles.error)
@@ -370,10 +370,10 @@ function LoadProfileDialog({
     if (onLoad && selected) {
       try {
         onLoad(parseInt(selected))
-        toast("Profile loaded!", toastStyles.success)
+        toast.success("Profile loaded!", toastStyles.success)
         onOpenChange?.(false)
       } catch (e) {
-        toast("Failed to load profile.", toastStyles.error)
+        toast.error("Failed to load profile.", toastStyles.error)
       }
     }
   }
