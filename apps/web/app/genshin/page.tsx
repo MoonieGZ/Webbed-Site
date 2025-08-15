@@ -59,9 +59,9 @@ function GIPageBody() {
       })
       const res = await createLobby({ privacy: "closed" })
       if (res.ok) {
-        toast.success("Connected to solo lobby", toastStyles.success)
+        toast.success("Connected to solo lobby.", toastStyles.success)
       } else {
-        toast.error(res.error || "Failed to create lobby", toastStyles.error)
+        toast.error(res.error || "Failed to create lobby.", toastStyles.error)
       }
     })()
   }, [connected, lobby?.lobbyId, createLobby])

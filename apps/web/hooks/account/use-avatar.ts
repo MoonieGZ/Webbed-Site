@@ -50,11 +50,11 @@ export function useAvatar() {
         updateUser({ avatar: data.avatar })
         await fetchRecentAvatars()
       } else {
-        toast.error(data.error || "Failed to upload avatar", toastStyles.error)
+        toast.error(data.error || "Failed to upload avatar.", toastStyles.error)
       }
     } catch (error) {
       console.error("Error uploading avatar:", error)
-      toast.error("Failed to upload avatar", toastStyles.error)
+      toast.error("Failed to upload avatar.", toastStyles.error)
     } finally {
       setIsUploadingAvatar(false)
     }
@@ -77,13 +77,13 @@ export function useAvatar() {
         await fetchRecentAvatars()
       } else {
         toast.error(
-          data.error || "Failed to import Gravatar",
+          data.error || "Failed to import Gravatar.",
           toastStyles.error,
         )
       }
     } catch (error) {
       console.error("Error importing Gravatar:", error)
-      toast.error("Failed to import Gravatar", toastStyles.error)
+      toast.error("Failed to import Gravatar.", toastStyles.error)
     } finally {
       setIsUploadingAvatar(false)
     }
@@ -107,11 +107,11 @@ export function useAvatar() {
         toast.success("Avatar set successfully!", toastStyles.success)
         updateUser({ avatar: data.avatar })
       } else {
-        toast.error(data.error || "Failed to set avatar", toastStyles.error)
+        toast.error(data.error || "Failed to set avatar.", toastStyles.error)
       }
     } catch (error) {
       console.error("Error setting recent avatar:", error)
-      toast.error("Failed to set avatar", toastStyles.error)
+      toast.error("Failed to set avatar.", toastStyles.error)
     }
   }
 

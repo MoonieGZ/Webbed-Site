@@ -84,13 +84,13 @@ export function useProfileInformation() {
         updateUser({ name: newUsername.trim() })
       } else {
         toast.error(
-          data.error || "Failed to update username",
+          data.error || "Failed to update username.",
           toastStyles.error,
         )
       }
     } catch (error) {
       console.error("Error updating username:", error)
-      toast.error("Failed to update username", toastStyles.error)
+      toast.error("Failed to update username.", toastStyles.error)
     } finally {
       setIsChangingUsername(false)
     }
@@ -112,10 +112,10 @@ export function useProfileInformation() {
         toast.success("Title updated!", toastStyles.success)
         updateUser({ title: data.title ?? null })
       } else {
-        toast.error(data.error || "Failed to update title", toastStyles.error)
+        toast.error(data.error || "Failed to update title.", toastStyles.error)
       }
     } catch (e) {
-      toast.error("Failed to update title", toastStyles.error)
+      toast.error("Failed to update title.", toastStyles.error)
     } finally {
       setIsSavingTitle(false)
     }

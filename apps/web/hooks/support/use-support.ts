@@ -33,7 +33,7 @@ export function useSupport() {
 
     for (const f of incoming) {
       if (f.size > 5 * 1024 * 1024) {
-        toast.error("Each attachment must be ≤ 5MB", toastStyles.error)
+        toast.error("Each attachment must be ≤ 5MB.", toastStyles.error)
         return
       }
     }
@@ -45,7 +45,7 @@ export function useSupport() {
     for (const f of incoming) map.set(key(f), f)
     const merged = Array.from(map.values())
     if (merged.length > 5) {
-      toast.error("You can attach up to 5 files", toastStyles.error)
+      toast.error("You can attach up to 5 files.", toastStyles.error)
     }
     setFiles(merged.slice(0, 5))
   }
@@ -62,7 +62,7 @@ export function useSupport() {
       !message.trim() ||
       !category
     ) {
-      toast.error("Please complete all required fields", toastStyles.error)
+      toast.error("Please complete all required fields.", toastStyles.error)
       return
     }
     setSubmitting(true)
@@ -87,12 +87,12 @@ export function useSupport() {
         setFiles([])
       } else {
         toast.error(
-          data.error || "Failed to send support request",
+          data.error || "Failed to send support request.",
           toastStyles.error,
         )
       }
     } catch (err) {
-      toast.error("Failed to send support request", toastStyles.error)
+      toast.error("Failed to send support request.", toastStyles.error)
     } finally {
       setSubmitting(false)
     }

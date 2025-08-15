@@ -72,12 +72,12 @@ export function useAccount() {
 
   const handleUsernameChange = async () => {
     if (!user) {
-      toast.error("User not found", toastStyles.error)
+      toast.error("User not found.", toastStyles.error)
       return
     }
 
     if (!newUsername.trim()) {
-      toast.error("Please enter a username", toastStyles.error)
+      toast.error("Please enter a username.", toastStyles.error)
       return
     }
 
@@ -132,12 +132,12 @@ export function useAccount() {
 
   const handleAvatarUpload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file", toastStyles.error)
+      toast.error("Please select an image file.", toastStyles.error)
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be smaller than 5MB", toastStyles.error)
+      toast.error("Image must be smaller than 5MB.", toastStyles.error)
       return
     }
 
@@ -160,11 +160,11 @@ export function useAccount() {
 
         fetchRecentAvatars()
       } else {
-        toast.error(data.error || "Failed to upload avatar", toastStyles.error)
+        toast.error(data.error || "Failed to upload avatar.", toastStyles.error)
       }
     } catch (error) {
       console.error("Avatar upload failed:", error)
-      toast.error("An error occurred while uploading avatar", toastStyles.error)
+      toast.error("An error occurred while uploading avatar.", toastStyles.error)
     } finally {
       await new Promise((resolve) => setTimeout(resolve, 250))
       setIsUploadingAvatar(false)
@@ -173,7 +173,7 @@ export function useAccount() {
 
   const handleGravatarImport = async () => {
     if (!user?.email) {
-      toast.error("No email address available for Gravatar", toastStyles.error)
+      toast.error("No email address available for Gravatar.", toastStyles.error)
       return
     }
 
@@ -197,14 +197,14 @@ export function useAccount() {
         fetchRecentAvatars()
       } else {
         toast.error(
-          data.error || "Failed to import Gravatar",
+          data.error || "Failed to import Gravatar.",
           toastStyles.error,
         )
       }
     } catch (error) {
       console.error("Gravatar import failed:", error)
       toast.error(
-        "An error occurred while importing Gravatar",
+        "An error occurred while importing Gravatar.",
         toastStyles.error,
       )
     } finally {
@@ -215,7 +215,7 @@ export function useAccount() {
 
   const handleSetRecentAvatar = async (filename: string) => {
     if (!user) {
-      toast.error("User not found", toastStyles.error)
+      toast.error("User not found.", toastStyles.error)
       return
     }
 
@@ -238,11 +238,11 @@ export function useAccount() {
 
         fetchRecentAvatars()
       } else {
-        toast.error(data.error || "Failed to update avatar", toastStyles.error)
+        toast.error(data.error || "Failed to update avatar.", toastStyles.error)
       }
     } catch (error) {
       console.error("Avatar update failed:", error)
-      toast.error("An error occurred while updating avatar", toastStyles.error)
+      toast.error("An error occurred while updating avatar.", toastStyles.error)
     } finally {
       await new Promise((resolve) => setTimeout(resolve, 250))
       setIsUploadingAvatar(false)

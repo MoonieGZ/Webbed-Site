@@ -31,7 +31,7 @@ export function useLoginForm() {
     e.preventDefault()
 
     if (!email) {
-      toast.error("Please enter your email address", toastStyles.error)
+      toast.error("Please enter your email address.", toastStyles.error)
       return
     }
 
@@ -58,7 +58,7 @@ export function useLoginForm() {
           "Email sent! If you have not received it, you can try again in 2 minutes.",
         )
       } else {
-        const message = data.error || "Failed to send magic link"
+        const message = data.error || "Failed to send magic link."
         setCooldownMessage(message)
 
         const match = /wait\s+(\d+)s/i.exec(message)
@@ -72,7 +72,7 @@ export function useLoginForm() {
       }
     } catch (error) {
       toast.error(
-        "An error occurred while sending the magic link",
+        "An error occurred while sending the magic link.",
         toastStyles.error,
       )
     } finally {

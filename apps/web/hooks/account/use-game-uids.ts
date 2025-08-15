@@ -72,11 +72,11 @@ export function useGameUIDs() {
         setUidInputs(initialInputs)
       } else {
         console.error("Failed to fetch game UIDs:", data.error)
-        toast.error("Failed to load game UIDs", toastStyles.error)
+        toast.error("Failed to load game UIDs.", toastStyles.error)
       }
     } catch (error) {
       console.error("Error fetching game UIDs:", error)
-      toast.error("Failed to load game UIDs", toastStyles.error)
+      toast.error("Failed to load game UIDs.", toastStyles.error)
     } finally {
       setLoading(false)
     }
@@ -103,7 +103,7 @@ export function useGameUIDs() {
           await fetchGameUIDs()
         } else {
           toast.error(
-            data.error || `Failed to delete ${GAME_INFO[game].name} UID`,
+            data.error || `Failed to delete ${GAME_INFO[game].name} UID.`,
             toastStyles.error,
           )
         }
@@ -126,7 +126,7 @@ export function useGameUIDs() {
           await fetchGameUIDs()
         } else {
           toast.error(
-            data.error || `Failed to save ${GAME_INFO[game].name} UID`,
+            data.error || `Failed to save ${GAME_INFO[game].name} UID.`,
             toastStyles.error,
           )
         }
@@ -134,7 +134,7 @@ export function useGameUIDs() {
     } catch (error) {
       console.error(`Error saving/deleting ${GAME_INFO[game].name} UID:`, error)
       toast.error(
-        `Failed to save ${GAME_INFO[game].name} UID`,
+        `Failed to save ${GAME_INFO[game].name} UID.`,
         toastStyles.error,
       )
     } finally {

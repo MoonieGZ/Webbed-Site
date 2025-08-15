@@ -248,7 +248,7 @@ export function GILobbyStatusCard() {
                     setJoining(true)
                     const res = await joinLobby({ lobbyId: joinCode })
                     if (res.ok) {
-                      toast.success("Joined lobby", toastStyles.success)
+                      toast.success("Joined lobby!", toastStyles.success)
                       setJoinOpen(false)
                     } else {
                       toast.error(
@@ -285,7 +285,7 @@ export function GILobbyStatusCard() {
               onClick={async () => {
                 const res = await leaveLobby()
                 if (res.ok) {
-                  toast.success("Left lobby", toastStyles.success)
+                  toast.success("Left lobby!", toastStyles.success)
                   setLeaveOpen(false)
                 } else {
                   toast.error(
@@ -318,7 +318,7 @@ export function GILobbyStatusCard() {
                 if (!kickTarget) return
                 const res = await kickMember(kickTarget)
                 if (res.ok) {
-                  toast.success("Member kicked", toastStyles.success)
+                  toast.success("Member kicked.", toastStyles.success)
                   setKickOpen(false)
                 } else {
                   toast.error(

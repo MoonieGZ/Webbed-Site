@@ -23,11 +23,11 @@ export function usePFQApiKey() {
         setApiKeyInfo(data)
       } else {
         console.error("Failed to fetch PFQ API key info:", data.error)
-        toast.error("Failed to load PFQ API key information", toastStyles.error)
+        toast.error("Failed to load PFQ API key information.", toastStyles.error)
       }
     } catch (error) {
       console.error("Error fetching PFQ API key info:", error)
-      toast.error("Failed to load PFQ API key information", toastStyles.error)
+      toast.error("Failed to load PFQ API key information.", toastStyles.error)
     } finally {
       setLoading(false)
     }
@@ -35,7 +35,7 @@ export function usePFQApiKey() {
 
   const saveApiKey = async () => {
     if (!apiKey.trim()) {
-      toast.error("Please enter an API key", toastStyles.error)
+      toast.error("Please enter an API key.", toastStyles.error)
       return
     }
 
@@ -56,11 +56,11 @@ export function usePFQApiKey() {
         setApiKey("")
         await fetchApiKeyInfo()
       } else {
-        toast.error(data.error || "Failed to save API key", toastStyles.error)
+        toast.error(data.error || "Failed to save API key.", toastStyles.error)
       }
     } catch (error) {
       console.error("Error saving PFQ API key:", error)
-      toast.error("Failed to save API key", toastStyles.error)
+      toast.error("Failed to save API key.", toastStyles.error)
     } finally {
       setIsSaving(false)
     }
@@ -79,11 +79,11 @@ export function usePFQApiKey() {
         toast.success("PFQ API key deleted successfully!", toastStyles.success)
         await fetchApiKeyInfo()
       } else {
-        toast.error(data.error || "Failed to delete API key", toastStyles.error)
+        toast.error(data.error || "Failed to delete API key.", toastStyles.error)
       }
     } catch (error) {
       console.error("Error deleting PFQ API key:", error)
-      toast.error("Failed to delete API key", toastStyles.error)
+      toast.error("Failed to delete API key.", toastStyles.error)
     } finally {
       setIsDeleting(false)
     }

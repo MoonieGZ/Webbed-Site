@@ -31,7 +31,7 @@ export function useBadges() {
       setHasUnsavedChanges(false)
     } catch (error) {
       console.error("Failed to load badges:", error)
-      toast.error("Failed to load badges", toastStyles.error)
+      toast.error("Failed to load badges.", toastStyles.error)
     } finally {
       setLoading(false)
     }
@@ -81,14 +81,14 @@ export function useBadges() {
       })
       const data = await response.json()
       if (!response.ok) {
-        throw new Error(data?.error || "Failed to update featured badges")
+        throw new Error(data?.error || "Failed to update featured badges.")
       }
       toast.success("Featured badges updated!", toastStyles.success)
       setHasUnsavedChanges(false)
       await fetchBadges()
     } catch (error) {
       console.error("Failed to save featured badges:", error)
-      toast.error("Failed to update featured badges", toastStyles.error)
+      toast.error("Failed to update featured badges.", toastStyles.error)
     } finally {
       setSaving(false)
     }
