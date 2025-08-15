@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/animate-ui/radix/dropdown-menu"
-import { useGiSettingsBosses } from "../../../hooks/minigames/gi/use-gi-settings-bosses"
+import { useGiSettingsBosses } from "@/hooks/minigames/gi/use-gi-settings-bosses"
 import {
   ChevronDown,
   Search,
@@ -46,7 +46,6 @@ import Image from "next/image"
 
 export default function GIBossesSettings() {
   const {
-    settings,
     filter,
     setFilter,
     enabledMap,
@@ -56,7 +55,6 @@ export default function GIBossesSettings() {
     toggleLegendBosses,
     toggleAll,
     profiles,
-    selectedProfile,
     saveProfile,
     loadProfile,
     usedProfileIndices,
