@@ -16,7 +16,13 @@ import { AddFriendDialog } from "@/components/friends/add-friend-dialog"
 import Link from "next/link"
 import { iconForBadge } from "@/lib/icon-utils"
 import { Checkbox } from "@/components/animate-ui/radix/checkbox"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/animate-ui/radix/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/animate-ui/radix/dialog"
 import { Button } from "@/components/ui/button"
 import {
   Tooltip,

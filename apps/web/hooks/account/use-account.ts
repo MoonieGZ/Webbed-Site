@@ -164,7 +164,10 @@ export function useAccount() {
       }
     } catch (error) {
       console.error("Avatar upload failed:", error)
-      toast.error("An error occurred while uploading avatar.", toastStyles.error)
+      toast.error(
+        "An error occurred while uploading avatar.",
+        toastStyles.error,
+      )
     } finally {
       await new Promise((resolve) => setTimeout(resolve, 250))
       setIsUploadingAvatar(false)

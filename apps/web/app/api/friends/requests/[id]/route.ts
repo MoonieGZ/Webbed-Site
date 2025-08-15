@@ -66,10 +66,9 @@ export async function PUT(
         requesterRow?.cnt ?? 0,
       )
 
-      const meRow = (await queryOne(
-        "SELECT id, name FROM users WHERE id = ?",
-        [me.id],
-      )) as { id: number; name: string | null } | null
+      const meRow = (await queryOne("SELECT id, name FROM users WHERE id = ?", [
+        me.id,
+      ])) as { id: number; name: string | null } | null
       if (meRow) {
         await emitFriendAccepted(existing.requester_id, {
           id: meRow.id,

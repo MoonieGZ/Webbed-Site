@@ -23,7 +23,10 @@ export function usePFQApiKey() {
         setApiKeyInfo(data)
       } else {
         console.error("Failed to fetch PFQ API key info:", data.error)
-        toast.error("Failed to load PFQ API key information.", toastStyles.error)
+        toast.error(
+          "Failed to load PFQ API key information.",
+          toastStyles.error,
+        )
       }
     } catch (error) {
       console.error("Error fetching PFQ API key info:", error)
@@ -79,7 +82,10 @@ export function usePFQApiKey() {
         toast.success("PFQ API key deleted successfully!", toastStyles.success)
         await fetchApiKeyInfo()
       } else {
-        toast.error(data.error || "Failed to delete API key.", toastStyles.error)
+        toast.error(
+          data.error || "Failed to delete API key.",
+          toastStyles.error,
+        )
       }
     } catch (error) {
       console.error("Error deleting PFQ API key:", error)
