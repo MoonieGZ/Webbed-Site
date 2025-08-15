@@ -7,7 +7,7 @@ import type { GiLobbyPrivacy } from "@/types"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
 import { useGiMultiplayerProfileGate } from "@/hooks/minigames/gi/use-gi-multiplayer-profile-gate"
-import { useGiData } from "@/hooks/minigames/gi/use-gi-data"
+import { useGiDataContext } from "@/hooks/minigames/gi/gi-data-provider"
 import type { GiBossProfile, GiCharacterProfile } from "@/types/gi/profile"
 
 export function useGiLobbyStatus() {
@@ -15,7 +15,7 @@ export function useGiLobbyStatus() {
     useGiLobbyContext()
   const { list: members, loading } = useUsersByIds(memberUserIds)
   const { ensureHasMultiplayerProfile } = useGiMultiplayerProfileGate()
-  const { characters, bosses, settings, setSettings } = useGiData()
+  const { characters, bosses, settings, setSettings } = useGiDataContext()
 
   const [profiles, setProfiles] = useState<GiCharacterProfile[]>([])
   const [selectedProfileIndex, setSelectedProfileIndex] = useState<
@@ -233,8 +233,12 @@ export function useGiLobbyStatus() {
 
   const availableBosses = useMemo(() => {
     if (!bosses) return 0
-    return bosses.filter((b) => settings.bosses.enabled[b.name] ?? true).length
-  }, [bosses, settings])
+    const coopMode = settings.rules.coopMode
+    const enabledMap = settings.bosses.enabled
+    const list = bosses.filter((b) => enabledMap[b.name] ?? true)
+    if (!coopMode) return list.length
+    return list.filter((b) => Boolean(b.coop)).length
+  }, [bosses, settings.rules.coopMode, JSON.stringify(settings.bosses.enabled)])
 
   const updateCharacterCount = useCallback(
     (count: number) =>

@@ -32,7 +32,7 @@ import {
 import React from "react"
 import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
 import { useGiLobbyStatus } from "@/hooks/minigames/gi/use-gi-lobby-status"
-import { useGiData } from "@/hooks/minigames/gi/use-gi-data"
+import { useGiDataContext } from "@/hooks/minigames/gi/gi-data-provider"
 
 export default function GIRandomizer() {
   const {
@@ -46,7 +46,7 @@ export default function GIRandomizer() {
   } = useGiRandomizer()
   const { lobby, isHost, rollCharacters, rollBoss } = useGiLobbyContext()
   const { combineMode, refreshCombine } = useGiLobbyStatus()
-  const { characters, bosses } = useGiData()
+  const { characters, bosses } = useGiDataContext()
 
   React.useEffect(() => {
     if (!lobby) return
@@ -77,7 +77,7 @@ export default function GIRandomizer() {
       <Tabs defaultValue="randomizer" className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="randomizer" className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
+            <Shuffle className="h-4 w-4" />
             Randomizer
           </TabsTrigger>
           <TabsTrigger value="rules" className="flex items-center gap-2">
@@ -85,7 +85,7 @@ export default function GIRandomizer() {
             Rules
           </TabsTrigger>
           <TabsTrigger value="excluded" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
+            <Filter className="h-4 w-4" />
             Excluded
           </TabsTrigger>
         </TabsList>
@@ -288,7 +288,7 @@ export default function GIRandomizer() {
               <CardHeader>
                 <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
+                    <Filter className="h-5 w-5" />
                     Excluded ({settings.characters.excluded.length})
                   </div>
                   <div className="flex items-center space-x-2 justify-end">

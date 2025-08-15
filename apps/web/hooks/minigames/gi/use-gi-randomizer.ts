@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import type { GiBoss, GiCharacter } from "@/types"
-import { useGiData } from "./use-gi-data"
+import { useGiDataContext } from "@/hooks/minigames/gi/gi-data-provider"
 
 export type RandomizeType = "characters" | "bosses" | "combined"
 
@@ -14,7 +14,7 @@ export interface RandomResult {
 }
 
 export function useGiRandomizer() {
-  const { characters, bosses, settings, setSettings, loading } = useGiData()
+  const { characters, bosses, settings, setSettings, loading } = useGiDataContext()
   const [result, setResult] = useState<RandomResult | null>(null)
 
   const availableCharacters = useMemo(() => {
@@ -30,8 +30,11 @@ export function useGiRandomizer() {
 
   const availableBosses = useMemo(() => {
     if (!bosses) return 0
-    return bosses.filter((b) => settings.bosses.enabled[b.name] ?? true).length
-  }, [bosses, settings])
+    const enabledMap = settings.bosses.enabled
+    const list = bosses.filter((b) => enabledMap[b.name] ?? true)
+    if (settings.rules.coopMode) return list.filter((b) => Boolean(b.coop)).length
+    return list.length
+  }, [bosses, settings.rules.coopMode, JSON.stringify(settings.bosses.enabled)])
 
   const updateCharacterCount = (count: number) =>
     setSettings((prev) => ({

@@ -3,6 +3,7 @@
 import React from "react"
 import { TooltipProvider } from "@/components/animate-ui/components/tooltip"
 import { GiLobbyProvider } from "@/hooks/minigames/gi/lobby-provider"
+import { GiDataProvider } from "@/hooks/minigames/gi/gi-data-provider"
 
 export default function GenshinLayout({
   children,
@@ -11,7 +12,9 @@ export default function GenshinLayout({
 }) {
   return (
     <TooltipProvider>
-      <GiLobbyProvider>{children}</GiLobbyProvider>
+      <GiDataProvider>
+        <GiLobbyProvider>{children}</GiLobbyProvider>
+      </GiDataProvider>
     </TooltipProvider>
   )
 }
