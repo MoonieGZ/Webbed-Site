@@ -224,10 +224,11 @@ io.on("connection", (socket) => {
       if (!Array.isArray(result))
         return cb?.({ ok: false, error: "Not enough bosses or invalid settings" })
 
+      const bosses = result
       const boss = result[0] || null
-      lobby.currentRoll = { ...(lobby.currentRoll || {}), boss }
-      io.to(lobbyId).emit("rolledBoss", { ok: true, boss })
-      cb?.({ ok: true, boss })
+      lobby.currentRoll = { ...(lobby.currentRoll || {}), boss, bosses }
+      io.to(lobbyId).emit("rolledBoss", { ok: true, boss, bosses })
+      cb?.({ ok: true, boss, bosses })
       emitLobbyState(lobbyId)
     } catch (e) {
       cb?.({ ok: false, error: "Failed to roll boss" })

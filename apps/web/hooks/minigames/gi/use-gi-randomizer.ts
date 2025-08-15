@@ -38,6 +38,25 @@ export function useGiRandomizer() {
     return list.length
   }, [bosses, settings.rules.coopMode, JSON.stringify(settings.bosses.enabled)])
 
+  const getCandidateCharacters = () => {
+    const list = Array.isArray(characters) ? characters : []
+    return list.filter((c) => {
+      const enabled = settings.characters.enabled[c.name] ?? true
+      const excluded =
+        settings.enableExclusion &&
+        settings.characters.excluded.includes(c.name)
+      return enabled && !excluded
+    })
+  }
+
+  const getCandidateBosses = () => {
+    const list = Array.isArray(bosses) ? bosses : []
+    const filtered = list.filter((b) => settings.bosses.enabled[b.name] ?? true)
+    return settings.rules.coopMode
+      ? filtered.filter((b) => Boolean(b.coop))
+      : filtered
+  }
+
   const updateCharacterCount = (count: number) =>
     setSettings((prev) => ({
       ...prev,
@@ -77,6 +96,8 @@ export function useGiRandomizer() {
     setSettings,
     availableCharacters,
     availableBosses,
+    getCandidateCharacters,
+    getCandidateBosses,
     updateCharacterCount,
     updateBossCount,
     toggleExclusion,

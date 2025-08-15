@@ -87,7 +87,12 @@ export function useGiLobby() {
         )
         s.on(
           "rolledBoss",
-          (p: { ok: boolean; boss?: string; error?: string }) => {
+          (p: {
+            ok: boolean
+            boss?: string
+            bosses?: string[]
+            error?: string
+          }) => {
             if (!p?.ok) return
             setCurrentLobby((prev) =>
               prev
@@ -96,6 +101,9 @@ export function useGiLobby() {
                     currentRoll: {
                       ...(prev.currentRoll || {}),
                       boss: p.boss ?? null,
+                      bosses: Array.isArray(p.bosses)
+                        ? p.bosses
+                        : prev.currentRoll?.bosses,
                     },
                   }
                 : prev,

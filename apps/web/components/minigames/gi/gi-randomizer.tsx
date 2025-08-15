@@ -33,15 +33,17 @@ import React from "react"
 import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
 import { useGiLobbyStatus } from "@/hooks/minigames/gi/use-gi-lobby-status"
 import { useGiDataContext } from "@/hooks/minigames/gi/gi-data-provider"
+import { GIRollResultCard } from "@/components/minigames/gi/gi-roll-result"
 
 export default function GIRandomizer() {
   const {
     loading,
     settings,
     setSettings,
+    getCandidateCharacters,
+    getCandidateBosses,
     toggleExclusion,
     includeCharacter,
-    result,
     setResult,
   } = useGiRandomizer()
   const { lobby, isHost, rollCharacters, rollBoss } = useGiLobbyContext()
@@ -130,9 +132,10 @@ export default function GIRandomizer() {
                     onClick={async () => {
                       if (!lobby || !isHost || !characters) return
                       if (combineMode) await refreshCombine()
+                      const candidates = getCandidateCharacters()
                       await rollCharacters({
                         lobbyId: lobby.lobbyId,
-                        characters,
+                        characters: candidates,
                         settings,
                       })
                     }}
@@ -148,9 +151,10 @@ export default function GIRandomizer() {
                     onClick={async () => {
                       if (!lobby || !isHost || !bosses) return
                       if (combineMode) await refreshCombine()
+                      const candidates = getCandidateBosses()
                       await rollBoss({
                         lobbyId: lobby.lobbyId,
-                        bosses,
+                        bosses: candidates,
                         settings,
                       })
                     }}
@@ -164,14 +168,16 @@ export default function GIRandomizer() {
                     onClick={async () => {
                       if (!lobby || !isHost || !characters || !bosses) return
                       if (combineMode) await refreshCombine()
+                      const c = getCandidateCharacters()
+                      const b = getCandidateBosses()
                       await rollCharacters({
                         lobbyId: lobby.lobbyId,
-                        characters,
+                        characters: c,
                         settings,
                       })
                       await rollBoss({
                         lobbyId: lobby.lobbyId,
-                        bosses,
+                        bosses: b,
                         settings,
                       })
                     }}
@@ -182,6 +188,8 @@ export default function GIRandomizer() {
                 </div>
               </CardContent>
             </Card>
+
+            <GIRollResultCard />
           </TabsContent>
 
           <TabsContent value="rules">

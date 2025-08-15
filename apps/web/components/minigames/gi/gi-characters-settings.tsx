@@ -161,7 +161,7 @@ export default function GICharactersSettings() {
             <div className="space-y-6">
               {Array.from(filteredGroups.entries()).map(([element, chars]) => (
                 <div key={element} className="space-y-2">
-                  <h3 className="text-lg font-medium flex items-center gap-2">
+                  <div className="text-lg font-medium flex items-center gap-2">
                     <Image
                       src={`/minigames/gi/elements/${element}.webp`}
                       alt={element}
@@ -170,7 +170,7 @@ export default function GICharactersSettings() {
                       className="rounded-sm"
                     />
                     {element}
-                  </h3>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                     {chars.map((c) => (
                       <div

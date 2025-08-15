@@ -4,6 +4,10 @@ export interface GiLobbyState {
   lobbyId: string
   hostId: string | null
   members: string[]
-  currentRoll?: { characters?: string[]; boss?: string | null }
+  currentRoll?: {
+    characters?: string[]
+    boss?: string | null
+    bosses?: string[]
+  }
   privacy: GiLobbyPrivacy
 }
