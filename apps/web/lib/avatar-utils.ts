@@ -9,7 +9,7 @@ export async function getRecentAvatars(
   try {
     const userAvatarDir = join(
       process.cwd(),
-      "public",
+      "uploads",
       "avatars",
       userId.toString(),
     )
@@ -53,7 +53,7 @@ export async function cleanupOldAvatars(
   try {
     const userAvatarDir = join(
       process.cwd(),
-      "public",
+      "uploads",
       "avatars",
       userId.toString(),
     )

@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     const avatarDir = path.join(
       process.cwd(),
-      "public",
+      "uploads",
       "avatars",
       user.id.toString(),
     )
