@@ -72,6 +72,8 @@ io.on("connection", (socket) => {
         members: lobby.members,
         currentRoll: lobby.currentRoll || {},
         privacy: lobby.privacy || "invite-only",
+        hostEnabledMap: lobby.hostEnabledMap || null,
+        hostBossEnabledMap: lobby.hostBossEnabledMap || null,
       },
     }
     io.to(lobbyId).emit("lobbyState", payload)
@@ -201,6 +203,14 @@ io.on("connection", (socket) => {
       if (!Array.isArray(result))
         return cb?.({ ok: false, error: "Not enough characters or invalid settings" })
       lobby.currentRoll = { ...(lobby.currentRoll || {}), characters: result }
+      // Track host's effective enabled map so other members can compute availability similarly
+      try {
+        if (Array.isArray(candidates)) {
+          const map = Object.create(null)
+          for (const c of candidates) map[c.name] = true
+          lobby.hostEnabledMap = map
+        }
+      } catch {}
       io.to(lobbyId).emit("rolledCharacters", { ok: true, characters: result })
       cb?.({ ok: true, characters: result })
       emitLobbyState(lobbyId)
@@ -227,6 +237,13 @@ io.on("connection", (socket) => {
       const bosses = result
       const boss = result[0] || null
       lobby.currentRoll = { ...(lobby.currentRoll || {}), boss, bosses }
+      try {
+        if (Array.isArray(candidates)) {
+          const map = Object.create(null)
+          for (const b of candidates) map[b.name] = true
+          lobby.hostBossEnabledMap = map
+        }
+      } catch {}
       io.to(lobbyId).emit("rolledBoss", { ok: true, boss, bosses })
       cb?.({ ok: true, boss, bosses })
       emitLobbyState(lobbyId)
@@ -249,6 +266,40 @@ io.on("connection", (socket) => {
       emitLobbyState(lobbyId)
     } catch (e) {
       cb?.({ ok: false, error: "Failed to change privacy" })
+    }
+  })
+
+  socket.on("syncHostEnabledMap", (payload, cb) => {
+    try {
+      const lobbyId = payload?.lobbyId
+      const enabledMap = payload?.enabledMap || null
+      if (!lobbyId || typeof enabledMap !== 'object') return cb?.({ ok: false, error: "Missing fields" })
+      const lobby = getLobbySafe(lobbyId)
+      if (!lobby) return cb?.({ ok: false, error: "Lobby not found" })
+      if (lobby.hostId !== userId)
+        return cb?.({ ok: false, error: "Only host can sync map" })
+      lobby.hostEnabledMap = enabledMap
+      cb?.({ ok: true })
+      emitLobbyState(lobbyId)
+    } catch (e) {
+      cb?.({ ok: false, error: "Failed to sync map" })
+    }
+  })
+
+  socket.on("syncHostBossEnabledMap", (payload, cb) => {
+    try {
+      const lobbyId = payload?.lobbyId
+      const enabledMap = payload?.enabledMap || null
+      if (!lobbyId || typeof enabledMap !== 'object') return cb?.({ ok: false, error: "Missing fields" })
+      const lobby = getLobbySafe(lobbyId)
+      if (!lobby) return cb?.({ ok: false, error: "Lobby not found" })
+      if (lobby.hostId !== userId)
+        return cb?.({ ok: false, error: "Only host can sync map" })
+      lobby.hostBossEnabledMap = enabledMap
+      cb?.({ ok: true })
+      emitLobbyState(lobbyId)
+    } catch (e) {
+      cb?.({ ok: false, error: "Failed to sync map" })
     }
   })
 

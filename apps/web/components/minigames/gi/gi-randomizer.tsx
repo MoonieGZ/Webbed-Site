@@ -28,12 +28,18 @@ import {
   Filter,
   Shuffle,
   PencilRuler,
+  X,
+  RotateCcw,
 } from "lucide-react"
+import Image from "next/image"
+import { buildCharacterIconPath } from "@/lib/minigames/gi/icon-path"
 import React from "react"
 import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
 import { useGiLobbyStatus } from "@/hooks/minigames/gi/use-gi-lobby-status"
 import { useGiDataContext } from "@/hooks/minigames/gi/gi-data-provider"
 import { GIRollResultCard } from "@/components/minigames/gi/gi-roll-result"
+import { toast } from "sonner"
+import { toastStyles } from "@/lib/toast-styles"
 
 export default function GIRandomizer() {
   const {
@@ -312,6 +318,7 @@ export default function GIRandomizer() {
                             }))
                           }
                         >
+                          <RotateCcw className="h-4 w-4" />
                           Reset All
                         </Button>
                       )}
@@ -333,7 +340,17 @@ export default function GIRandomizer() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {settings.characters.excluded.length === 0 ? (
+                {!settings.enableExclusion ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">
+                      Exclusion is disabled.
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Enable it above to use this feature.
+                    </p>
+                  </div>
+                ) : excluded.size === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
                     <Users className="h-12 w-12 text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">
@@ -341,24 +358,67 @@ export default function GIRandomizer() {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {Array.from(excluded).map((name) => (
-                      <div
-                        key={name}
-                        className="flex items-center justify-between p-2 rounded-lg border"
-                      >
-                        <span className="truncate text-sm flex-1 select-none">
-                          {name}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => includeCharacter(name)}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    {Array.from(excluded).map((name) => {
+                      const info = (characters || []).find(
+                        (c) => c.name === name,
+                      )
+                      const thumb = info
+                        ? buildCharacterIconPath(info.name, info.element)
+                        : null
+                      const gradient = info?.fiveStar
+                        ? "rarity-5-gradient"
+                        : "rarity-4-gradient"
+                      const border = info?.fiveStar
+                        ? "border-accent-5"
+                        : "border-accent-4"
+                      return (
+                        <div
+                          key={name}
+                          className="relative group cursor-pointer rounded-md overflow-hidden border border-border hover:border-primary transition-colors h-18 flex items-center gap-2 px-3"
+                          onClick={() => {
+                            includeCharacter(name)
+                            toast.success(
+                              "Character re-enabled.",
+                              toastStyles.success,
+                            )
+                          }}
                         >
-                          Re-enable
-                        </Button>
-                      </div>
-                    ))}
+                          <div
+                            className={`relative h-12 w-12 rounded-sm overflow-hidden flex-shrink-0 mr-2 border-2 ${border}`}
+                          >
+                            <div className={`absolute inset-0 ${gradient}`} />
+                            {thumb && (
+                              <Image
+                                src={thumb}
+                                alt={name}
+                                fill
+                                className="object-cover relative z-10"
+                                sizes="48px"
+                              />
+                            )}
+                          </div>
+                          <span className="truncate text-sm flex-1 select-none">
+                            {name}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              includeCharacter(name)
+                              toast.success(
+                                "Character re-enabled.",
+                                toastStyles.success,
+                              )
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </CardContent>

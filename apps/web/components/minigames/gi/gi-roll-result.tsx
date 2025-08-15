@@ -11,7 +11,10 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useGiRollResult } from "@/hooks/minigames/gi/use-gi-roll-result"
-import { buildBossIconPath, buildCharacterIconPath } from "@/lib/minigames/gi/icon-path"
+import {
+  buildBossIconPath,
+  buildCharacterIconPath,
+} from "@/lib/minigames/gi/icon-path"
 import { cn } from "@/lib/utils"
 import { Shuffle, Loader2, Save } from "lucide-react"
 import { Checkbox } from "@/components/animate-ui/radix/checkbox"
@@ -29,14 +32,20 @@ export function GIRollResultCard() {
   const [revealedBossCount, setRevealedBossCount] = React.useState(0)
   const [charRollId, setCharRollId] = React.useState(0)
   const [bossRollId, setBossRollId] = React.useState(0)
-  const [selectedChars, setSelectedChars] = React.useState<Record<string, boolean>>({})
+  const [selectedChars, setSelectedChars] = React.useState<
+    Record<string, boolean>
+  >({})
 
   const charSig = React.useMemo(
-    () => (rolledCharacters.length ? rolledCharacters.map((c) => c.name).join("|") : ""),
+    () =>
+      rolledCharacters.length
+        ? rolledCharacters.map((c) => c.name).join("|")
+        : "",
     [rolledCharacters],
   )
   const bossSig = React.useMemo(
-    () => (rolledBosses.length ? rolledBosses.map((b) => b.name).join("|") : ""),
+    () =>
+      rolledBosses.length ? rolledBosses.map((b) => b.name).join("|") : "",
     [rolledBosses],
   )
 
@@ -89,7 +98,10 @@ export function GIRollResultCard() {
                 {rolledBosses.map((b, idx) => {
                   const bossImg = buildBossIconPath(b.name, b.location)
                   return (
-                    <div key={`${bossRollId}-${b.name}`} className="relative group">
+                    <div
+                      key={`${bossRollId}-${b.name}`}
+                      className="relative group"
+                    >
                       {idx < revealedBossCount ? (
                         <div
                           className={cn(
@@ -110,10 +122,15 @@ export function GIRollResultCard() {
                             </div>
                           )}
                           <div className="boss-info-overlay">
-                            <p className="font-medium text-white truncate" title={b.name}>
+                            <p
+                              className="font-medium text-white truncate"
+                              title={b.name}
+                            >
                               {b.name}
                             </p>
-                            <p className="text-xs text-white/75 truncate">{b.location}</p>
+                            <p className="text-xs text-white/75 truncate">
+                              {b.location}
+                            </p>
                           </div>
                         </div>
                       ) : (
@@ -138,16 +155,24 @@ export function GIRollResultCard() {
                   const charImg = buildCharacterIconPath(c.name, c.element)
                   const isSelected = !!selectedChars[c.name]
                   return (
-                    <div key={`${charRollId}-${c.name}`} className="relative group">
+                    <div
+                      key={`${charRollId}-${c.name}`}
+                      className="relative group"
+                    >
                       {idx < revealedCharCount ? (
                         <div
                           className={cn(
                             "relative aspect-square overflow-hidden rounded-md ring-1 ring-border character-card animate-appear",
-                            c.fiveStar ? "rarity-5-gradient" : "rarity-4-gradient",
+                            c.fiveStar
+                              ? "rarity-5-gradient"
+                              : "rarity-4-gradient",
                           )}
                           onClick={() => {
                             if (!isHost) return
-                            setSelectedChars((prev) => ({ ...prev, [c.name]: !isSelected }))
+                            setSelectedChars((prev) => ({
+                              ...prev,
+                              [c.name]: !isSelected,
+                            }))
                           }}
                           role={isHost ? "button" : undefined}
                           aria-pressed={isHost ? isSelected : undefined}
@@ -158,7 +183,10 @@ export function GIRollResultCard() {
                               <Checkbox
                                 checked={isSelected}
                                 onCheckedChange={(checked) =>
-                                  setSelectedChars((prev) => ({ ...prev, [c.name]: Boolean(checked) }))
+                                  setSelectedChars((prev) => ({
+                                    ...prev,
+                                    [c.name]: Boolean(checked),
+                                  }))
                                 }
                                 onClick={(e) => e.stopPropagation()}
                               />
@@ -172,10 +200,15 @@ export function GIRollResultCard() {
                             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 200px"
                           />
                           <div className="character-info-overlay">
-                            <p className="font-medium text-white truncate" title={c.name}>
+                            <p
+                              className="font-medium text-white truncate"
+                              title={c.name}
+                            >
                               {c.name}
                             </p>
-                            <p className="text-xs text-white/75 truncate">{c.element}</p>
+                            <p className="text-xs text-white/75 truncate">
+                              {c.element}
+                            </p>
                           </div>
                         </div>
                       ) : (
@@ -198,7 +231,10 @@ export function GIRollResultCard() {
                       if (names.length === 0) return
                       excludeCharacter(names)
                       setSelectedChars({})
-                      toast.success("Saved selection. These characters will be excluded from future rolls.", toastStyles.success)
+                      toast.success(
+                        "Saved selection. These characters will be excluded from future rolls.",
+                        toastStyles.success,
+                      )
                     }}
                   >
                     <Save className="h-4 w-4" />

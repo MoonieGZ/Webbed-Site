@@ -16,6 +16,7 @@ export function useGiLobbyStatus() {
   const { list: members, loading } = useUsersByIds(memberUserIds)
   const { ensureHasMultiplayerProfile } = useGiMultiplayerProfileGate()
   const { characters, bosses, settings, setSettings } = useGiDataContext()
+  const { syncHostEnabledMap, syncHostBossEnabledMap } = useGiLobbyContext()
 
   const [profiles, setProfiles] = useState<GiCharacterProfile[]>([])
   const [selectedProfileIndex, setSelectedProfileIndex] = useState<
@@ -134,6 +135,7 @@ export function useGiLobbyStatus() {
         const ids = (memberUserIds || [])
           .map((x) => Number(x))
           .filter((n) => Number.isFinite(n))
+          .sort((a, b) => a - b)
         if (ids.length === 0) return
         const r = await fetch("/api/minigames/gi/profiles/by-user-ids", {
           method: "POST",
@@ -162,10 +164,21 @@ export function useGiLobbyStatus() {
           }
           merged[c.name] = anyEnabled
         })
-        setSettings((prev) => ({
-          ...prev,
-          characters: { ...prev.characters, enabled: merged },
-        }))
+        setSettings((prev) => {
+          const prevMap = prev.characters.enabled || {}
+          let changed = false
+          for (const c of characters || []) {
+            if ((prevMap[c.name] ?? true) !== (merged[c.name] ?? true)) {
+              changed = true
+              break
+            }
+          }
+          if (!changed) return prev
+          return {
+            ...prev,
+            characters: { ...prev.characters, enabled: merged },
+          }
+        })
       } catch {}
     })()
     return () => {
@@ -173,7 +186,9 @@ export function useGiLobbyStatus() {
     }
   }, [
     combineMode,
-    JSON.stringify(memberUserIds || []),
+    JSON.stringify(
+      (memberUserIds || []).map((x) => Number(x)).sort((a, b) => a - b),
+    ),
     characters,
     setSettings,
   ])
@@ -222,23 +237,79 @@ export function useGiLobbyStatus() {
 
   const availableCharacters = useMemo(() => {
     if (!characters) return 0
+    // If I'm the host, use my local map; otherwise, prefer host's map if provided
+    const enabledMap = isHost
+      ? settings.characters.enabled
+      : lobby?.hostEnabledMap || settings.characters.enabled
     return characters.filter((c) => {
-      const enabled = settings.characters.enabled[c.name] ?? true
+      const enabled = enabledMap[c.name] ?? true
       const excluded =
         settings.enableExclusion &&
         settings.characters.excluded.includes(c.name)
       return enabled && !excluded
     }).length
-  }, [characters, settings])
+  }, [
+    characters,
+    settings.enableExclusion,
+    settings.characters.excluded,
+    settings.characters.enabled,
+    isHost,
+    lobby?.hostEnabledMap,
+  ])
+
+  // On mount/join or whenever local enabled map changes and I'm host, sync to server so others can reflect my pool
+  useEffect(() => {
+    if (!isHost) return
+    const lobbyId = lobby?.lobbyId
+    if (!lobbyId) return
+    // build current enabled set without exclusions
+    const map: Record<string, boolean> = {}
+    for (const c of characters || []) {
+      const enabled = settings.characters.enabled[c.name] ?? true
+      const excluded =
+        settings.enableExclusion &&
+        settings.characters.excluded.includes(c.name)
+      map[c.name] = enabled && !excluded
+    }
+    syncHostEnabledMap(map)
+    // build boss enabled map respecting co-op
+    const bossMap: Record<string, boolean> = {}
+    for (const b of bosses || []) {
+      const enabled = settings.bosses.enabled[b.name] ?? true
+      const coopOk = !settings.rules.coopMode || Boolean(b.coop)
+      bossMap[b.name] = enabled && coopOk
+    }
+    syncHostBossEnabledMap(bossMap)
+  }, [
+    isHost,
+    lobby?.lobbyId,
+    characters,
+    bosses,
+    settings.characters.enabled,
+    settings.enableExclusion,
+    settings.characters.excluded,
+    settings.bosses.enabled,
+    settings.rules.coopMode,
+    syncHostEnabledMap,
+    syncHostBossEnabledMap,
+  ])
 
   const availableBosses = useMemo(() => {
     if (!bosses) return 0
     const coopMode = settings.rules.coopMode
-    const enabledMap = settings.bosses.enabled
+    const enabledMap = isHost
+      ? settings.bosses.enabled
+      : lobby?.hostBossEnabledMap || settings.bosses.enabled
     const list = bosses.filter((b) => enabledMap[b.name] ?? true)
     if (!coopMode) return list.length
     return list.filter((b) => Boolean(b.coop)).length
-  }, [bosses, settings.rules.coopMode, JSON.stringify(settings.bosses.enabled)])
+  }, [
+    bosses,
+    settings.rules.coopMode,
+    JSON.stringify(settings.bosses.enabled),
+    isHost,
+    lobby?.hostBossEnabledMap,
+  ])
 
   const updateCharacterCount = useCallback(
     (count: number) =>

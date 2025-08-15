@@ -10,4 +10,6 @@ export interface GiLobbyState {
     bosses?: string[]
   }
   privacy: GiLobbyPrivacy
+  hostEnabledMap?: Record<string, boolean> | null
+  hostBossEnabledMap?: Record<string, boolean> | null
 }

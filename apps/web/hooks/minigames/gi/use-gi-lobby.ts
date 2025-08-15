@@ -346,6 +346,32 @@ export function useGiLobby() {
           resolve({ ok: true })
         })
       }),
+    syncHostEnabledMap: (enabledMap: Record<string, boolean>) =>
+      new Promise<{ ok: boolean; error?: string }>((resolve) => {
+        const s = socketRef.current
+        const lobbyId = currentLobby?.lobbyId
+        if (!s || !lobbyId) return resolve({ ok: false, error: "No lobby" })
+        s.emit("syncHostEnabledMap", { lobbyId, enabledMap }, (res: any) => {
+          if (!res?.ok)
+            return resolve({ ok: false, error: res?.error || "Failed" })
+          resolve({ ok: true })
+        })
+      }),
+    syncHostBossEnabledMap: (enabledMap: Record<string, boolean>) =>
+      new Promise<{ ok: boolean; error?: string }>((resolve) => {
+        const s = socketRef.current
+        const lobbyId = currentLobby?.lobbyId
+        if (!s || !lobbyId) return resolve({ ok: false, error: "No lobby" })
+        s.emit(
+          "syncHostBossEnabledMap",
+          { lobbyId, enabledMap },
+          (res: any) => {
+            if (!res?.ok)
+              return resolve({ ok: false, error: res?.error || "Failed" })
+            resolve({ ok: true })
+          },
+        )
+      }),
     rolling,
     leaveLobby,
     kickMember,
