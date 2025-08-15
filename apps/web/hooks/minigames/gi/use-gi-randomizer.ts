@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import type { GiBoss, GiCharacter, GiRandomizerSettings } from "@/types"
+import type { GiBoss, GiCharacter } from "@/types"
 import { useGiData } from "./use-gi-data"
 
 export type RandomizeType = "characters" | "bosses" | "combined"
@@ -13,12 +13,9 @@ export interface RandomResult {
   bosses: Array<RandomResultItem<GiBoss>>
 }
 
-// Client-side rolling has been removed. Randomization is handled server-side.
-
 export function useGiRandomizer() {
   const { characters, bosses, settings, setSettings, loading } = useGiData()
   const [result, setResult] = useState<RandomResult | null>(null)
-  // Keep local result state to display server-provided results (mapped by name)
 
   const availableCharacters = useMemo(() => {
     if (!characters) return 0
@@ -68,8 +65,6 @@ export function useGiRandomizer() {
         excluded: [...prev.characters.excluded, ...names],
       },
     }))
-
-  // Client-side randomization handlers removed. Server is the source of truth.
 
   return {
     loading,

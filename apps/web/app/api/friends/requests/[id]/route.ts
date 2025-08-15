@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
-import { emitFriendPendingCount } from "@/lib/realtime"
+import { emitFriendPendingCount, emitFriendAccepted } from "@/lib/realtime"
 
 async function requireUser(
   request: NextRequest,
@@ -65,6 +65,17 @@ export async function PUT(
         existing.requester_id,
         requesterRow?.cnt ?? 0,
       )
+
+      const meRow = (await queryOne(
+        "SELECT id, name FROM users WHERE id = ?",
+        [me.id],
+      )) as { id: number; name: string | null } | null
+      if (meRow) {
+        await emitFriendAccepted(existing.requester_id, {
+          id: meRow.id,
+          name: meRow.name ?? null,
+        })
+      }
       return NextResponse.json({ success: true })
     }
 

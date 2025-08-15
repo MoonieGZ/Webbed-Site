@@ -85,7 +85,6 @@ export function useGiSettingsBosses() {
     return arr.length > 0 && arr.every((i) => enabledMap[i.name])
   }
 
-  // Profiles: load
   useEffect(() => {
     fetch("/api/minigames/gi/boss-profiles")
       .then((r) => r.json())

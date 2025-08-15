@@ -16,6 +16,8 @@ import { AddFriendDialog } from "@/components/friends/add-friend-dialog"
 import Link from "next/link"
 import { iconForBadge } from "@/lib/icon-utils"
 import { Checkbox } from "@/components/animate-ui/radix/checkbox"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/animate-ui/radix/dialog"
+import { Button } from "@/components/ui/button"
 import {
   Tooltip,
   TooltipContent,
@@ -38,6 +40,7 @@ export function FriendsListCard() {
     removeSelected,
   } = useFriendsList()
   const [open, setOpen] = React.useState(false)
+  const [confirmOpen, setConfirmOpen] = React.useState(false)
 
   return (
     <TooltipProvider>
@@ -148,11 +151,37 @@ export function FriendsListCard() {
               onPrevPage={() => setPage(Math.max(1, page - 1))}
               onNextPage={() => setPage(page + 1)}
               onAddFriend={() => setOpen(true)}
-              onRemoveSelected={removeSelected}
+              onRemoveSelected={() => setConfirmOpen(true)}
             />
           </div>
 
           <AddFriendDialog open={open} onOpenChange={setOpen} />
+
+          <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Remove selected friends?</DialogTitle>
+                <DialogDescription>
+                  This will remove the selected friends from your list.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={async () => {
+                    await removeSelected()
+                    setConfirmOpen(false)
+                  }}
+                  disabled={selected.size === 0}
+                >
+                  Remove
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
     </TooltipProvider>

@@ -115,7 +115,7 @@ export function useGiLobby() {
                   }
                 : prev,
             )
-            // Show warning to all remaining members
+
             toast.warning(
               "Host left. A new host has been assigned.",
               toastStyles.warning,

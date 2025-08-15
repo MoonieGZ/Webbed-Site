@@ -101,6 +101,21 @@ export function useFriendRealtime() {
           lastCount = next
           setPendingCount(next)
         })
+
+        s.on(
+          "friend:accepted",
+          (p: { friend?: { id: number; name: string | null } }) => {
+            const friendName = p?.friend?.name || "Your friend"
+            toast.success(`${friendName} accepted your friend request!`, {
+              ...toastStyles.success,
+              duration: 10000,
+            })
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("friends:refresh"))
+              window.dispatchEvent(new CustomEvent("friend-requests:refresh"))
+            }
+          },
+        )
       } catch {}
     })()
 

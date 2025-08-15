@@ -319,6 +319,21 @@ app.post("/emit/friends/pending-count", (req, res) => {
   return res.json({ ok: true })
 })
 
+app.post("/emit/friends/accepted", (req, res) => {
+  const adminKey = req.headers["x-admin-key"]
+  if (!adminKey || adminKey !== process.env.WS_ADMIN_KEY) {
+    return res.status(403).json({ error: "Forbidden" })
+  }
+  const { userId, friend } = req.body || {}
+  if (!userId || !friend || typeof friend?.id !== "number") {
+    return res.status(400).json({ error: "Invalid body" })
+  }
+  io.to(`user:${userId}`).emit("friend:accepted", {
+    friend: { id: friend.id, name: friend.name ?? null },
+  })
+  return res.json({ ok: true })
+})
+
 const port = Number(process.env.WS_PORT || 4001)
 server.listen(port, () => {
   console.log(`Socket.IO server listening on :${port}`)
