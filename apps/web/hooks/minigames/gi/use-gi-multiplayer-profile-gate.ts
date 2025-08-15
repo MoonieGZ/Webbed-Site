@@ -19,7 +19,7 @@ export function useGiMultiplayerProfileGate() {
             description:
               "Go to Settings, choose your character list, then Profiles > Save and name it 'Multiplayer'.",
             duration: 10000,
-          } as any)
+          })
         }
         return cacheRef.current.has
       }
@@ -40,7 +40,7 @@ export function useGiMultiplayerProfileGate() {
             description:
               "Go to Settings, choose your character list, then Profiles > Save and name it 'Multiplayer'.",
             duration: 10000,
-          } as any)
+          })
         }
         return has
       } catch {
@@ -49,7 +49,7 @@ export function useGiMultiplayerProfileGate() {
           description:
             "Go to Settings, choose your character list, then Profiles > Save and name it 'Multiplayer'.",
           duration: 10000,
-        } as any)
+        })
         return false
       }
     },
