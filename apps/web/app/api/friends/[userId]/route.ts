@@ -13,11 +13,9 @@ async function requireUser(
   return user
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { userId: string } },
-) {
+export async function DELETE(request: NextRequest, context: any) {
   try {
+    const { params } = context as { params: { userId: string } }
     const me = await requireUser(request)
     if (!me)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
