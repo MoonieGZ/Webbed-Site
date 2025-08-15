@@ -105,7 +105,6 @@ export function useGiLobbyStatus() {
         characters: { ...prev.characters, enabled: normalized },
       }))
       setSelectedProfileIndex(profileIndex)
-      toast.success("Profile applied to lobby settings.", toastStyles.success)
     },
     [profiles, normalizeEnabledMapForCharacters, setSettings],
   )
@@ -123,24 +122,19 @@ export function useGiLobbyStatus() {
         bosses: { ...prev.bosses, enabled: merged },
       }))
       setSelectedBossProfileIndex(profileIndex)
-      toast.success(
-        "Boss profile applied to lobby settings.",
-        toastStyles.success,
-      )
     },
     [bossProfiles, bosses, setSettings],
   )
 
-  // If combine mode is on, merge all members' 'Multiplayer' profiles into enabled map
   useEffect(() => {
     if (!combineMode) return
-    const ids = (memberUserIds || [])
-      .map((x) => Number(x))
-      .filter((n) => Number.isFinite(n))
-    if (ids.length === 0) return
     let cancelled = false
     ;(async () => {
       try {
+        const ids = (memberUserIds || [])
+          .map((x) => Number(x))
+          .filter((n) => Number.isFinite(n))
+        if (ids.length === 0) return
         const r = await fetch("/api/minigames/gi/profiles/by-user-ids", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -184,11 +178,47 @@ export function useGiLobbyStatus() {
     setSettings,
   ])
 
-  // When disabling combine mode, re-apply the selected profile if any
   useEffect(() => {
     if (combineMode) return
     if (selectedProfileIndex) applyProfile(selectedProfileIndex)
   }, [combineMode])
+
+  const refreshCombine = useCallback(async () => {
+    const ids = (memberUserIds || [])
+      .map((x) => Number(x))
+      .filter((n) => Number.isFinite(n))
+    if (ids.length === 0) return
+    const r = await fetch("/api/minigames/gi/profiles/by-user-ids", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids }),
+    })
+    if (!r.ok) return
+    const data = (await r.json()) as {
+      profiles?: Array<{
+        userId: number
+        profileIndex: number
+        name: string | null
+        enabledMap: Record<string, boolean>
+      }>
+    }
+    const merged: Record<string, boolean> = {}
+    ;(characters || []).forEach((c) => {
+      let anyEnabled = false
+      for (const prof of data.profiles || []) {
+        const val = prof.enabledMap[c.name]
+        if (val === true) {
+          anyEnabled = true
+          break
+        }
+      }
+      merged[c.name] = anyEnabled
+    })
+    setSettings((prev) => ({
+      ...prev,
+      characters: { ...prev.characters, enabled: merged },
+    }))
+  }, [JSON.stringify(memberUserIds || []), characters, setSettings])
 
   const availableCharacters = useMemo(() => {
     if (!characters) return 0
@@ -249,5 +279,6 @@ export function useGiLobbyStatus() {
     bossCount: settings.bosses.count,
     updateCharacterCount,
     updateBossCount,
+    refreshCombine,
   }
 }

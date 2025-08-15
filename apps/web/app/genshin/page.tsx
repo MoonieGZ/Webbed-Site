@@ -12,10 +12,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import GIRandomizer from "@/components/minigames/gi/gi-randomizer"
 import { GILobbyStatusCard } from "@/components/minigames/gi"
-import {
-  GiLobbyProvider,
-  useGiLobbyContext,
-} from "@/hooks/minigames/gi/lobby-provider"
+import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
 import { Info, Settings } from "lucide-react"
 import Link from "next/link"
 import {
@@ -174,11 +171,5 @@ function GIPageBody() {
 }
 
 export default function GIPage() {
-  return (
-    <TooltipProvider>
-      <GiLobbyProvider>
-        <GIPageBody />
-      </GiLobbyProvider>
-    </TooltipProvider>
-  )
+  return <GIPageBody />
 }

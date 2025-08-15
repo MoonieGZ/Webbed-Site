@@ -176,7 +176,7 @@ export function GILobbyStatusCard() {
                     content={lobby?.lobbyId || ""}
                     onCopy={() => {
                       toast.success(
-                        "Lobby ID copied to clipboard",
+                        "Lobby ID copied to clipboard.",
                         toastStyles.success,
                       )
                     }}
@@ -344,7 +344,7 @@ export function GILobbyStatusCard() {
                       setJoinOpen(false)
                     } else {
                       toast.error(
-                        res.error || "Failed to join lobby",
+                        res.error || "Failed to join lobby.",
                         toastStyles.error,
                       )
                     }
@@ -465,7 +465,6 @@ export function GILobbyStatusCard() {
               </Button>
               <Button
                 onClick={() => {
-                  // Apply character profile selection
                   if (localProfile === "__combine__") {
                     setCombineMode(true)
                     setSelectedProfileIndex(null)
@@ -477,7 +476,7 @@ export function GILobbyStatusCard() {
                       applyProfile(idx)
                     }
                   }
-                  // Apply boss profile selection
+
                   {
                     const idx = Number(localBossProfile)
                     if (Number.isFinite(idx)) {
@@ -485,7 +484,7 @@ export function GILobbyStatusCard() {
                       applyBossProfile(idx)
                     }
                   }
-                  // Apply counts
+
                   updateCharacterCount(localCharCount)
                   updateBossCount(localBossCount)
                   setSettingsOpen(false)
@@ -552,7 +551,7 @@ export function GILobbyStatusCard() {
                   setKickOpen(false)
                 } else {
                   toast.error(
-                    res.error || "Failed to kick member",
+                    res.error || "Failed to kick member.",
                     toastStyles.error,
                   )
                 }

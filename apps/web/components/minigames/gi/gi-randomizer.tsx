@@ -31,6 +31,7 @@ import {
 } from "lucide-react"
 import React from "react"
 import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
+import { useGiLobbyStatus } from "@/hooks/minigames/gi/use-gi-lobby-status"
 import { useGiData } from "@/hooks/minigames/gi/use-gi-data"
 
 export default function GIRandomizer() {
@@ -44,6 +45,7 @@ export default function GIRandomizer() {
     setResult,
   } = useGiRandomizer()
   const { lobby, isHost, rollCharacters, rollBoss } = useGiLobbyContext()
+  const { combineMode, refreshCombine } = useGiLobbyStatus()
   const { characters, bosses } = useGiData()
 
   React.useEffect(() => {
@@ -126,12 +128,13 @@ export default function GIRandomizer() {
                     className="flex-1"
                     disabled={!!lobby && !isHost}
                     onClick={async () => {
-                      if (lobby && isHost && characters)
-                        await rollCharacters({
-                          lobbyId: lobby.lobbyId,
-                          characters,
-                          settings,
-                        })
+                      if (!lobby || !isHost || !characters) return
+                      if (combineMode) await refreshCombine()
+                      await rollCharacters({
+                        lobbyId: lobby.lobbyId,
+                        characters,
+                        settings,
+                      })
                     }}
                   >
                     <Dice5 className="h-4 w-4 mr-2" />
@@ -143,12 +146,13 @@ export default function GIRandomizer() {
                     className="flex-1"
                     disabled={!!lobby && !isHost}
                     onClick={async () => {
-                      if (lobby && isHost && bosses)
-                        await rollBoss({
-                          lobbyId: lobby.lobbyId,
-                          bosses,
-                          settings,
-                        })
+                      if (!lobby || !isHost || !bosses) return
+                      if (combineMode) await refreshCombine()
+                      await rollBoss({
+                        lobbyId: lobby.lobbyId,
+                        bosses,
+                        settings,
+                      })
                     }}
                   >
                     <Dice5 className="h-4 w-4 mr-2" />
@@ -158,18 +162,18 @@ export default function GIRandomizer() {
                     className="flex-1"
                     disabled={!!lobby && !isHost}
                     onClick={async () => {
-                      if (lobby && isHost && characters && bosses) {
-                        await rollCharacters({
-                          lobbyId: lobby.lobbyId,
-                          characters,
-                          settings,
-                        })
-                        await rollBoss({
-                          lobbyId: lobby.lobbyId,
-                          bosses,
-                          settings,
-                        })
-                      }
+                      if (!lobby || !isHost || !characters || !bosses) return
+                      if (combineMode) await refreshCombine()
+                      await rollCharacters({
+                        lobbyId: lobby.lobbyId,
+                        characters,
+                        settings,
+                      })
+                      await rollBoss({
+                        lobbyId: lobby.lobbyId,
+                        bosses,
+                        settings,
+                      })
                     }}
                   >
                     <Dices className="h-4 w-4 mr-2" />
@@ -235,6 +239,7 @@ export default function GIRandomizer() {
                             rules: { ...prev.rules, coopMode: checked },
                           }))
                         }
+                        disabled={!isHost}
                       />
                     </div>
                     <div className="flex items-center justify-between rounded-lg border p-4">
@@ -248,7 +253,8 @@ export default function GIRandomizer() {
                         {settings.rules.limitFiveStars && (
                           <Counter
                             number={settings.rules.maxFiveStars}
-                            setNumber={(n) =>
+                            setNumber={(n) => {
+                              if (!isHost) return
                               setSettings((p) => ({
                                 ...p,
                                 rules: {
@@ -256,7 +262,7 @@ export default function GIRandomizer() {
                                   maxFiveStars: Math.max(0, n),
                                 },
                               }))
-                            }
+                            }}
                           />
                         )}
                         <Switch
@@ -267,6 +273,7 @@ export default function GIRandomizer() {
                               rules: { ...prev.rules, limitFiveStars: checked },
                             }))
                           }
+                          disabled={!isHost}
                         />
                       </div>
                     </div>
