@@ -150,6 +150,13 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    if (action === "allow_user") {
+      await query(
+        `UPDATE users SET name_changed_at = NULL WHERE id IN (${userIds.map(() => "?").join(",")})`,
+        userIds,
+      )
+    }
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Admin users bulk update error:", error)
