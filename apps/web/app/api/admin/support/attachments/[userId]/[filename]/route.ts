@@ -22,11 +22,9 @@ function getContentType(filename: string): string {
   return (ext && map[ext]) || "application/octet-stream"
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { userId: string; filename: string } },
-) {
+export async function GET(request: NextRequest, context: any) {
   try {
+    const { params } = context as { params: { userId: string; filename: string } }
     const sessionToken = request.cookies.get("session")?.value
     const user = sessionToken ? await getUserBySession(sessionToken) : null
     if (!user || user.id !== ADMIN_USER_ID) {
