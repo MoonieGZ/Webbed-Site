@@ -41,8 +41,9 @@ export function useNavMain() {
     },
   ]
 
-  const filtered = navMain
-    .filter((item) => !item.requiresAccount || isAuthenticated)
+  const filtered = navMain.filter(
+    (item) => !item.requiresAccount || isAuthenticated,
+  )
   // Temporarily disabled submenu filtering until items are reintroduced.
   // .map((item) =>
   //   item.items
