@@ -7,26 +7,26 @@ export function useNavMain() {
   const { user } = useSidebarData()
   const isAuthenticated = !!user && user.id !== null
   const navMain = [
-    {
-      title: "Fimsh 1",
-      url: "#",
-      icon: FishSymbol,
-      isActive: true,
-      items: [
-        {
-          title: "Fimsh 1.1",
-          url: "#",
-        },
-        {
-          title: "Fimsh 1.2",
-          url: "#",
-        },
-        {
-          title: "Fimsh 1.3",
-          url: "#",
-        },
-      ],
-    },
+    // {
+    //   title: "Fimsh 1",
+    //   url: "#",
+    //   icon: FishSymbol,
+    //   isActive: true,
+    //   items: [
+    //     {
+    //       title: "Fimsh 1.1",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Fimsh 1.2",
+    //       url: "#",
+    //     },
+    //     {
+    //       title: "Fimsh 1.3",
+    //       url: "#",
+    //     },
+    //   ],
+    // },
     {
       title: "Echovia",
       url: "/genshin",
@@ -43,18 +43,17 @@ export function useNavMain() {
 
   const filtered = navMain
     .filter((item) => !item.requiresAccount || isAuthenticated)
-    .map((item) =>
-      item.items
-        ? {
-            ...item,
-            items: item.items.filter(
-              // Support requiresAccount on subitems in the future
-              // @ts-ignore optional property
-              (sub) => !sub.requiresAccount || isAuthenticated,
-            ),
-          }
-        : item,
-    )
+  // Temporarily disabled submenu filtering until items are reintroduced.
+  // .map((item) =>
+  //   item.items
+  //     ? {
+  //         ...item,
+  //         items: item.items.filter(
+  //           (sub) => !sub.requiresAccount || isAuthenticated,
+  //         ),
+  //       }
+  //     : item,
+  // )
 
   return { navMain: filtered }
 }
