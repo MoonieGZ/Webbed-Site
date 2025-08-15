@@ -57,6 +57,9 @@ export function FriendsListCard() {
               placeholder="Search by username"
               onChange={(e) => setQ(e.target.value)}
               className="peer ps-9 placeholder:text-muted-foreground"
+              autoComplete="off"
+              inputMode="search"
+              name="search"
             />
           </div>
         </div>

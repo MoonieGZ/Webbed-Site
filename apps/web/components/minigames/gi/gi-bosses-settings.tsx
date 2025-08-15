@@ -42,6 +42,7 @@ import {
   SelectContent as ProfileSelectContent,
   SelectItem as ProfileSelectItem,
 } from "@/components/ui/select"
+import Image from "next/image"
 
 export default function GIBossesSettings() {
   const {
@@ -86,6 +87,9 @@ export default function GIBossesSettings() {
                   onChange={(e) => setFilter(e.target.value)}
                   placeholder="Search Bosses"
                   className="h-8 w-[200px] peer ps-9 placeholder:text-muted-foreground"
+                  autoComplete="off"
+                  inputMode="search"
+                  name="search"
                 />
               </div>
               <DropdownMenu>
@@ -148,11 +152,12 @@ export default function GIBossesSettings() {
               <div key={region} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium flex items-center gap-2">
-                    <img
+                    <Image
                       src={`/minigames/gi/locations/${region}.webp`}
                       alt={region}
-                      className="h-5 w-5 rounded-sm"
-                      loading="lazy"
+                      width={24}
+                      height={24}
+                      className="rounded-sm"
                     />
                     {region}
                   </h3>
@@ -179,11 +184,12 @@ export default function GIBossesSettings() {
                           }`}
                           title={b.name}
                         >
-                          <img
+                          <Image
                             src={buildBossIconPath(b.name, b.location)}
                             alt={b.name}
                             className="h-full w-full object-cover"
-                            loading="lazy"
+                            width={32}
+                            height={32}
                           />
                         </div>
                         <div className="min-w-0">

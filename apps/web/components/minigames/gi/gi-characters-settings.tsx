@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
+import Image from "next/image"
 
 export default function GICharactersSettings() {
   const {
@@ -81,6 +82,9 @@ export default function GICharactersSettings() {
                   onChange={(e) => setFilter(e.target.value)}
                   placeholder="Search Characters"
                   className="h-8 w-[200px] peer ps-9 placeholder:text-muted-foreground"
+                  autoComplete="off"
+                  inputMode="search"
+                  name="search"
                 />
               </div>
 
@@ -158,11 +162,12 @@ export default function GICharactersSettings() {
               {Array.from(filteredGroups.entries()).map(([element, chars]) => (
                 <div key={element} className="space-y-2">
                   <h3 className="text-lg font-medium flex items-center gap-2">
-                    <img
+                    <Image
                       src={`/minigames/gi/elements/${element}.webp`}
                       alt={element}
-                      className="h-5 w-5 rounded-sm"
-                      loading="lazy"
+                      width={24}
+                      height={24}
+                      className="rounded-sm"
                     />
                     {element}
                   </h3>
@@ -188,11 +193,12 @@ export default function GICharactersSettings() {
                             }`}
                             title={c.name}
                           >
-                            <img
+                            <Image
                               src={buildCharacterIconPath(c.name, c.element)}
                               alt={c.name}
-                              className="h-full w-full object-cover"
-                              loading="lazy"
+                              width={32}
+                              height={32}
+                              className="object-cover"
                             />
                           </div>
                           <div className="min-w-0">

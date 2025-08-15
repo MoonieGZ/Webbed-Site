@@ -5,6 +5,7 @@ import { LoginForm } from "@/components/login/login-form"
 import { MotionEffect } from "@/components/animate-ui/effects/motion-effect"
 import { useSession } from "@/hooks/login/use-session"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function LoginPage() {
   const { loading } = useSession()
@@ -41,10 +42,12 @@ export default function LoginPage() {
       <div
         className={`bg-muted relative hidden lg:block transition-opacity duration-500 ${loading ? "opacity-0" : "opacity-100"}`}
       >
-        <img
+        <Image
           src="/login/bg.jpg"
           alt="Image"
           className="absolute inset-0 h-full w-full object-cover brightness-50"
+          width={1000}
+          height={1000}
         />
       </div>
     </div>

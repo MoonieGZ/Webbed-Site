@@ -4,6 +4,7 @@ import { Moon, CheckCircle, XCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useMagicLink } from "@/hooks/login/use-magic-link"
 import Link from "next/link"
+import Image from "next/image"
 
 export default function MagicLinkPage() {
   const { status, message, handleBackToLogin } = useMagicLink()
@@ -64,10 +65,12 @@ export default function MagicLinkPage() {
         </div>
       </div>
       <div className="bg-muted relative hidden lg:block">
-        <img
+        <Image
           src="/login/bg.jpg"
           alt="Image"
           className="absolute inset-0 h-full w-full object-cover brightness-50"
+          width={1000}
+          height={1000}
         />
       </div>
     </div>
