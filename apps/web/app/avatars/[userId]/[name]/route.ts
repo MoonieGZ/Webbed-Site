@@ -14,11 +14,9 @@ function getContentType(filename: string): string {
   return (ext && map[ext]) || "application/octet-stream"
 }
 
-export async function GET(
-  _request: NextRequest,
-  context: { params: { userId: string; name: string } },
-) {
-  const { userId, name } = context.params
+export async function GET(_request: NextRequest, context: any) {
+  const { params } = context as { params: { userId: string; name: string } }
+  const { userId, name } = params
 
   if (!/^[0-9]+$/.test(userId) || !/^[A-Za-z0-9._-]+$/.test(name)) {
     return NextResponse.json({ error: "Invalid path" }, { status: 400 })
