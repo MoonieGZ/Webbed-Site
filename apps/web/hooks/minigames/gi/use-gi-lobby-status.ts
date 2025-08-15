@@ -42,7 +42,7 @@ export function useGiLobbyStatus() {
             description:
               "Go to Settings > Bosses, then Profiles > Save to create a boss profile.",
             duration: 10000,
-          } as any)
+          })
           return
         }
       }
