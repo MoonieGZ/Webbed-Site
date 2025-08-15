@@ -43,6 +43,8 @@ import {
   SelectItem as ProfileSelectItem,
 } from "@/components/ui/select"
 import Image from "next/image"
+import { toastStyles } from "@/lib/toast-styles"
+import { toast } from "sonner"
 
 export default function GIBossesSettings() {
   const {
@@ -249,6 +251,7 @@ function SaveProfileDialog({
 }) {
   const [selected, setSelected] = React.useState<string>("")
   const [name, setName] = React.useState("")
+  const [saving, setSaving] = React.useState(false)
   const canCreate = used && used.size < 10 && !!nextIndex
   const options = (profiles ?? []).map((p) => ({
     value: String(p.profileIndex),
@@ -259,12 +262,19 @@ function SaveProfileDialog({
   if (canCreate) options.push({ value: "new", label: "Create new" })
   const handleSave = async () => {
     if (!onSave) return
+    if (saving) return
     try {
+      setSaving(true)
       if (selected === "new" && nextIndex)
         await onSave(nextIndex, name || undefined)
       else if (selected) await onSave(parseInt(selected), undefined)
+      toast("Profile saved!", toastStyles.success)
       onOpenChange?.(false)
-    } catch (e) {}
+    } catch (e) {
+      toast("Failed to save profile.", toastStyles.error)
+    } finally {
+      setSaving(false)
+    }
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -293,6 +303,7 @@ function SaveProfileDialog({
                 className="w-full rounded-md border px-3 py-2 bg-background"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={saving}
               />
             </div>
           )}
@@ -303,10 +314,10 @@ function SaveProfileDialog({
             </p>
           )}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => onOpenChange?.(false)}>
+            <Button variant="outline" onClick={() => onOpenChange?.(false)} disabled={saving}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={!selected}>
+            <Button onClick={handleSave} disabled={!selected || saving}>
               Save
             </Button>
           </div>
