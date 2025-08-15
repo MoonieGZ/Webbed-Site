@@ -53,7 +53,8 @@ export async function GET(request: NextRequest, context: any) {
 
     const data = await readFile(filePath)
     const contentType = getContentType(filename)
-    return new NextResponse(data, {
+    const body = new Uint8Array(data)
+    return new NextResponse(body, {
       status: 200,
       headers: {
         "Content-Type": contentType,
