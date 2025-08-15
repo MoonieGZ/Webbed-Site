@@ -6,21 +6,27 @@ import { useUsersByIds } from "@/hooks/api/use-users-by-ids"
 import type { GiLobbyPrivacy } from "@/types"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
+import { useGiMultiplayerProfileGate } from "@/hooks/minigames/gi/use-gi-multiplayer-profile-gate"
 
 export function useGiLobbyStatus() {
   const { lobby, isHost, hostUserId, memberUserIds, setLobbyPrivacy } =
     useGiLobbyContext()
   const { list: members, loading } = useUsersByIds(memberUserIds)
+  const { ensureHasMultiplayerProfile } = useGiMultiplayerProfileGate()
 
   const privacy = (lobby?.privacy as GiLobbyPrivacy) || "closed"
   const hasOthers = (lobby?.members?.length || 0) > 1
 
   const handleSetPrivacy = useCallback(
     async (next: GiLobbyPrivacy) => {
+      if (next === "invite-only") {
+        const ok = await ensureHasMultiplayerProfile()
+        if (!ok) return
+      }
       await setLobbyPrivacy(next)
-      toast.success("Lobby privacy updated", toastStyles.success)
+      toast.success("Lobby privacy updated!", toastStyles.success)
     },
-    [setLobbyPrivacy],
+    [setLobbyPrivacy, ensureHasMultiplayerProfile],
   )
 
   const sortedMembers = useMemo(() => {

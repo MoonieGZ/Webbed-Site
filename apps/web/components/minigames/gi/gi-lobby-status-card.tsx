@@ -32,6 +32,7 @@ import {
   DialogTitle,
 } from "@/components/animate-ui/radix/dialog"
 import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
+import { useGiMultiplayerProfileGate } from "@/hooks/minigames/gi/use-gi-multiplayer-profile-gate"
 
 export function GILobbyStatusCard() {
   const {
@@ -44,6 +45,7 @@ export function GILobbyStatusCard() {
     handleSetPrivacy,
   } = useGiLobbyStatus()
   const { joinLobby, leaveLobby, kickMember } = useGiLobbyContext()
+  const { ensureHasMultiplayerProfile } = useGiMultiplayerProfileGate()
 
   const loading = !lobby
   const [joinOpen, setJoinOpen] = React.useState(false)
@@ -246,6 +248,8 @@ export function GILobbyStatusCard() {
                   if (!joinCode) return
                   try {
                     setJoining(true)
+                    const ok = await ensureHasMultiplayerProfile()
+                    if (!ok) return
                     const res = await joinLobby({ lobbyId: joinCode })
                     if (res.ok) {
                       toast.success("Joined lobby!", toastStyles.success)
