@@ -13,14 +13,23 @@ import { Badge } from "@/components/ui/badge"
 import { useGiRollResult } from "@/hooks/minigames/gi/use-gi-roll-result"
 import { buildBossIconPath, buildCharacterIconPath } from "@/lib/minigames/gi/icon-path"
 import { cn } from "@/lib/utils"
-import { Shuffle, Loader2 } from "lucide-react"
+import { Shuffle, Loader2, Save } from "lucide-react"
+import { Checkbox } from "@/components/animate-ui/radix/checkbox"
+import { Button } from "@/components/ui/button"
+import { useGiRandomizer } from "@/hooks/minigames/gi/use-gi-randomizer"
+import { toast } from "sonner"
+import { toastStyles } from "@/lib/toast-styles"
+import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
 
 export function GIRollResultCard() {
   const { hasResult, rolledCharacters, rolledBosses } = useGiRollResult()
+  const { excludeCharacter } = useGiRandomizer()
+  const { isHost } = useGiLobbyContext()
   const [revealedCharCount, setRevealedCharCount] = React.useState(0)
   const [revealedBossCount, setRevealedBossCount] = React.useState(0)
   const [charRollId, setCharRollId] = React.useState(0)
   const [bossRollId, setBossRollId] = React.useState(0)
+  const [selectedChars, setSelectedChars] = React.useState<Record<string, boolean>>({})
 
   const charSig = React.useMemo(
     () => (rolledCharacters.length ? rolledCharacters.map((c) => c.name).join("|") : ""),
@@ -127,6 +136,7 @@ export function GIRollResultCard() {
               <div className="results-grid">
                 {rolledCharacters.map((c, idx) => {
                   const charImg = buildCharacterIconPath(c.name, c.element)
+                  const isSelected = !!selectedChars[c.name]
                   return (
                     <div key={`${charRollId}-${c.name}`} className="relative group">
                       {idx < revealedCharCount ? (
@@ -135,7 +145,25 @@ export function GIRollResultCard() {
                             "relative aspect-square overflow-hidden rounded-md ring-1 ring-border character-card animate-appear",
                             c.fiveStar ? "rarity-5-gradient" : "rarity-4-gradient",
                           )}
+                          onClick={() => {
+                            if (!isHost) return
+                            setSelectedChars((prev) => ({ ...prev, [c.name]: !isSelected }))
+                          }}
+                          role={isHost ? "button" : undefined}
+                          aria-pressed={isHost ? isSelected : undefined}
+                          style={{ cursor: isHost ? "pointer" : undefined }}
                         >
+                          {isHost && (
+                            <div className="card-corner-element right">
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={(checked) =>
+                                  setSelectedChars((prev) => ({ ...prev, [c.name]: Boolean(checked) }))
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          )}
                           <Image
                             src={charImg}
                             alt={c.name}
@@ -159,6 +187,25 @@ export function GIRollResultCard() {
                   )
                 })}
               </div>
+              {isHost && Object.values(selectedChars).some(Boolean) && (
+                <div className="flex justify-end mt-4">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const names = Object.entries(selectedChars)
+                        .filter(([, v]) => v)
+                        .map(([k]) => k)
+                      if (names.length === 0) return
+                      excludeCharacter(names)
+                      setSelectedChars({})
+                      toast.success("Saved selection. These characters will be excluded from future rolls.", toastStyles.success)
+                    }}
+                  >
+                    <Save className="h-4 w-4" />
+                    Save
+                  </Button>
+                </div>
+              )}
             </section>
           )}
         </div>
