@@ -124,7 +124,8 @@ io.on("connection", (socket) => {
       if (lobby.members.length >= 4)
         return cb?.({ ok: false, error: "Lobby is full" })
 
-      if (!lobby.members.includes(userId)) {
+      const wasNewMember = !lobby.members.includes(userId)
+      if (wasNewMember) {
         lobby.members.push(userId)
       }
       socket.join(lobbyId)
@@ -136,6 +137,13 @@ io.on("connection", (socket) => {
         currentRoll: lobby.currentRoll || {},
         privacy: lobby.privacy || "invite-only",
       })
+      if (wasNewMember) {
+        socket.to(lobbyId).emit("lobby:member_joined", {
+          ok: true,
+          lobbyId,
+          memberUserId: userId,
+        })
+      }
       emitLobbyState(lobbyId)
     } catch (e) {
       cb?.({ ok: false, error: "Failed to join lobby" })
@@ -215,7 +223,7 @@ io.on("connection", (socket) => {
       const result = selectRandomBosses(candidates, settings)
       if (!Array.isArray(result))
         return cb?.({ ok: false, error: "Not enough bosses or invalid settings" })
-      // Store the last single boss or list; spec says single boss, but keep list to allow count>1
+
       const boss = result[0] || null
       lobby.currentRoll = { ...(lobby.currentRoll || {}), boss }
       io.to(lobbyId).emit("rolledBoss", { ok: true, boss })

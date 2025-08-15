@@ -124,6 +124,29 @@ export function useGiLobby() {
         )
 
         s.on(
+          "lobby:member_joined",
+          (p: { ok: boolean; lobbyId?: string; memberUserId?: string }) => {
+            if (!p?.ok) return
+            setCurrentLobby((prev) => {
+              if (!prev || (p?.lobbyId && prev.lobbyId !== p.lobbyId)) return prev
+              const mid = String(p?.memberUserId || "")
+              if (!mid) return prev
+              if (prev.members?.includes(mid)) return prev
+              const next = { ...prev, members: [...(prev.members || []), mid] }
+              try {
+                if (!user || String(user.id) !== mid) {
+                  toast.info("A player joined the lobby", {
+                    ...toastStyles.info,
+                    duration: 3000,
+                  })
+                }
+              } catch {}
+              return next
+            })
+          },
+        )
+
+        s.on(
           "lobby:host_transfer",
           (p: { ok: boolean; lobbyId?: string; hostId?: string }) => {
             setCurrentLobby((prev) =>
