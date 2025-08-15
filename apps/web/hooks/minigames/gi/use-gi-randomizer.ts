@@ -14,7 +14,8 @@ export interface RandomResult {
 }
 
 export function useGiRandomizer() {
-  const { characters, bosses, settings, setSettings, loading } = useGiDataContext()
+  const { characters, bosses, settings, setSettings, loading } =
+    useGiDataContext()
   const [result, setResult] = useState<RandomResult | null>(null)
 
   const availableCharacters = useMemo(() => {
@@ -32,7 +33,8 @@ export function useGiRandomizer() {
     if (!bosses) return 0
     const enabledMap = settings.bosses.enabled
     const list = bosses.filter((b) => enabledMap[b.name] ?? true)
-    if (settings.rules.coopMode) return list.filter((b) => Boolean(b.coop)).length
+    if (settings.rules.coopMode)
+      return list.filter((b) => Boolean(b.coop)).length
     return list.length
   }, [bosses, settings.rules.coopMode, JSON.stringify(settings.bosses.enabled)])
 

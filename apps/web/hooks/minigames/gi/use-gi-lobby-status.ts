@@ -271,7 +271,12 @@ export function useGiLobbyStatus() {
     if (!hasOthers && !settings.rules.coopMode && selectedBossProfileIndex) {
       applyBossProfile(selectedBossProfileIndex)
     }
-  }, [hasOthers, settings.rules.coopMode, selectedBossProfileIndex, applyBossProfile])
+  }, [
+    hasOthers,
+    settings.rules.coopMode,
+    selectedBossProfileIndex,
+    applyBossProfile,
+  ])
 
   return {
     lobby,
