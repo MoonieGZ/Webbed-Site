@@ -312,6 +312,7 @@ export default function GIRandomizer() {
                         id="enable-exclusion"
                         checked={settings.enableExclusion}
                         onCheckedChange={toggleExclusion}
+                        disabled={!isHost}
                       />
                       <label
                         htmlFor="enable-exclusion"

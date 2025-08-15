@@ -254,6 +254,21 @@ export function useGiLobbyStatus() {
     [setSettings],
   )
 
+  useEffect(() => {
+    if (hasOthers && !settings.rules.coopMode) {
+      setSettings((prev) => ({
+        ...prev,
+        rules: { ...prev.rules, coopMode: true },
+      }))
+    }
+  }, [hasOthers, settings.rules.coopMode, setSettings])
+
+  useEffect(() => {
+    if (!hasOthers && !settings.rules.coopMode && selectedBossProfileIndex) {
+      applyBossProfile(selectedBossProfileIndex)
+    }
+  }, [hasOthers, settings.rules.coopMode, selectedBossProfileIndex, applyBossProfile])
+
   return {
     lobby,
     isHost,
