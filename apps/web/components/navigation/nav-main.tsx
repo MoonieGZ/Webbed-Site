@@ -30,7 +30,7 @@ export function NavMain() {
       <SidebarGroupLabel>Menu</SidebarGroupLabel>
       <SidebarMenu>
         {navMain.map((item) => (
-          <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
+          <Collapsible key={item.title} asChild>
             <SidebarMenuItem>
               <SidebarMenuButton asChild tooltip={item.title}>
                 <Link href={item.url} className="relative">
@@ -44,7 +44,8 @@ export function NavMain() {
                   <span className="flex items-center gap-2">{item.title}</span>
                 </Link>
               </SidebarMenuButton>
-              {item.items?.length ? (
+              {/* TODO: Reintroduce submenu filtering */}
+              {false && (item as any).items?.length ? (
                 <>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuAction className="data-[state=open]:rotate-90">
@@ -54,7 +55,7 @@ export function NavMain() {
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>
-                      {item.items?.map((subItem) => (
+                      {(item as any).items?.map((subItem: any) => (
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton asChild>
                             <Link href={subItem.url}>
