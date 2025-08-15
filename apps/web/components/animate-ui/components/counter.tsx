@@ -52,11 +52,13 @@ function Counter({
         </Button>
       </motion.div>
 
-      <SlidingNumber
-        number={number}
-        {...slidingNumberProps}
-        className={cn("text-lg", slidingNumberProps?.className)}
-      />
+      <div className="relative h-[1.75rem] flex items-center overflow-hidden">
+        <SlidingNumber
+          number={number}
+          {...slidingNumberProps}
+          className={cn("text-lg leading-none", slidingNumberProps?.className)}
+        />
+      </div>
 
       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
         <Button

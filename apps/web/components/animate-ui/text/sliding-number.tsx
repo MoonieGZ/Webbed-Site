@@ -10,7 +10,6 @@ import {
   type SpringOptions,
   type UseInViewOptions,
 } from "motion/react"
-import useMeasure from "react-use-measure"
 
 import { cn } from "@/lib/utils"
 
@@ -35,21 +34,16 @@ function SlidingNumberRoller({
     animatedValue.set(targetNumber)
   }, [targetNumber, animatedValue])
 
-  const [measureRef, { height }] = useMeasure()
-
   return (
     <span
-      ref={measureRef}
       data-slot="sliding-number-roller"
-      className="relative inline-block w-[1ch] overflow-x-visible overflow-y-clip leading-none tabular-nums"
+      className="relative inline-block h-[1em] w-[1ch] overflow-hidden leading-none tabular-nums align-middle"
     >
-      <span className="invisible">0</span>
       {Array.from({ length: 10 }, (_, i) => (
         <SlidingNumberDisplay
           key={i}
           motionValue={animatedValue}
           number={i}
-          height={height}
           transition={transition}
         />
       ))}
@@ -60,34 +54,27 @@ function SlidingNumberRoller({
 type SlidingNumberDisplayProps = {
   motionValue: MotionValue<number>
   number: number
-  height: number
   transition: SpringOptions
 }
 
 function SlidingNumberDisplay({
   motionValue,
   number,
-  height,
   transition,
 }: SlidingNumberDisplayProps) {
   const y = useTransform(motionValue, (latest) => {
-    if (!height) return 0
     const currentNumber = latest % 10
     const offset = (10 + number - currentNumber) % 10
-    let translateY = offset * height
-    if (offset > 5) translateY -= 10 * height
-    return translateY
+    let translatePercent = offset * 100
+    if (offset > 5) translatePercent -= 1000
+    return `${translatePercent}%`
   })
-
-  if (!height) {
-    return <span className="invisible absolute">{number}</span>
-  }
 
   return (
     <motion.span
       data-slot="sliding-number-display"
       style={{ y }}
-      className="absolute inset-0 flex items-center justify-center"
+      className="absolute left-0 top-0 h-[1em] w-full flex items-center justify-center"
       transition={{ ...transition, type: "spring" }}
     >
       {number}
@@ -197,7 +184,7 @@ function SlidingNumber({
     <span
       ref={localRef}
       data-slot="sliding-number"
-      className={cn("flex items-center", className)}
+      className={cn("flex items-center leading-none", className)}
       {...props}
     >
       {isInView && Number(number) < 0 && <span className="mr-1">-</span>}

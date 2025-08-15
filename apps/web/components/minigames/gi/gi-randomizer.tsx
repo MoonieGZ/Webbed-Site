@@ -26,8 +26,6 @@ import {
   Users,
   Settings2,
   Filter,
-  ChartPie,
-  SlidersHorizontal,
   Shuffle,
   PencilRuler,
 } from "lucide-react"
@@ -35,71 +33,20 @@ import React from "react"
 import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
 import { useGiData } from "@/hooks/minigames/gi/use-gi-data"
 
-function MetricStat({ title, value }: { title: string; value: number }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ChartPie className="h-5 w-5" />
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex items-center justify-start">
-        <p className="text-3xl font-semibold">{value}</p>
-      </CardContent>
-    </Card>
-  )
-}
-
-function CounterStat({
-  title,
-  value,
-  onChange,
-  min = 1,
-  max = Number.MAX_SAFE_INTEGER,
-}: {
-  title: string
-  value: number
-  onChange: (n: number) => void
-  min?: number
-  max?: number
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <SlidersHorizontal className="h-5 w-5" />
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex items-center justify-end">
-        <Counter
-          number={value}
-          setNumber={(n) => onChange(Math.max(min, Math.min(max, n)))}
-        />
-      </CardContent>
-    </Card>
-  )
-}
-
 export default function GIRandomizer() {
   const {
     loading,
     settings,
     setSettings,
-    availableCharacters,
-    availableBosses,
-    updateCharacterCount,
-    updateBossCount,
     toggleExclusion,
     includeCharacter,
     result,
+    setResult,
   } = useGiRandomizer()
   const { lobby, isHost, rollCharacters, rollBoss } = useGiLobbyContext()
   const { characters, bosses } = useGiData()
 
   React.useEffect(() => {
-    // Sync server roll results into local result state
     if (!lobby) return
     const names = lobby.currentRoll?.characters || null
     const bossName = lobby.currentRoll?.boss || null
@@ -115,10 +62,7 @@ export default function GIRandomizer() {
           .map((b) => ({ ...b, visible: false }))
       : []
     if (charObjs.length > 0 || bossObjs.length > 0) {
-      // @ts-expect-error setResult type compatible
-      typeof result !== "undefined" &&
-        setResult &&
-        setResult({ characters: charObjs, bosses: bossObjs })
+      setResult({ characters: charObjs, bosses: bossObjs })
     }
   }, [lobby?.currentRoll, characters, bosses])
 
@@ -146,28 +90,6 @@ export default function GIRandomizer() {
 
         <TabsContents>
           <TabsContent value="randomizer" className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <MetricStat
-                title="Available Characters"
-                value={availableCharacters}
-              />
-              <MetricStat title="Available Bosses" value={availableBosses} />
-              <CounterStat
-                title="Character count"
-                value={settings.characters.count}
-                onChange={(n) => updateCharacterCount(n)}
-                min={1}
-                max={availableCharacters}
-              />
-              <CounterStat
-                title="Boss count"
-                value={settings.bosses.count}
-                onChange={(n) => updateBossCount(n)}
-                min={1}
-                max={availableBosses}
-              />
-            </div>
-
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
