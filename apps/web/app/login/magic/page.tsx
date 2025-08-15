@@ -1,12 +1,13 @@
 "use client"
 
+import { Suspense } from "react"
 import { Moon, CheckCircle, XCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useMagicLink } from "@/hooks/login/use-magic-link"
 import Link from "next/link"
 import Image from "next/image"
 
-export default function MagicLinkPage() {
+function MagicLinkPageContent() {
   const { status, message, handleBackToLogin } = useMagicLink()
 
   const getStatusIcon = () => {
@@ -74,5 +75,21 @@ export default function MagicLinkPage() {
         />
       </div>
     </div>
+  )
+}
+
+export default function MagicLinkPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid min-h-svh place-items-center">
+          <div className="text-sm text-muted-foreground">
+            Validating magic link…
+          </div>
+        </div>
+      }
+    >
+      <MagicLinkPageContent />
+    </Suspense>
   )
 }
