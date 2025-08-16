@@ -22,6 +22,10 @@ export function useGiPage() {
   React.useEffect(() => {
     if (!connected) return
     if (lobby?.lobbyId) return
+    try {
+      const storedLobbyId = localStorage.getItem("gi:lastLobbyId")
+      if (storedLobbyId) return
+    } catch {}
     ;(async () => {
       toast.info("Connecting to lobby...", {
         ...toastStyles.info,

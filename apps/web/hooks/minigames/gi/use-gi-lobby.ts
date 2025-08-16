@@ -59,10 +59,86 @@ export function useGiLobby() {
         const s = io(url, {
           transports: ["websocket"],
           auth: { token: auth.token },
+          reconnection: true,
+          reconnectionAttempts: Infinity,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
         })
         socketRef.current = s
-        s.on("connect", () => setConnected(true))
-        s.on("disconnect", () => setConnected(false))
+        const createSoloLobby = async () => {
+          return new Promise<void>((resolve) => {
+            try {
+              s.emit("createLobby", { privacy: "closed" }, (res: any) => {
+                if (!res?.ok || !res?.lobbyId) {
+                  try {
+                    toast.error(
+                      res?.error || "Failed to create solo lobby.",
+                      toastStyles.error,
+                    )
+                  } catch {}
+                  return resolve()
+                }
+                s.emit("lobbyState", { lobbyId: res.lobbyId }, (state: any) => {
+                  if (state?.ok && state.lobby)
+                    setCurrentLobby(state.lobby as GiLobbyState)
+                  try {
+                    localStorage.setItem(
+                      "gi:lastLobbyId",
+                      String(res.lobbyId),
+                    )
+                    toast.success(
+                      "Connected to solo lobby.",
+                      toastStyles.success,
+                    )
+                  } catch {}
+                  resolve()
+                })
+              })
+            } catch {
+              resolve()
+            }
+          })
+        }
+        s.on("connect", async () => {
+          setConnected(true)
+          try {
+            if (currentLobby?.lobbyId) return
+            const stored = localStorage.getItem("gi:lastLobbyId")
+            if (!stored) return
+            await new Promise<void>((resolve) => {
+              s.emit("joinLobby", { lobbyId: stored }, async (res: any) => {
+                if (res?.ok) {
+                  s.emit("lobbyState", { lobbyId: stored }, (state: any) => {
+                    if (state?.ok && state.lobby) {
+                      setCurrentLobby(state.lobby as GiLobbyState)
+                      toast.success("Rejoined your previous lobby.", toastStyles.success)
+                    }
+                    resolve()
+                  })
+                } else {
+                  try {
+                    localStorage.removeItem("gi:lastLobbyId")
+                    toast.info("Your previous lobby was closed.", {
+                      ...toastStyles.info,
+                      duration: 3000,
+                    })
+                  } catch {}
+                  await createSoloLobby()
+                  resolve()
+                }
+              })
+            })
+          } catch {}
+        })
+        s.on("disconnect", () => {
+          setConnected(false)
+          try {
+            toast.info("Disconnected. Attempting to reconnect...", {
+              ...toastStyles.info,
+              duration: 2000,
+            })
+          } catch {}
+        })
 
         s.on("lobbyState", (p: { ok: boolean; lobby?: GiLobbyState }) => {
           if (!p?.ok || !p.lobby) return
@@ -174,6 +250,24 @@ export function useGiLobby() {
             })
           } catch {}
           setCurrentLobby(null)
+          try {
+            localStorage.removeItem("gi:lastLobbyId")
+          } catch {}
+        })
+
+        s.on("lobby:closed", (p: { ok: boolean; lobbyId?: string }) => {
+          try {
+            toast.info("Lobby was closed.", {
+              ...toastStyles.info,
+              duration: 3000,
+            })
+          } catch {}
+          setCurrentLobby(null)
+          try {
+            localStorage.removeItem("gi:lastLobbyId")
+          } catch {}
+          // Auto-create a replacement solo lobby
+          void createSoloLobby()
         })
       } catch {}
     })()
@@ -188,6 +282,44 @@ export function useGiLobby() {
     // no-op; but ensures hook re-computes isHost when user is available
   }, [user?.id, currentLobby?.hostId])
 
+  useEffect(() => {
+    const s = socketRef.current
+    const lobbyId = currentLobby?.lobbyId
+    if (!s || !connected || !lobbyId) return
+    let stopped = false
+    const sendHeartbeat = () => {
+      try {
+        s.emit("heartbeat", { lobbyId })
+      } catch {}
+    }
+    const intervalId = setInterval(sendHeartbeat, 5000)
+    sendHeartbeat()
+    const onVisibility = () => {
+      if (!document.hidden) sendHeartbeat()
+    }
+    const onOnline = () => sendHeartbeat()
+    window.addEventListener("visibilitychange", onVisibility)
+    window.addEventListener("online", onOnline)
+    return () => {
+      stopped = true
+      clearInterval(intervalId)
+      window.removeEventListener("visibilitychange", onVisibility)
+      window.removeEventListener("online", onOnline)
+    }
+  }, [connected, currentLobby?.lobbyId])
+
+  useEffect(() => {
+    const hasOthers = (currentLobby?.members?.length || 0) > 1
+    const shouldWarn = Boolean(currentLobby?.lobbyId) && (isHost || hasOthers)
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!shouldWarn) return
+      e.preventDefault()
+      e.returnValue = ""
+    }
+    window.addEventListener("beforeunload", handler)
+    return () => window.removeEventListener("beforeunload", handler)
+  }, [currentLobby?.lobbyId, currentLobby?.members, isHost])
+
   const createLobby = useCallback(async (params?: CreateLobbyParams) => {
     return new Promise<{ ok: boolean; lobbyId?: string; error?: string }>(
       (resolve) => {
@@ -200,6 +332,9 @@ export function useGiLobby() {
           s.emit("lobbyState", { lobbyId: res.lobbyId }, (state: any) => {
             if (state?.ok && state.lobby)
               setCurrentLobby(state.lobby as GiLobbyState)
+            try {
+              localStorage.setItem("gi:lastLobbyId", String(res.lobbyId))
+            } catch {}
             resolve({ ok: true, lobbyId: res.lobbyId })
           })
         })
@@ -223,6 +358,9 @@ export function useGiLobby() {
           s.emit("lobbyState", { lobbyId }, (state: any) => {
             if (state?.ok && state.lobby)
               setCurrentLobby(state.lobby as GiLobbyState)
+            try {
+              localStorage.setItem("gi:lastLobbyId", String(lobbyId))
+            } catch {}
             resolve({ ok: true })
           })
         })
@@ -240,6 +378,9 @@ export function useGiLobby() {
         if (!res?.ok)
           return resolve({ ok: false, error: res?.error || "Failed" })
         setCurrentLobby(null)
+        try {
+          localStorage.removeItem("gi:lastLobbyId")
+        } catch {}
         resolve({ ok: true })
       })
     })

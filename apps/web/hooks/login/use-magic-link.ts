@@ -61,7 +61,7 @@ export function useMagicLink() {
   }
 
   useEffect(() => {
-    const token = searchParams.get("token")
+    const token = searchParams?.get?.("token") || null
 
     if (!token) {
       setStatus("invalid")

@@ -30,6 +30,8 @@ const io = new Server(server, {
   },
 })
 
+const DISCONNECT_GRACE_MS = Number(process.env.WS_DISCONNECT_GRACE_MS || 15000)
+
 io.use((socket, next) => {
   try {
     const bearer = socket.handshake.headers["authorization"]
@@ -52,6 +54,9 @@ io.on("connection", (socket) => {
   socket.emit("connected", { ok: true })
   if (!io.lobbies) {
     io.lobbies = Object.create(null)
+  }
+  if (!io.lobbyGraceTimers) {
+    io.lobbyGraceTimers = Object.create(null)
   }
 
   function getLobbySafe(lobbyId) {
@@ -92,6 +97,54 @@ io.on("connection", (socket) => {
     }
   }
 
+  function ensureGraceBucket(lobbyId) {
+    if (!io.lobbyGraceTimers[lobbyId]) io.lobbyGraceTimers[lobbyId] = Object.create(null)
+    return io.lobbyGraceTimers[lobbyId]
+  }
+
+  function clearGraceTimer(lobbyId, memberUserId) {
+    const bucket = ensureGraceBucket(lobbyId)
+    const t = bucket[memberUserId]
+    if (t) {
+      clearTimeout(t)
+      delete bucket[memberUserId]
+    }
+  }
+
+  function scheduleGraceRemoval(lobbyId, memberUserId) {
+    const bucket = ensureGraceBucket(lobbyId)
+    if (bucket[memberUserId]) return
+    bucket[memberUserId] = setTimeout(() => {
+      try {
+        const lobby = io.lobbies?.[lobbyId]
+        if (!lobby) return
+        if (!lobby.members.includes(memberUserId)) return
+        const wasHost = lobby.hostId === memberUserId
+        removeMemberFromLobby(lobby, memberUserId)
+        if (io.lobbies[lobbyId]) {
+          emitLobbyState(lobbyId)
+          if (wasHost) {
+            io.to(lobbyId).emit("lobby:host_left", {
+              ok: true,
+              lobbyId,
+              hostId: lobby.hostId || null,
+            })
+            if (lobby.hostId) {
+              io.to(`user:${lobby.hostId}`).emit("lobby:host_transfer", {
+                ok: true,
+                lobbyId,
+                hostId: lobby.hostId,
+              })
+            }
+          }
+        } else {
+          // Lobby fully closed; notify the user whose timer elapsed
+          io.to(`user:${memberUserId}`).emit("lobby:closed", { ok: true, lobbyId })
+        }
+      } catch {}
+    }, DISCONNECT_GRACE_MS)
+  }
+
   socket.on("createLobby", (payload, cb) => {
     try {
       const privacy = payload?.privacy || "invite-only"
@@ -107,6 +160,8 @@ io.on("connection", (socket) => {
       }
       io.lobbies[lobbyId] = lobby
       socket.join(lobbyId)
+      // Clear any stale grace timer if present
+      clearGraceTimer(lobbyId, userId)
       cb?.({ ok: true, lobbyId, hostId: lobby.hostId })
       emitLobbyState(lobbyId)
     } catch (e) {
@@ -131,6 +186,8 @@ io.on("connection", (socket) => {
         lobby.members.push(userId)
       }
       socket.join(lobbyId)
+      // Rejoining within grace period should cancel removal
+      clearGraceTimer(lobbyId, userId)
       cb?.({
         ok: true,
         lobbyId,
@@ -158,13 +215,30 @@ io.on("connection", (socket) => {
       if (!lobbyId) return cb?.({ ok: false, error: "Missing lobbyId" })
       const lobby = getLobbySafe(lobbyId)
       if (!lobby) return cb?.({ ok: true })
+      clearGraceTimer(lobbyId, userId)
       removeMemberFromLobby(lobby, userId)
       socket.leave(lobbyId)
       cb?.({ ok: true })
-      if (io.lobbies[lobbyId]) emitLobbyState(lobbyId)
+      if (io.lobbies[lobbyId]) {
+        emitLobbyState(lobbyId)
+      } else {
+        // Last member left; lobby closed
+        io.to(`user:${userId}`).emit("lobby:closed", { ok: true, lobbyId })
+      }
     } catch (e) {
       cb?.({ ok: false, error: "Failed to leave lobby" })
     }
+  })
+
+  socket.on("heartbeat", (payload) => {
+    try {
+      const lobbyId = payload?.lobbyId
+      if (!lobbyId) return
+      const lobby = getLobbySafe(lobbyId)
+      if (!lobby) return
+      // Heartbeat indicates the user is present; cancel any pending removal
+      clearGraceTimer(lobbyId, userId)
+    } catch {}
   })
 
   socket.on("lobbyState", (payload, cb) => {
@@ -338,27 +412,9 @@ io.on("connection", (socket) => {
         const lobby = io.lobbies[lobbyId]
         if (!lobby) continue
         if (lobby.members.includes(userId)) {
-          const wasHost = lobby.hostId === userId
-          removeMemberFromLobby(lobby, userId)
+          // Schedule removal after a grace period instead of immediate removal
+          scheduleGraceRemoval(lobbyId, userId)
           socket.leave(lobbyId)
-          if (io.lobbies[lobbyId]) {
-            emitLobbyState(lobbyId)
-            if (wasHost) {
-              io.to(lobbyId).emit("lobby:host_left", {
-                ok: true,
-                lobbyId,
-                hostId: lobby.hostId || null,
-              })
-
-              if (lobby.hostId) {
-                io.to(`user:${lobby.hostId}`).emit("lobby:host_transfer", {
-                  ok: true,
-                  lobbyId,
-                  hostId: lobby.hostId,
-                })
-              }
-            }
-          }
         }
       }
     } catch {}
