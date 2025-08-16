@@ -82,10 +82,7 @@ export function useGiLobby() {
                   if (state?.ok && state.lobby)
                     setCurrentLobby(state.lobby as GiLobbyState)
                   try {
-                    localStorage.setItem(
-                      "gi:lastLobbyId",
-                      String(res.lobbyId),
-                    )
+                    localStorage.setItem("gi:lastLobbyId", String(res.lobbyId))
                     toast.success(
                       "Connected to solo lobby.",
                       toastStyles.success,
@@ -111,7 +108,10 @@ export function useGiLobby() {
                   s.emit("lobbyState", { lobbyId: stored }, (state: any) => {
                     if (state?.ok && state.lobby) {
                       setCurrentLobby(state.lobby as GiLobbyState)
-                      toast.success("Rejoined your previous lobby.", toastStyles.success)
+                      toast.success(
+                        "Rejoined your previous lobby.",
+                        toastStyles.success,
+                      )
                     }
                     resolve()
                   })

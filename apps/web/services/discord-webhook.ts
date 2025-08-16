@@ -74,7 +74,11 @@ export class DiscordWebhookService {
    * Sends notification for avatar upload
    */
   static async notifyAvatarUpload(
-    user: { id: number; name: string | null | undefined; email: string | null | undefined },
+    user: {
+      id: number
+      name: string | null | undefined
+      email: string | null | undefined
+    },
     avatarUrl: string,
   ): Promise<void> {
     const safeName = this.coerce(user?.name, `User #${user.id}`)
@@ -116,7 +120,11 @@ export class DiscordWebhookService {
    * Sends notification for Gravatar import
    */
   static async notifyGravatarImport(
-    user: { id: number; name: string | null | undefined; email: string | null | undefined },
+    user: {
+      id: number
+      name: string | null | undefined
+      email: string | null | undefined
+    },
     avatarUrl: string,
   ): Promise<void> {
     const safeName = this.coerce(user?.name, `User #${user.id}`)
@@ -158,7 +166,11 @@ export class DiscordWebhookService {
    * Sends notification for username change
    */
   static async notifyUsernameChange(
-    user: { id: number; name: string | null | undefined; email: string | null | undefined },
+    user: {
+      id: number
+      name: string | null | undefined
+      email: string | null | undefined
+    },
     oldUsername: string | null | undefined,
     newUsername: string | null | undefined,
   ): Promise<void> {
@@ -206,7 +218,11 @@ export class DiscordWebhookService {
   }
 
   static async notifyDonationRequest(
-    user: { id: number; name: string | null | undefined; email: string | null | undefined },
+    user: {
+      id: number
+      name: string | null | undefined
+      email: string | null | undefined
+    },
     donationId: string | null | undefined,
     paypalEmail: string | null | undefined,
     discordUsername: string | null | undefined,

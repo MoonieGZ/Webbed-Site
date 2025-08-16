@@ -45,7 +45,10 @@ export function useGiData() {
       const existing = localStorage.getItem(VERSION_KEY)
       if (existing !== DATA_VERSION) {
         Object.keys(localStorage)
-          .filter((k) => k.startsWith("gi_characters_v") || k.startsWith("gi_bosses_v"))
+          .filter(
+            (k) =>
+              k.startsWith("gi_characters_v") || k.startsWith("gi_bosses_v"),
+          )
           .forEach((k) => localStorage.removeItem(k))
         localStorage.setItem(VERSION_KEY, DATA_VERSION)
       }
@@ -64,9 +67,17 @@ export function useGiData() {
     async function load() {
       try {
         const [cRes, bRes, sRes] = await Promise.all([
-          fetch(`/api/minigames/gi/characters?version=${encodeURIComponent(DATA_VERSION)}`, { cache: "no-store" }).then((r) => r.json()),
-          fetch(`/api/minigames/gi/bosses?version=${encodeURIComponent(DATA_VERSION)}`, { cache: "no-store" }).then((r) => r.json()),
-          fetch("/api/minigames/gi/settings", { cache: "no-store" }).then((r) => r.json()),
+          fetch(
+            `/api/minigames/gi/characters?version=${encodeURIComponent(DATA_VERSION)}`,
+            { cache: "no-store" },
+          ).then((r) => r.json()),
+          fetch(
+            `/api/minigames/gi/bosses?version=${encodeURIComponent(DATA_VERSION)}`,
+            { cache: "no-store" },
+          ).then((r) => r.json()),
+          fetch("/api/minigames/gi/settings", { cache: "no-store" }).then((r) =>
+            r.json(),
+          ),
         ])
         if (cancelled) return
         setCharacters(Array.isArray(cRes) ? cRes : [])
