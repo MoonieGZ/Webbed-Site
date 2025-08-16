@@ -4,6 +4,17 @@ export class DiscordWebhookService {
   private static readonly userinfoWebhookUrl = process.env.DISCORD_USERINFO
   private static readonly donationWebhookUrl = process.env.DISCORD_DONATION
 
+  private static coerce(value: unknown, fallback: string): string {
+    try {
+      const raw = value ?? ""
+      const str = typeof raw === "string" ? raw : String(raw)
+      const trimmed = str.trim()
+      return trimmed.length > 0 ? trimmed : fallback
+    } catch {
+      return fallback
+    }
+  }
+
   /**
    * Sends a Discord webhook notification with an embed
    */
@@ -63,12 +74,14 @@ export class DiscordWebhookService {
    * Sends notification for avatar upload
    */
   static async notifyAvatarUpload(
-    user: { id: number; name: string; email: string },
+    user: { id: number; name: string | null | undefined; email: string | null | undefined },
     avatarUrl: string,
   ): Promise<void> {
+    const safeName = this.coerce(user?.name, `User #${user.id}`)
+    const safeEmail = this.coerce(user?.email, "N/A")
     const embed: DiscordEmbed = {
       title: "🖼️ Avatar Upload",
-      description: `User **${user.name}** has uploaded a new avatar`,
+      description: `User **${safeName}** has uploaded a new avatar`,
       color: 0x00ff00, // Green
       fields: [
         {
@@ -78,7 +91,7 @@ export class DiscordWebhookService {
         },
         {
           name: "Email",
-          value: user.email,
+          value: safeEmail,
           inline: true,
         },
         {
@@ -103,12 +116,14 @@ export class DiscordWebhookService {
    * Sends notification for Gravatar import
    */
   static async notifyGravatarImport(
-    user: { id: number; name: string; email: string },
+    user: { id: number; name: string | null | undefined; email: string | null | undefined },
     avatarUrl: string,
   ): Promise<void> {
+    const safeName = this.coerce(user?.name, `User #${user.id}`)
+    const safeEmail = this.coerce(user?.email, "N/A")
     const embed: DiscordEmbed = {
       title: "📥 Gravatar Import",
-      description: `User **${user.name}** has imported their Gravatar`,
+      description: `User **${safeName}** has imported their Gravatar`,
       color: 0x0099ff, // Blue
       fields: [
         {
@@ -118,7 +133,7 @@ export class DiscordWebhookService {
         },
         {
           name: "Email",
-          value: user.email,
+          value: safeEmail,
           inline: true,
         },
         {
@@ -143,10 +158,13 @@ export class DiscordWebhookService {
    * Sends notification for username change
    */
   static async notifyUsernameChange(
-    user: { id: number; name: string; email: string },
-    oldUsername: string,
-    newUsername: string,
+    user: { id: number; name: string | null | undefined; email: string | null | undefined },
+    oldUsername: string | null | undefined,
+    newUsername: string | null | undefined,
   ): Promise<void> {
+    const safeEmail = this.coerce(user?.email, "N/A")
+    const safeOld = this.coerce(oldUsername, "(not set)")
+    const safeNew = this.coerce(newUsername, "(not set)")
     const embed: DiscordEmbed = {
       title: "✏️ Username Change",
       description: `User has changed their username`,
@@ -159,17 +177,17 @@ export class DiscordWebhookService {
         },
         {
           name: "Email",
-          value: user.email,
+          value: safeEmail,
           inline: true,
         },
         {
           name: "Old Username",
-          value: oldUsername,
+          value: safeOld,
           inline: true,
         },
         {
           name: "New Username",
-          value: newUsername,
+          value: safeNew,
           inline: true,
         },
         {
@@ -188,14 +206,19 @@ export class DiscordWebhookService {
   }
 
   static async notifyDonationRequest(
-    user: { id: number; name: string; email: string },
-    donationId: string,
-    paypalEmail: string,
-    discordUsername: string,
+    user: { id: number; name: string | null | undefined; email: string | null | undefined },
+    donationId: string | null | undefined,
+    paypalEmail: string | null | undefined,
+    discordUsername: string | null | undefined,
   ): Promise<void> {
+    const safeName = this.coerce(user?.name, `User #${user.id}`)
+    const safeEmail = this.coerce(user?.email, "N/A")
+    const safeDonationId = this.coerce(donationId, "N/A")
+    const safePaypal = this.coerce(paypalEmail, "N/A")
+    const safeDiscord = this.coerce(discordUsername, "N/A")
     const embed: DiscordEmbed = {
       title: "💰 Donation Validation Request",
-      description: `User **${user.name}** has requested a donation validation`,
+      description: `User **${safeName}** has requested a donation validation`,
       color: 0xffd700, // Gold
       fields: [
         {
@@ -205,17 +228,17 @@ export class DiscordWebhookService {
         },
         {
           name: "Donation ID",
-          value: donationId,
+          value: safeDonationId,
           inline: true,
         },
         {
           name: "PayPal Email",
-          value: paypalEmail,
+          value: safePaypal,
           inline: true,
         },
         {
           name: "Discord Username",
-          value: discordUsername,
+          value: safeDiscord,
           inline: true,
         },
       ],
