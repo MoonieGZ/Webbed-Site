@@ -1,4 +1,8 @@
-import { MessageCircleHeart, MessageCircleQuestionMark } from "lucide-react"
+import {
+  MessageCircleHeart,
+  MessageCircleQuestionMark,
+  MessageCircleWarning,
+} from "lucide-react"
 
 export function useNavSecondary() {
   const navSecondary = [
@@ -11,6 +15,11 @@ export function useNavSecondary() {
       title: "Support",
       url: "/support",
       icon: MessageCircleQuestionMark,
+    },
+    {
+      title: "Privacy Policy",
+      url: "/privacy",
+      icon: MessageCircleWarning,
     },
   ]
 
