@@ -4,10 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import type { GiBoss, GiCharacter, GiRandomizerSettings } from "@/types"
 import { DEFAULT_GI_SETTINGS } from "@/types"
 
-const CHARACTERS_KEY = "gi_characters_v1"
-const BOSSES_KEY = "gi_bosses_v1"
-const SETTINGS_KEY = "gi_settings_v1"
+const DATA_VERSION = String(process.env.NEXT_PUBLIC_GI_DATA_VERSION || "1")
+const CHARACTERS_KEY = `gi_characters_v${DATA_VERSION}`
+const BOSSES_KEY = `gi_bosses_v${DATA_VERSION}`
+const SETTINGS_KEY = `gi_settings_v1`
 const ONE_HOUR_MS = 60 * 60 * 1000
+const VERSION_KEY = "gi_data_version"
 
 type Cached<T> = { data: T; ts: number }
 
@@ -38,6 +40,17 @@ export function useGiData() {
   const settingsDirty = useRef(false)
 
   useEffect(() => {
+    // If app version changed, clear old caches (data shape/content changes)
+    try {
+      const existing = localStorage.getItem(VERSION_KEY)
+      if (existing !== DATA_VERSION) {
+        Object.keys(localStorage)
+          .filter((k) => k.startsWith("gi_characters_v") || k.startsWith("gi_bosses_v"))
+          .forEach((k) => localStorage.removeItem(k))
+        localStorage.setItem(VERSION_KEY, DATA_VERSION)
+      }
+    } catch {}
+
     const c = readCache<GiCharacter[]>(CHARACTERS_KEY, ONE_HOUR_MS)
     const b = readCache<GiBoss[]>(BOSSES_KEY, ONE_HOUR_MS)
     const s = readCache<GiRandomizerSettings>(SETTINGS_KEY)
@@ -51,9 +64,9 @@ export function useGiData() {
     async function load() {
       try {
         const [cRes, bRes, sRes] = await Promise.all([
-          fetch("/api/minigames/gi/characters").then((r) => r.json()),
-          fetch("/api/minigames/gi/bosses").then((r) => r.json()),
-          fetch("/api/minigames/gi/settings").then((r) => r.json()),
+          fetch(`/api/minigames/gi/characters?version=${encodeURIComponent(DATA_VERSION)}`, { cache: "no-store" }).then((r) => r.json()),
+          fetch(`/api/minigames/gi/bosses?version=${encodeURIComponent(DATA_VERSION)}`, { cache: "no-store" }).then((r) => r.json()),
+          fetch("/api/minigames/gi/settings", { cache: "no-store" }).then((r) => r.json()),
         ])
         if (cancelled) return
         setCharacters(Array.isArray(cRes) ? cRes : [])
