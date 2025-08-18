@@ -81,10 +81,24 @@ io.on("connection", (socket) => {
         hostBossEnabledMap: lobby.hostBossEnabledMap || null,
       },
     }
+    // Send once to lobby room; do not also send to user rooms to avoid duplicates
     io.to(lobbyId).emit("lobbyState", payload)
-    ;(lobby.members || []).forEach((uid) => {
-      io.to(`user:${uid}`).emit("lobbyState", payload)
-    })
+  }
+
+  function mapsEqual(a, b) {
+    try {
+      if (a === b) return true
+      if (!a || !b) return false
+      const aKeys = Object.keys(a)
+      const bKeys = Object.keys(b)
+      if (aKeys.length !== bKeys.length) return false
+      for (const k of aKeys) {
+        if ((a[k] ?? undefined) !== (b[k] ?? undefined)) return false
+      }
+      return true
+    } catch {
+      return false
+    }
   }
 
   function removeMemberFromLobby(lobby, memberUserId) {
@@ -351,9 +365,12 @@ io.on("connection", (socket) => {
       if (!lobby) return cb?.({ ok: false, error: "Lobby not found" })
       if (lobby.hostId !== userId)
         return cb?.({ ok: false, error: "Only host can sync map" })
-      lobby.hostEnabledMap = enabledMap
+      const prev = lobby.hostEnabledMap || null
+      if (!mapsEqual(prev, enabledMap)) {
+        lobby.hostEnabledMap = enabledMap
+        emitLobbyState(lobbyId)
+      }
       cb?.({ ok: true })
-      emitLobbyState(lobbyId)
     } catch (e) {
       cb?.({ ok: false, error: "Failed to sync map" })
     }
@@ -368,9 +385,12 @@ io.on("connection", (socket) => {
       if (!lobby) return cb?.({ ok: false, error: "Lobby not found" })
       if (lobby.hostId !== userId)
         return cb?.({ ok: false, error: "Only host can sync map" })
-      lobby.hostBossEnabledMap = enabledMap
+      const prev = lobby.hostBossEnabledMap || null
+      if (!mapsEqual(prev, enabledMap)) {
+        lobby.hostBossEnabledMap = enabledMap
+        emitLobbyState(lobbyId)
+      }
       cb?.({ ok: true })
-      emitLobbyState(lobbyId)
     } catch (e) {
       cb?.({ ok: false, error: "Failed to sync map" })
     }

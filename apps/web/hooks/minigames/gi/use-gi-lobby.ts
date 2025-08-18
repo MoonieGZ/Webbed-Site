@@ -464,19 +464,8 @@ export function useGiLobby() {
     [],
   )
 
-  return {
-    connected,
-    lobby: currentLobby,
-    isHost,
-    hostUserId: currentLobby?.hostId ?? null,
-    memberUserIds: Array.isArray(currentLobby?.members)
-      ? currentLobby!.members
-      : [],
-    createLobby,
-    joinLobby,
-    rollCharacters,
-    rollBoss,
-    setLobbyPrivacy: (privacy: GiLobbyPrivacy) =>
+  const setLobbyPrivacy = useCallback(
+    (privacy: GiLobbyPrivacy) =>
       new Promise<{ ok: boolean; error?: string }>((resolve) => {
         const s = socketRef.current
         const lobbyId = currentLobby?.lobbyId
@@ -487,7 +476,11 @@ export function useGiLobby() {
           resolve({ ok: true })
         })
       }),
-    syncHostEnabledMap: (enabledMap: Record<string, boolean>) =>
+    [currentLobby?.lobbyId],
+  )
+
+  const syncHostEnabledMap = useCallback(
+    (enabledMap: Record<string, boolean>) =>
       new Promise<{ ok: boolean; error?: string }>((resolve) => {
         const s = socketRef.current
         const lobbyId = currentLobby?.lobbyId
@@ -498,7 +491,11 @@ export function useGiLobby() {
           resolve({ ok: true })
         })
       }),
-    syncHostBossEnabledMap: (enabledMap: Record<string, boolean>) =>
+    [currentLobby?.lobbyId],
+  )
+
+  const syncHostBossEnabledMap = useCallback(
+    (enabledMap: Record<string, boolean>) =>
       new Promise<{ ok: boolean; error?: string }>((resolve) => {
         const s = socketRef.current
         const lobbyId = currentLobby?.lobbyId
@@ -513,6 +510,24 @@ export function useGiLobby() {
           },
         )
       }),
+    [currentLobby?.lobbyId],
+  )
+
+  return {
+    connected,
+    lobby: currentLobby,
+    isHost,
+    hostUserId: currentLobby?.hostId ?? null,
+    memberUserIds: Array.isArray(currentLobby?.members)
+      ? currentLobby!.members
+      : [],
+    createLobby,
+    joinLobby,
+    rollCharacters,
+    rollBoss,
+    setLobbyPrivacy,
+    syncHostEnabledMap,
+    syncHostBossEnabledMap,
     rolling,
     leaveLobby,
     kickMember,
