@@ -269,25 +269,14 @@ export function useGiLobbyStatus() {
         settings.characters.excluded.includes(c.name)
       map[c.name] = enabled && !excluded
     }
+    syncHostEnabledMap(map)
     const bossMap: Record<string, boolean> = {}
     for (const b of bosses || []) {
       const enabled = settings.bosses.enabled[b.name] ?? true
       const coopOk = !settings.rules.coopMode || Boolean(b.coop)
       bossMap[b.name] = enabled && coopOk
     }
-    // Debounce and dedupe to avoid flooding the server
-    let cancelled = false
-    const timeout = setTimeout(async () => {
-      if (cancelled) return
-      try {
-        await syncHostEnabledMap(map)
-        await syncHostBossEnabledMap(bossMap)
-      } catch {}
-    }, 150)
-    return () => {
-      cancelled = true
-      clearTimeout(timeout)
-    }
+    syncHostBossEnabledMap(bossMap)
   }, [
     isHost,
     lobby?.lobbyId,
