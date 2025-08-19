@@ -269,17 +269,27 @@ export function useGiLobbyStatus() {
         settings.characters.excluded.includes(c.name)
       map[c.name] = enabled && !excluded
     }
-    syncHostEnabledMap(map)
+    const prevMapJson = JSON.stringify(lobby?.hostEnabledMap || {})
+    const nextMapJson = JSON.stringify(map)
+    if (prevMapJson !== nextMapJson) {
+      syncHostEnabledMap(map)
+    }
     const bossMap: Record<string, boolean> = {}
     for (const b of bosses || []) {
       const enabled = settings.bosses.enabled[b.name] ?? true
       const coopOk = !settings.rules.coopMode || Boolean(b.coop)
       bossMap[b.name] = enabled && coopOk
     }
-    syncHostBossEnabledMap(bossMap)
+    const prevBossMapJson = JSON.stringify(lobby?.hostBossEnabledMap || {})
+    const nextBossMapJson = JSON.stringify(bossMap)
+    if (prevBossMapJson !== nextBossMapJson) {
+      syncHostBossEnabledMap(bossMap)
+    }
   }, [
     isHost,
     lobby?.lobbyId,
+    JSON.stringify(lobby?.hostEnabledMap || {}),
+    JSON.stringify(lobby?.hostBossEnabledMap || {}),
     characters,
     bosses,
     settings.characters.enabled,

@@ -38,6 +38,9 @@ export function useGiLobby() {
   const [currentLobby, setCurrentLobby] = useState<GiLobbyState | null>(null)
   const [rolling, setRolling] = useState(false)
   const socketRef = useRef<Socket | null>(null)
+  const currentLobbyIdRef = useRef<string | null>(null)
+  const transitioningRef = useRef(false)
+  const intendedLobbyIdRef = useRef<string | null>(null)
   const { user } = useAccount()
 
   const isHost = useMemo(() => {
@@ -105,6 +108,7 @@ export function useGiLobby() {
             await new Promise<void>((resolve) => {
               s.emit("joinLobby", { lobbyId: stored }, async (res: any) => {
                 if (res?.ok) {
+                  currentLobbyIdRef.current = String(stored)
                   s.emit("lobbyState", { lobbyId: stored }, (state: any) => {
                     if (state?.ok && state.lobby) {
                       setCurrentLobby(state.lobby as GiLobbyState)
@@ -142,7 +146,25 @@ export function useGiLobby() {
 
         s.on("lobbyState", (p: { ok: boolean; lobby?: GiLobbyState }) => {
           if (!p?.ok || !p.lobby) return
-          setCurrentLobby(p.lobby)
+          setCurrentLobby((prev) => {
+            const next = p.lobby!
+            if (!prev) return next
+            // Shallow compare to avoid pointless renders
+            const same =
+              prev.lobbyId === next.lobbyId &&
+              prev.hostId === next.hostId &&
+              prev.privacy === next.privacy &&
+              JSON.stringify(prev.members) === JSON.stringify(next.members) &&
+              JSON.stringify(prev.currentRoll || {}) ===
+                JSON.stringify(next.currentRoll || {}) &&
+              JSON.stringify(prev.hostEnabledMap || null) ===
+                JSON.stringify(next.hostEnabledMap || null) &&
+              JSON.stringify(prev.hostBossEnabledMap || null) ===
+                JSON.stringify(next.hostBossEnabledMap || null)
+            const result = same ? prev : next
+            currentLobbyIdRef.current = result?.lobbyId ?? null
+            return result
+          })
         })
         s.on(
           "rolledCharacters",
@@ -256,6 +278,13 @@ export function useGiLobby() {
         })
 
         s.on("lobby:closed", (p: { ok: boolean; lobbyId?: string }) => {
+          if (!p?.ok) return
+          // Ignore lobby:closed during an intentional join/transition
+          if (transitioningRef.current) return
+          const closedId = p.lobbyId ? String(p.lobbyId) : null
+          const activeId = currentLobbyIdRef.current
+          // Only react if the closed lobby is exactly the active lobby
+          if (!closedId || !activeId || closedId !== activeId) return
           try {
             toast.info("Lobby was closed.", {
               ...toastStyles.info,
@@ -263,6 +292,7 @@ export function useGiLobby() {
             })
           } catch {}
           setCurrentLobby(null)
+          currentLobbyIdRef.current = null
           try {
             localStorage.removeItem("gi:lastLobbyId")
           } catch {}
@@ -347,20 +377,31 @@ export function useGiLobby() {
       return new Promise<{ ok: boolean; error?: string }>(async (resolve) => {
         const s = socketRef.current
         if (!s) return resolve({ ok: false, error: "Not connected" })
+        // Begin transition to a new lobby
+        transitioningRef.current = true
+        intendedLobbyIdRef.current = String(lobbyId)
+        // Prevent reacting to close of the old lobby during transition
+        currentLobbyIdRef.current = null
         if (currentLobby?.lobbyId && currentLobby.lobbyId !== lobbyId) {
           await new Promise<void>((res) => {
             s.emit("leaveLobby", { lobbyId: currentLobby.lobbyId }, () => res())
           })
         }
         s.emit("joinLobby", { lobbyId }, (res: any) => {
-          if (!res?.ok)
+          if (!res?.ok) {
+            transitioningRef.current = false
+            intendedLobbyIdRef.current = null
             return resolve({ ok: false, error: res?.error || "Failed" })
+          }
           s.emit("lobbyState", { lobbyId }, (state: any) => {
             if (state?.ok && state.lobby)
               setCurrentLobby(state.lobby as GiLobbyState)
             try {
               localStorage.setItem("gi:lastLobbyId", String(lobbyId))
             } catch {}
+            currentLobbyIdRef.current = String(lobbyId)
+            transitioningRef.current = false
+            intendedLobbyIdRef.current = null
             resolve({ ok: true })
           })
         })

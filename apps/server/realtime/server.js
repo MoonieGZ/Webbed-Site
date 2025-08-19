@@ -82,9 +82,6 @@ io.on("connection", (socket) => {
       },
     }
     io.to(lobbyId).emit("lobbyState", payload)
-    ;(lobby.members || []).forEach((uid) => {
-      io.to(`user:${uid}`).emit("lobbyState", payload)
-    })
   }
 
   function removeMemberFromLobby(lobby, memberUserId) {
@@ -202,8 +199,15 @@ io.on("connection", (socket) => {
           lobbyId,
           memberUserId: userId,
         })
+        // Immediately broadcast the updated lobby state so all current lobby
+        // sockets receive the updated member list
+        emitLobbyState(lobbyId)
       }
-      emitLobbyState(lobbyId)
+      // For re-joins (not new member), also emit to ensure the rejoining client
+      // receives a full lobby snapshot promptly
+      if (!wasNewMember) {
+        emitLobbyState(lobbyId)
+      }
     } catch (e) {
       cb?.({ ok: false, error: "Failed to join lobby" })
     }
