@@ -1,11 +1,11 @@
 export const ASCENSION_TEMPLATES = {
   CHARACTER: [
-    { level: 20, ascension: 1, boss_drop: 0, enemy_drop: [4, 0, 0, 0], specialty: 0, credits: 5000 },
-    { level: 40, ascension: 2, boss_drop: 3, enemy_drop: [0, 4, 0, 0], specialty: 4, credits: 10000 },
-    { level: 50, ascension: 3, boss_drop: 6, enemy_drop: [0, 8, 0, 0], specialty: 8, credits: 15000 },
-    { level: 60, ascension: 4, boss_drop: 9, enemy_drop: [0, 0, 4, 0], specialty: 12, credits: 20000 },
-    { level: 70, ascension: 5, boss_drop: 12, enemy_drop: [0, 0, 8, 0], specialty: 16, credits: 40000 },
-    { level: 80, ascension: 6, boss_drop: 16, enemy_drop: [0, 0, 0, 4], specialty: 20, credits: 80000 }
+    { level: 20, ascension: 1, boss_drop: 0, enemy_drop: [4, 0, 0, 0], collectible: 0, credits: 5000 },
+    { level: 40, ascension: 2, boss_drop: 3, enemy_drop: [0, 4, 0, 0], collectible: 4, credits: 10000 },
+    { level: 50, ascension: 3, boss_drop: 6, enemy_drop: [0, 8, 0, 0], collectible: 8, credits: 15000 },
+    { level: 60, ascension: 4, boss_drop: 9, enemy_drop: [0, 0, 4, 0], collectible: 12, credits: 20000 },
+    { level: 70, ascension: 5, boss_drop: 12, enemy_drop: [0, 0, 8, 0], collectible: 16, credits: 40000 },
+    { level: 80, ascension: 6, boss_drop: 16, enemy_drop: [0, 0, 0, 4], collectible: 20, credits: 80000 }
   ],
 
   WEAPON_5: [

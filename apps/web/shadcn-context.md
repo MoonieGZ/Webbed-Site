@@ -18,6 +18,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - Dropdown Menu (for menus)
   - Switch (for toggles)
   - Select (for dropdowns)
+  - Separator (for layout)
 
 - **Animate-UI Components**:
   - SidebarProvider, SidebarInset, SidebarTrigger (from animate-ui/radix/sidebar)
@@ -44,6 +45,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - FriendsListCard (friends list with mutual badges)
   - FriendsRequestsCard (tabs for received/sent/blocked requests)
   - FriendsManagementBar (pagination-only variant of management bar)
+  - WwGroupsTable (admin WW grouping management)
 
 - **Custom Hooks Built**:
   - useGiData (GI data fetch + local caching + persistence)
@@ -64,6 +66,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - useAdminTools (admin tool metadata & navigation)
   - useFriends (friends and friend-requests state management)
   - useFriendRealtime (websocket client for pending friend request count)
+  - useWwAdminGroups (admin WW grouping state and actions)
 
 ## Installation History
 

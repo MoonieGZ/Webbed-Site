@@ -29,6 +29,12 @@ export function useAdminTools() {
       icon: BadgeCheck,
     },
     {
+      title: "WW Groupings",
+      description: "Assign material groups to WW characters",
+      href: "/admin/wuwa/groups",
+      icon: Shield,
+    },
+    {
       title: "System",
       description: "Maintenance & tools",
       href: "/admin/tools",
