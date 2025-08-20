@@ -1,8 +1,8 @@
 "use client"
 
 import { useMemo } from "react"
-import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
-import { useGiDataContext } from "@/hooks/minigames/gi/gi-data-provider"
+import { useGiLobbyContext } from "@/hooks/games/gi/lobby-provider"
+import { useGiDataContext } from "@/hooks/games/gi/gi-data-provider"
 import type { GiBoss, GiCharacter } from "@/types"
 
 export function useGiRollResult() {

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import type { GiBoss, GiCharacter } from "@/types"
-import { useGiDataContext } from "@/hooks/minigames/gi/gi-data-provider"
+import { useGiDataContext } from "@/hooks/games/gi/gi-data-provider"
 
 export type RandomizeType = "characters" | "bosses" | "combined"
 

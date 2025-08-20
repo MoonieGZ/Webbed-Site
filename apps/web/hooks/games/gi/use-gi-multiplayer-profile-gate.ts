@@ -24,7 +24,7 @@ export function useGiMultiplayerProfileGate() {
         return cacheRef.current.has
       }
       try {
-        const res = await fetch("/api/minigames/gi/profiles", {
+        const res = await fetch("/api/games/gi/profiles", {
           cache: "no-store",
         })
         const list = (await res.json()) as Array<{ name: string | null }>

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useContext } from "react"
-import { useGiLobby } from "@/hooks/minigames/gi/use-gi-lobby"
+import { useGiLobby } from "@/hooks/games/gi/use-gi-lobby"
 
 type LobbyContextValue = ReturnType<typeof useGiLobby>
 

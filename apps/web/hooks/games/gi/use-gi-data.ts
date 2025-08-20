@@ -68,14 +68,14 @@ export function useGiData() {
       try {
         const [cRes, bRes, sRes] = await Promise.all([
           fetch(
-            `/api/minigames/gi/characters?version=${encodeURIComponent(DATA_VERSION)}`,
+            `/api/games/gi/characters?version=${encodeURIComponent(DATA_VERSION)}`,
             { cache: "no-store" },
           ).then((r) => r.json()),
           fetch(
-            `/api/minigames/gi/bosses?version=${encodeURIComponent(DATA_VERSION)}`,
+            `/api/games/gi/bosses?version=${encodeURIComponent(DATA_VERSION)}`,
             { cache: "no-store" },
           ).then((r) => r.json()),
-          fetch("/api/minigames/gi/settings", { cache: "no-store" }).then((r) =>
+          fetch("/api/games/gi/settings", { cache: "no-store" }).then((r) =>
             r.json(),
           ),
         ])
@@ -102,7 +102,7 @@ export function useGiData() {
     const toSave = settings
     writeCache(SETTINGS_KEY, toSave)
 
-    fetch("/api/minigames/gi/settings", {
+    fetch("/api/games/gi/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(toSave),

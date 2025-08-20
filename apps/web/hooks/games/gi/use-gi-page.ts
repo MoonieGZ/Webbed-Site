@@ -3,7 +3,7 @@
 import * as React from "react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
-import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
+import { useGiLobbyContext } from "@/hooks/games/gi/lobby-provider"
 
 export function useGiPage() {
   const [aboutOpen, setAboutOpen] = React.useState(false)

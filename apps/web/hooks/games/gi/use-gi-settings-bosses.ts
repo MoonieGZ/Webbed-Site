@@ -86,7 +86,7 @@ export function useGiSettingsBosses() {
   }
 
   useEffect(() => {
-    fetch("/api/minigames/gi/boss-profiles")
+    fetch("/api/games/gi/boss-profiles")
       .then((r) => r.json())
       .then((p: GiBossProfile[]) => setProfiles(Array.isArray(p) ? p : []))
       .catch(() => {})
@@ -102,7 +102,7 @@ export function useGiSettingsBosses() {
 
   const saveProfile = async (profileIndex: number, name?: string) => {
     const fullMap = buildFullEnabledMap()
-    await fetch("/api/minigames/gi/boss-profiles", {
+    await fetch("/api/games/gi/boss-profiles", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -111,7 +111,7 @@ export function useGiSettingsBosses() {
         enabledMap: fullMap,
       }),
     }).catch(() => {})
-    const updated = await fetch("/api/minigames/gi/boss-profiles").then((r) =>
+    const updated = await fetch("/api/games/gi/boss-profiles").then((r) =>
       r.json(),
     )
     setProfiles(Array.isArray(updated) ? updated : [])

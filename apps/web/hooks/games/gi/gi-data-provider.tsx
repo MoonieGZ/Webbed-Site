@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useContext } from "react"
-import { useGiData } from "@/hooks/minigames/gi/use-gi-data"
+import { useGiData } from "@/hooks/games/gi/use-gi-data"
 
 type GiDataContextValue = ReturnType<typeof useGiData>
 

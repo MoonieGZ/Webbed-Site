@@ -22,7 +22,7 @@ export function useGiSettingsCharacters() {
         }
       } catch {}
     }
-    fetch("/api/minigames/gi/characters")
+    fetch("/api/games/gi/characters")
       .then((r) => r.json())
       .then((list: GiCharacter[]) => setCharacters(list))
       .finally(() => setLoading(false))
@@ -50,7 +50,7 @@ export function useGiSettingsCharacters() {
   }, [characters])
 
   useEffect(() => {
-    fetch("/api/minigames/gi/profiles")
+    fetch("/api/games/gi/profiles")
       .then((r) => r.json())
       .then((p: GiCharacterProfile[]) => setProfiles(Array.isArray(p) ? p : []))
       .catch(() => {})
@@ -58,7 +58,7 @@ export function useGiSettingsCharacters() {
 
   const refreshRemoteProfiles = async () => {
     try {
-      const res = await fetch("/api/minigames/gi/profiles")
+      const res = await fetch("/api/games/gi/profiles")
       const p = await res.json()
       setProfiles(Array.isArray(p) ? p : [])
     } catch {}
@@ -117,7 +117,7 @@ export function useGiSettingsCharacters() {
   }
   const saveProfile = async (profileIndex: number, name?: string) => {
     const fullMap = buildFullEnabledMap()
-    await fetch("/api/minigames/gi/profiles", {
+    await fetch("/api/games/gi/profiles", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -126,7 +126,7 @@ export function useGiSettingsCharacters() {
         enabledMap: fullMap,
       }),
     }).catch(() => {})
-    const updated = await fetch("/api/minigames/gi/profiles").then((r) =>
+    const updated = await fetch("/api/games/gi/profiles").then((r) =>
       r.json(),
     )
     setProfiles(Array.isArray(updated) ? updated : [])

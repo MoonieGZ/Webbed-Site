@@ -1,13 +1,13 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
+import { useGiLobbyContext } from "@/hooks/games/gi/lobby-provider"
 import { useUsersByIds } from "@/hooks/api/use-users-by-ids"
 import type { GiLobbyPrivacy } from "@/types"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
-import { useGiMultiplayerProfileGate } from "@/hooks/minigames/gi/use-gi-multiplayer-profile-gate"
-import { useGiDataContext } from "@/hooks/minigames/gi/gi-data-provider"
+import { useGiMultiplayerProfileGate } from "@/hooks/games/gi/use-gi-multiplayer-profile-gate"
+import { useGiDataContext } from "@/hooks/games/gi/gi-data-provider"
 import type { GiBossProfile, GiCharacterProfile } from "@/types/gi/profile"
 
 export function useGiLobbyStatus() {
@@ -64,7 +64,7 @@ export function useGiLobbyStatus() {
   useEffect(() => {
     ;(async () => {
       try {
-        const r = await fetch("/api/minigames/gi/profiles", {
+        const r = await fetch("/api/games/gi/profiles", {
           cache: "no-store",
         })
         const p = (await r.json()) as GiCharacterProfile[]
@@ -76,7 +76,7 @@ export function useGiLobbyStatus() {
   useEffect(() => {
     ;(async () => {
       try {
-        const r = await fetch("/api/minigames/gi/boss-profiles", {
+        const r = await fetch("/api/games/gi/boss-profiles", {
           cache: "no-store",
         })
         const p = (await r.json()) as GiBossProfile[]
@@ -137,7 +137,7 @@ export function useGiLobbyStatus() {
           .filter((n) => Number.isFinite(n))
           .sort((a, b) => a - b)
         if (ids.length === 0) return
-        const r = await fetch("/api/minigames/gi/profiles/by-user-ids", {
+        const r = await fetch("/api/games/gi/profiles/by-user-ids", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ids }),
@@ -203,7 +203,7 @@ export function useGiLobbyStatus() {
       .map((x) => Number(x))
       .filter((n) => Number.isFinite(n))
     if (ids.length === 0) return
-    const r = await fetch("/api/minigames/gi/profiles/by-user-ids", {
+    const r = await fetch("/api/games/gi/profiles/by-user-ids", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ids }),
