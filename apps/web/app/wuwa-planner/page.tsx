@@ -26,22 +26,16 @@ export default function WuwaPlannerPage() {
                 <BreadcrumbLink href="/">Home</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                Wuthering Waves
-              </BreadcrumbItem>
+              <BreadcrumbItem>Wuthering Waves</BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                Planner
-              </BreadcrumbItem>
+              <BreadcrumbItem>Planner</BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
       </header>
 
       <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
-        <div className="grid gap-6">
-          {/* TODO: Add content here */}
-        </div>
+        <div className="grid gap-6">{/* TODO: Add content here */}</div>
       </div>
     </>
   )

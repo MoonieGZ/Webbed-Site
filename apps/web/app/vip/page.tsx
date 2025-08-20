@@ -29,9 +29,7 @@ export default function VIPPage() {
                 <BreadcrumbLink href="/">Home</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                VIP
-              </BreadcrumbItem>
+              <BreadcrumbItem>VIP</BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
