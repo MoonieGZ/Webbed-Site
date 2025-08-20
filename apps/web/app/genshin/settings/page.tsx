@@ -8,8 +8,8 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import GICharactersSettings from "@/components/minigames/gi/gi-characters-settings"
-import GIBossesSettings from "@/components/minigames/gi/gi-bosses-settings"
+import GICharactersSettings from "@/components/games/gi/gi-characters-settings"
+import GIBossesSettings from "@/components/games/gi/gi-bosses-settings"
 import {
   TabsContent,
   TabsList,

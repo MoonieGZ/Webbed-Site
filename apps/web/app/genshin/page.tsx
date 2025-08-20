@@ -10,9 +10,8 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import GIRandomizer from "@/components/minigames/gi/gi-randomizer"
-import { GILobbyStatusCard } from "@/components/minigames/gi"
-import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
+import GIRandomizer from "@/components/games/gi/gi-randomizer"
+import { GILobbyStatusCard } from "@/components/games/gi"
 import { Info, Settings } from "lucide-react"
 import Link from "next/link"
 import {
@@ -28,7 +27,7 @@ import {
   DialogTitle,
 } from "@/components/animate-ui/radix/dialog"
 import { Button } from "@/components/ui/button"
-import { useGiPage } from "@/hooks/minigames/gi/use-gi-page"
+import { useGiPage } from "@/hooks/games/gi/use-gi-page"
 
 function GIPageBody() {
   const { aboutOpen, setAboutOpen, showFirstStart, handleAboutOpenChange } =

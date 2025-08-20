@@ -1,6 +1,6 @@
 "use client"
 
-import { useGiRandomizer } from "@/hooks/minigames/gi/use-gi-randomizer"
+import { useGiRandomizer } from "@/hooks/games/gi/use-gi-randomizer"
 import {
   Card,
   CardContent,
@@ -32,14 +32,15 @@ import {
   RotateCcw,
 } from "lucide-react"
 import Image from "next/image"
-import { buildCharacterIconPath } from "@/lib/minigames/gi/icon-path"
+import { buildCharacterIconPath } from "@/lib/games/gi/icon-path"
 import React from "react"
-import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
-import { useGiLobbyStatus } from "@/hooks/minigames/gi/use-gi-lobby-status"
-import { useGiDataContext } from "@/hooks/minigames/gi/gi-data-provider"
-import { GIRollResultCard } from "@/components/minigames/gi/gi-roll-result"
+import { useGiLobbyContext } from "@/hooks/games/gi/lobby-provider"
+import { useGiLobbyStatus } from "@/hooks/games/gi/use-gi-lobby-status"
+import { useGiDataContext } from "@/hooks/games/gi/gi-data-provider"
+import { GIRollResultCard } from "@/components/games/gi/gi-roll-result"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
+import type { GiBoss, GiCharacter, GiRandomizerSettings } from "@/types"
 
 export default function GIRandomizer() {
   const {
@@ -63,13 +64,13 @@ export default function GIRandomizer() {
     if (!names && !bossName) return
     const charObjs = Array.isArray(names)
       ? (characters || [])
-          .filter((c) => names.includes(c.name))
-          .map((c) => ({ ...c, selected: false, visible: false }))
+          .filter((c: GiCharacter) => names.includes(c.name))
+          .map((c: GiCharacter) => ({ ...c, selected: false, visible: false }))
       : []
     const bossObjs = bossName
       ? (bosses || [])
-          .filter((b) => b.name === bossName)
-          .map((b) => ({ ...b, visible: false }))
+          .filter((b: GiBoss) => b.name === bossName)
+          .map((b: GiBoss) => ({ ...b, visible: false }))
       : []
     if (charObjs.length > 0 || bossObjs.length > 0) {
       setResult({ characters: charObjs, bosses: bossObjs })
@@ -78,7 +79,7 @@ export default function GIRandomizer() {
 
   if (loading) return null
 
-  const excluded = new Set(settings.characters.excluded)
+  const excluded = new Set<string>(settings.characters.excluded)
 
   return (
     <div className="space-y-4">
@@ -248,7 +249,7 @@ export default function GIRandomizer() {
                       <Switch
                         checked={settings.rules.coopMode}
                         onCheckedChange={(checked) =>
-                          setSettings((prev) => ({
+                          setSettings((prev: GiRandomizerSettings) => ({
                             ...prev,
                             rules: { ...prev.rules, coopMode: checked },
                           }))
@@ -269,7 +270,7 @@ export default function GIRandomizer() {
                             number={settings.rules.maxFiveStars}
                             setNumber={(n) => {
                               if (!isHost) return
-                              setSettings((p) => ({
+                              setSettings((p: GiRandomizerSettings) => ({
                                 ...p,
                                 rules: {
                                   ...p.rules,
@@ -282,7 +283,7 @@ export default function GIRandomizer() {
                         <Switch
                           checked={settings.rules.limitFiveStars}
                           onCheckedChange={(checked) =>
-                            setSettings((prev) => ({
+                            setSettings((prev: GiRandomizerSettings) => ({
                               ...prev,
                               rules: { ...prev.rules, limitFiveStars: checked },
                             }))
@@ -312,7 +313,7 @@ export default function GIRandomizer() {
                           variant="outline"
                           size="sm"
                           onClick={() =>
-                            setSettings((p) => ({
+                            setSettings((p: GiRandomizerSettings) => ({
                               ...p,
                               characters: { ...p.characters, excluded: [] },
                             }))
@@ -359,9 +360,9 @@ export default function GIRandomizer() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                    {Array.from(excluded).map((name) => {
+                    {Array.from(excluded).map((name: string) => {
                       const info = (characters || []).find(
-                        (c) => c.name === name,
+                        (c: GiCharacter) => c.name === name,
                       )
                       const thumb = info
                         ? buildCharacterIconPath(info.name, info.element)

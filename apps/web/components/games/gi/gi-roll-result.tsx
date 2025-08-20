@@ -10,19 +10,19 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { useGiRollResult } from "@/hooks/minigames/gi/use-gi-roll-result"
+import { useGiRollResult } from "@/hooks/games/gi/use-gi-roll-result"
 import {
   buildBossIconPath,
   buildCharacterIconPath,
-} from "@/lib/minigames/gi/icon-path"
+} from "@/lib/games/gi/icon-path"
 import { cn } from "@/lib/utils"
 import { Shuffle, Loader2, Save } from "lucide-react"
 import { Checkbox } from "@/components/animate-ui/radix/checkbox"
 import { Button } from "@/components/ui/button"
-import { useGiRandomizer } from "@/hooks/minigames/gi/use-gi-randomizer"
+import { useGiRandomizer } from "@/hooks/games/gi/use-gi-randomizer"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
-import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
+import { useGiLobbyContext } from "@/hooks/games/gi/lobby-provider"
 
 export function GIRollResultCard() {
   const { hasResult, rolledCharacters, rolledBosses } = useGiRollResult()

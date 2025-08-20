@@ -2,8 +2,8 @@
 
 import React from "react"
 import { TooltipProvider } from "@/components/animate-ui/components/tooltip"
-import { GiLobbyProvider } from "@/hooks/minigames/gi/lobby-provider"
-import { GiDataProvider } from "@/hooks/minigames/gi/gi-data-provider"
+import { GiLobbyProvider } from "@/hooks/games/gi/lobby-provider"
+import { GiDataProvider } from "@/hooks/games/gi/gi-data-provider"
 
 export default function GenshinLayout({
   children,

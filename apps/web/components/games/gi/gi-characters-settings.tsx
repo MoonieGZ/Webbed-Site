@@ -9,25 +9,11 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/animate-ui/radix/switch"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/animate-ui/radix/dropdown-menu"
-import { useGiSettingsBosses } from "@/hooks/minigames/gi/use-gi-settings-bosses"
-import {
-  ChevronDown,
-  Search,
-  ShieldUser,
-  ToggleRight,
-  UserPen,
-} from "lucide-react"
-import type { GiBoss } from "@/types"
-import { buildBossIconPath } from "@/lib/minigames/gi/icon-path"
+import { Input } from "@/components/ui/input"
+import { useGiSettingsCharacters } from "@/hooks/games/gi/use-gi-settings-characters"
+import { buildCharacterIconPath } from "@/lib/games/gi/icon-path"
+import { ChevronDown, Search, ToggleRight, UserPen, Users } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -36,32 +22,39 @@ import {
 } from "@/components/animate-ui/radix/dialog"
 import { Label } from "@/components/ui/label"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/animate-ui/radix/dropdown-menu"
+import {
   Select as ProfileSelect,
   SelectTrigger as ProfileSelectTrigger,
   SelectValue as ProfileSelectValue,
   SelectContent as ProfileSelectContent,
   SelectItem as ProfileSelectItem,
 } from "@/components/ui/select"
-import Image from "next/image"
-import { toastStyles } from "@/lib/toast-styles"
 import { toast } from "sonner"
+import { toastStyles } from "@/lib/toast-styles"
+import Image from "next/image"
 
-export default function GIBossesSettings() {
+export default function GICharactersSettings() {
   const {
-    filter,
-    setFilter,
-    enabledMap,
-    groupKeys,
+    loading,
     filteredGroups,
-    setEnabled,
-    toggleLegendBosses,
-    toggleAll,
+    enabledMap,
+    toggleEnabled,
     profiles,
-    saveProfile,
     loadProfile,
+    saveProfile,
+    toggleAll,
+    toggleByRarity,
     usedProfileIndices,
     nextAvailableProfileIndex,
-  } = useGiSettingsBosses()
+    filter,
+    setFilter,
+  } = useGiSettingsCharacters()
   const [showSave, setShowSave] = React.useState(false)
   const [showLoad, setShowLoad] = React.useState(false)
 
@@ -71,12 +64,14 @@ export default function GIBossesSettings() {
         <CardHeader>
           <CardTitle className="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <ShieldUser className="h-5 w-5" />
-              Bosses
+              <Users className="h-5 w-5" />
+              Characters
             </div>
           </CardTitle>
           <div className="flex items-center justify-between">
-            <CardDescription>Manage enabled bosses by region</CardDescription>
+            <CardDescription>
+              Manage enabled characters in your profile
+            </CardDescription>
             <div className="flex items-center gap-2">
               <div className="relative">
                 <div className="text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-end ps-3 peer-disabled:opacity-50">
@@ -85,13 +80,14 @@ export default function GIBossesSettings() {
                 <Input
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
-                  placeholder="Search Bosses"
+                  placeholder="Search Characters"
                   className="h-8 w-[200px] peer ps-9 placeholder:text-muted-foreground"
                   autoComplete="off"
                   inputMode="search"
                   name="search"
                 />
               </div>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -112,11 +108,20 @@ export default function GIBossesSettings() {
                     Disable All
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => toggleLegendBosses(true)}>
-                    Enable Legends
+                  <DropdownMenuItem onClick={() => toggleByRarity(false, true)}>
+                    Enable All 4★
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => toggleLegendBosses(false)}>
-                    Disable Legends
+                  <DropdownMenuItem
+                    onClick={() => toggleByRarity(false, false)}
+                  >
+                    Disable All 4★
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => toggleByRarity(true, true)}>
+                    Enable All 5★
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => toggleByRarity(true, false)}>
+                    Disable All 5★
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -144,75 +149,78 @@ export default function GIBossesSettings() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {groupKeys.map((region: string) => {
-            const bosses = (filteredGroups.get(region) ?? []) as GiBoss[]
-            if (bosses.length === 0) return null
-            return (
-              <div key={region} className="space-y-2">
-                <div className="flex items-center justify-between">
+        <CardContent className="space-y-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent"></div>
+              <span className="ml-2 text-sm text-muted-foreground">
+                Loading characters...
+              </span>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {Array.from(filteredGroups.entries()).map(([element, chars]) => (
+                <div key={element} className="space-y-2">
                   <div className="text-lg font-medium flex items-center gap-2">
                     <Image
-                      src={`/minigames/gi/locations/${region}.webp`}
-                      alt={region}
+                      src={`/games/gi/elements/${element}.webp`}
+                      alt={element}
                       width={24}
                       height={24}
                       className="rounded-sm"
                     />
-                    {region}
+                    {element}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {chars.map((c) => (
+                      <div
+                        key={c.name}
+                        className={`flex items-center justify-between p-2 rounded-lg border bg-background/50 cursor-pointer ${
+                          c.fiveStar
+                            ? "ring-1 ring-yellow-500/40"
+                            : "ring-1 ring-purple-500/30"
+                        } ${(enabledMap[c.name] ?? true) ? "" : "opacity-75 grayscale"}`}
+                        onClick={() =>
+                          toggleEnabled(c.name, !(enabledMap[c.name] ?? true))
+                        }
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`h-8 w-8 shrink-0 rounded overflow-hidden ring-2 ${
+                              c.fiveStar
+                                ? "ring-yellow-500/60 bg-yellow-500/10"
+                                : "ring-purple-500/50 bg-purple-500/10"
+                            }`}
+                            title={c.name}
+                          >
+                            <Image
+                              src={buildCharacterIconPath(c.name, c.element)}
+                              alt={c.name}
+                              width={32}
+                              height={32}
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">
+                              {c.name}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {c.weaponType} &bull; {c.fiveStar ? "5★" : "4★"}
+                            </div>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={enabledMap[c.name] ?? true}
+                          className="pointer-events-none"
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {bosses.map((b) => (
-                    <div
-                      key={b.name}
-                      className={`flex items-center justify-between p-2 rounded-lg border bg-background/50 cursor-pointer ${
-                        b.legendary
-                          ? "ring-1 ring-yellow-500/40"
-                          : "ring-1 ring-muted-foreground/20"
-                      } ${(enabledMap[b.name] ?? true) ? "" : "opacity-75 grayscale"}`}
-                      onClick={() =>
-                        setEnabled(b.name, !(enabledMap[b.name] ?? true))
-                      }
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={`h-9 w-9 shrink-0 rounded overflow-hidden ring-2 ${
-                            b.legendary
-                              ? "ring-yellow-500/60 bg-yellow-500/10"
-                              : "ring-muted-foreground/40 bg-muted/20"
-                          }`}
-                          title={b.name}
-                        >
-                          <Image
-                            src={buildBossIconPath(b.name, b.location)}
-                            alt={b.name}
-                            className="h-full w-full object-cover"
-                            width={32}
-                            height={32}
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium truncate">
-                            {b.name}
-                          </div>
-                          <div className="text-xs text-muted-foreground truncate">
-                            {b.legendary ? "Legend" : ""}
-                            {b.legendary && !b.coop ? " • " : ""}
-                            {!b.coop ? "Co-Op N/A" : ""}
-                          </div>
-                        </div>
-                      </div>
-                      <Switch
-                        checked={enabledMap[b.name] ?? true}
-                        className="pointer-events-none"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -297,9 +305,9 @@ function SaveProfileDialog({
           </ProfileSelect>
           {selected === "new" && (
             <div className="space-y-2">
-              <Label htmlFor="boss-profile-name">Profile name (optional)</Label>
+              <Label htmlFor="profile-name">Profile name (optional)</Label>
               <input
-                id="boss-profile-name"
+                id="profile-name"
                 className="w-full rounded-md border px-3 py-2 bg-background"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -362,8 +370,11 @@ function LoadProfileDialog({
     if (onLoad && selected) {
       try {
         onLoad(parseInt(selected))
+        toast.success("Profile loaded!", toastStyles.success)
         onOpenChange?.(false)
-      } catch (e) {}
+      } catch (e) {
+        toast.error("Failed to load profile.", toastStyles.error)
+      }
     }
   }
   return (

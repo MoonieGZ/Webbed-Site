@@ -23,7 +23,7 @@ import {
   UserPen,
 } from "lucide-react"
 import type { GiLobbyPrivacy } from "@/types"
-import { useGiLobbyStatus } from "@/hooks/minigames/gi/use-gi-lobby-status"
+import { useGiLobbyStatus } from "@/hooks/games/gi/use-gi-lobby-status"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
@@ -42,8 +42,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/animate-ui/radix/dialog"
-import { useGiLobbyContext } from "@/hooks/minigames/gi/lobby-provider"
-import { useGiMultiplayerProfileGate } from "@/hooks/minigames/gi/use-gi-multiplayer-profile-gate"
+import { useGiLobbyContext } from "@/hooks/games/gi/lobby-provider"
+import { useGiMultiplayerProfileGate } from "@/hooks/games/gi/use-gi-multiplayer-profile-gate"
 import { Counter } from "@/components/animate-ui/components/counter"
 
 export function GILobbyStatusCard() {
