@@ -29,12 +29,6 @@ export function useAdminTools() {
       icon: BadgeCheck,
     },
     {
-      title: "Support",
-      description: "Moderate support requests",
-      href: "/admin/support",
-      icon: MessageSquare,
-    },
-    {
       title: "System",
       description: "Maintenance & tools",
       href: "/admin/tools",
@@ -45,12 +39,6 @@ export function useAdminTools() {
       description: "Data inspection (read-only)",
       href: "/admin/database",
       icon: Database,
-    },
-    {
-      title: "Access",
-      description: "Roles & permissions",
-      href: "/admin/access",
-      icon: Shield,
     },
   ]
 

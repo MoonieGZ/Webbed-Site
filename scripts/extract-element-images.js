@@ -39,9 +39,17 @@ function extractIconUrl(iconCellHtml) {
   if (!iconCellHtml) return null;
   // Prefer data-src if present (lazyloaded), else src
   const dataSrcMatch = iconCellHtml.match(/data-src="([^"]+)"/i);
-  if (dataSrcMatch) return dataSrcMatch[1];
+  if (dataSrcMatch) {
+    const url = dataSrcMatch[1];
+    const idx = url.toLowerCase().indexOf('.png');
+    return idx >= 0 ? url.slice(0, idx + 4) : url;
+  }
   const srcMatch = iconCellHtml.match(/\ssrc="([^"]+)"/i);
-  if (srcMatch) return srcMatch[1];
+  if (srcMatch) {
+    const url = srcMatch[1];
+    const idx = url.toLowerCase().indexOf('.png');
+    return idx >= 0 ? url.slice(0, idx + 4) : url;
+  }
   return null;
 }
 
