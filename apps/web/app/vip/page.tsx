@@ -30,7 +30,7 @@ export default function VIPPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <span>VIP</span>
+                VIP
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
