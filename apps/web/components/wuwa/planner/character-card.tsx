@@ -10,8 +10,14 @@ import {
 } from "@/components/ui/card"
 import { getMaterialIconUrl } from "@/lib/games/ww/icons"
 import { Coins, HeartHandshake } from "lucide-react"
+import { CircleHelp } from "lucide-react"
 
-type MaterialEntry = { type: string; name: string; qty: number }
+type MaterialEntry = {
+  type: string
+  name: string
+  qty: number
+  rarity?: number
+}
 
 export function CharacterCard({
   name,
@@ -23,6 +29,17 @@ export function CharacterCard({
   breakdown: { credits: number; materials: MaterialEntry[] }
 }) {
   const mats = breakdown.materials
+  const getGlow = (rarity?: number) => {
+    if (rarity === 1)
+      return { base: "#81e6be", light: "#c7f3e1", line: "#81e6be" }
+    if (rarity === 2)
+      return { base: "#8fd6fa", light: "#c9ebfd", line: "#8fd6fa" }
+    if (rarity === 3)
+      return { base: "#d0a2fd", light: "#e6cffd", line: "#d0a2fd" }
+    if (rarity === 4)
+      return { base: "#f9d852", light: "#fdeea6", line: "#f9d852" }
+    return { base: "#a1a1aa", light: "#d4d4d8", line: "#a1a1aa" }
+  }
 
   return (
     <Card>
@@ -48,16 +65,44 @@ export function CharacterCard({
           {mats.map((s, idx) => (
             <div
               key={idx}
-              className="rounded-md border bg-background/50 p-2 flex items-center justify-center"
+              className="group rounded-md border bg-background/50 p-2 flex items-center justify-center overflow-hidden"
             >
-              <div className="flex flex-col items-center gap-1">
-                <Image
-                  src={getMaterialIconUrl(s.type, s.name)}
-                  alt={s.name}
-                  width={50}
-                  height={50}
-                />
+              <div className="relative flex flex-col items-center gap-1">
+                <div className="relative flex justify-center w-full">
+                  {s.name === "Unknown" ? (
+                    <div className="h-12 w-12 rounded-full bg-muted/30 flex items-center justify-center opacity-85 transition-opacity group-hover:opacity-100">
+                      <CircleHelp className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <Image
+                      src={getMaterialIconUrl(s.type, s.name)}
+                      alt={s.name}
+                      width={50}
+                      height={50}
+                      className="opacity-85 transition-opacity group-hover:opacity-100"
+                    />
+                  )}
 
+                  {/* Glow + separator */}
+                  <div className="absolute bottom-0 w-2/3">
+                    <div className="relative flex w-full items-center">
+                      <div className="absolute h-4 w-full -bottom-1">
+                        <div
+                          className="absolute bottom-0 h-3 w-full blur-lg transition-all duration-200 group-hover:h-4 group-hover:blur opacity-80"
+                          style={{ background: getGlow(s.rarity).base }}
+                        />
+                        <div
+                          className="absolute bottom-0 h-2 w-full blur transition-all duration-200 group-hover:h-2 group-hover:blur-sm opacity-80"
+                          style={{ background: getGlow(s.rarity).light }}
+                        />
+                      </div>
+                    </div>
+                    <div
+                      className="h-[3px] opacity-85"
+                      style={{ backgroundColor: getGlow(s.rarity).line }}
+                    />
+                  </div>
+                </div>
                 <div className="text-xs">{s.qty.toLocaleString()}</div>
               </div>
             </div>
