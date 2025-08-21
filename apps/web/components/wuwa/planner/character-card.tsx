@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { getMaterialIconUrl } from "@/lib/games/ww/icons"
-import { Coins, HeartHandshake } from "lucide-react"
 import { CircleHelp } from "lucide-react"
 
 type MaterialEntry = {
@@ -22,10 +21,16 @@ type MaterialEntry = {
 export function CharacterCard({
   name,
   icon,
+  elementIcon,
+  elementName,
+  weaponType,
   breakdown,
 }: {
   name: string
   icon: string
+  elementIcon: string
+  elementName: string
+  weaponType: string
   breakdown: { credits: number; materials: MaterialEntry[] }
 }) {
   const mats = breakdown.materials
@@ -54,8 +59,14 @@ export function CharacterCard({
           />
           <div className="flex flex-col gap-1">
             <div className="font-bold">{name}</div>
-            <div className="text-xs text-muted-foreground">
-              {/* TODO: add element and weapon type */}
+            <div className="text-xs text-muted-foreground flex items-center gap-1">
+              <Image
+                src={elementIcon}
+                alt={elementName}
+                width={24}
+                height={24}
+              />
+              {elementName} {weaponType}
             </div>
           </div>
         </CardTitle>
@@ -83,22 +94,21 @@ export function CharacterCard({
                     />
                   )}
 
-                  {/* Glow + separator */}
-                  <div className="absolute bottom-0 w-2/3">
+                  <div className="absolute bottom-0 w-3/4">
                     <div className="relative flex w-full items-center">
                       <div className="absolute h-4 w-full -bottom-1">
                         <div
-                          className="absolute bottom-0 h-3 w-full blur-lg transition-all duration-200 group-hover:h-4 group-hover:blur opacity-80"
+                          className="absolute bottom-0 h-3 w-full blur-lg transition-all duration-200 group-hover:h-4 group-hover:blur opacity-40"
                           style={{ background: getGlow(s.rarity).base }}
                         />
                         <div
-                          className="absolute bottom-0 h-2 w-full blur transition-all duration-200 group-hover:h-2 group-hover:blur-sm opacity-80"
+                          className="absolute bottom-0 h-2 w-full blur transition-all duration-200 group-hover:h-2 group-hover:blur-sm opacity-60"
                           style={{ background: getGlow(s.rarity).light }}
                         />
                       </div>
                     </div>
                     <div
-                      className="h-[3px] opacity-85"
+                      className="h-[3px] opacity-40"
                       style={{ backgroundColor: getGlow(s.rarity).line }}
                     />
                   </div>

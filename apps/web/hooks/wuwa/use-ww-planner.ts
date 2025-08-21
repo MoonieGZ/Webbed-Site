@@ -11,6 +11,7 @@ type CharacterAsset = {
   id: number
   name: string
   element: string
+  weaponType: string
   rarity: number
   icon: string
   elementIcon: string
@@ -20,6 +21,9 @@ export type CharacterPlan = {
   characterId: number
   characterName: string
   characterIcon: string
+  characterElement: string
+  characterElementIcon: string
+  characterWeaponType: string
   fromAscension: number
   toAscension: number
   fromLevel: number
@@ -121,6 +125,7 @@ export function useWwPlanner() {
           id: c.id,
           name: c.name,
           element: c.element,
+          weaponType: (c as any).weaponType,
           rarity: c.rarity,
           icon: c.icon,
           elementIcon: c.elementIcon,
@@ -187,6 +192,9 @@ export function useWwPlanner() {
       characterId: selectedCharacter.id,
       characterName: selectedCharacter.name,
       characterIcon: selectedCharacter.icon,
+      characterElement: selectedCharacter.element,
+      characterElementIcon: selectedCharacter.elementIcon,
+      characterWeaponType: selectedCharacter.weaponType,
       fromAscension,
       toAscension,
       fromLevel,
@@ -466,6 +474,12 @@ export function useWwPlanner() {
                 const qty = t.talent_upgrade[i]
                 if (qty) addItem("talent_upgrade", talentMats[i].name, qty)
               }
+            } else if (Array.isArray(t.talent_upgrade)) {
+              const tiers = t.talent_upgrade as number[]
+              for (let i = 0; i < tiers.length; i++) {
+                const qty = tiers[i] || 0
+                if (qty) addItem("talent_upgrade", "Unknown", qty, i + 1)
+              }
             }
             if (enemyMats && Array.isArray(t.enemy_drop)) {
               for (
@@ -475,6 +489,12 @@ export function useWwPlanner() {
               ) {
                 const qty = t.enemy_drop[i]
                 if (qty) addItem("enemy_drop", enemyMats[i].name, qty)
+              }
+            } else if (Array.isArray(t.enemy_drop)) {
+              const tiers = t.enemy_drop as number[]
+              for (let i = 0; i < tiers.length; i++) {
+                const qty = tiers[i] || 0
+                if (qty) addItem("enemy_drop", "Unknown", qty, i + 1)
               }
             }
             const weekly = detail?.materials?.weekly_boss
@@ -497,6 +517,12 @@ export function useWwPlanner() {
                 const qty = t.talent_upgrade[i]
                 if (qty) addItem("talent_upgrade", talentMats[i].name, qty)
               }
+            } else if (Array.isArray(t.talent_upgrade)) {
+              const tiers = t.talent_upgrade as number[]
+              for (let i = 0; i < tiers.length; i++) {
+                const qty = tiers[i] || 0
+                if (qty) addItem("talent_upgrade", "Unknown", qty, i + 1)
+              }
             }
             if (enemyMats && Array.isArray(t.enemy_drop)) {
               for (
@@ -506,6 +532,12 @@ export function useWwPlanner() {
               ) {
                 const qty = t.enemy_drop[i]
                 if (qty) addItem("enemy_drop", enemyMats[i].name, qty)
+              }
+            } else if (Array.isArray(t.enemy_drop)) {
+              const tiers = t.enemy_drop as number[]
+              for (let i = 0; i < tiers.length; i++) {
+                const qty = tiers[i] || 0
+                if (qty) addItem("enemy_drop", "Unknown", qty, i + 1)
               }
             }
             const weekly = detail?.materials?.weekly_boss
@@ -590,14 +622,14 @@ export function useWwPlanner() {
         }
         const bossMat = detail?.materials?.boss_drop
         if (bossMat && step.boss_drop)
-          addItem("boss_drop", bossMat.name, step.boss_drop, bossMat.rarity)
+          addItem("boss_drop", bossMat.name, step.boss_drop, 3)
         const collMat = detail?.materials?.collectible
         if (collMat && step.collectible)
           addItem("collectible", collMat.name, step.collectible, collMat.rarity)
         else if (!collMat && step.collectible)
           addItem("collectible", "Unknown", step.collectible)
         if (!bossMat && step.boss_drop)
-          addItem("boss_drop", "Unknown", step.boss_drop)
+          addItem("boss_drop", "Unknown", step.boss_drop, 3)
         if (step.credits) addItem("other", "Shell Credit", step.credits, 2)
         credits += step.credits || 0
       }
@@ -664,9 +696,9 @@ export function useWwPlanner() {
           }
           const weekly = detail?.materials?.weekly_boss
           if (weekly && step.weekly_boss)
-            addItem("weekly_boss", weekly.name, step.weekly_boss, weekly.rarity)
+            addItem("weekly_boss", weekly.name, step.weekly_boss, 3)
           else if (step.weekly_boss)
-            addItem("weekly_boss", "Unknown", step.weekly_boss)
+            addItem("weekly_boss", "Unknown", step.weekly_boss, 3)
           if (step.credits) addItem("other", "Shell Credit", step.credits, 2)
           credits += step.credits || 0
         }
@@ -724,9 +756,9 @@ export function useWwPlanner() {
           }
           const weekly = detail?.materials?.weekly_boss
           if (weekly && t.weekly_boss)
-            addItem("weekly_boss", weekly.name, t.weekly_boss, weekly.rarity)
+            addItem("weekly_boss", weekly.name, t.weekly_boss, 3)
           else if (t.weekly_boss)
-            addItem("weekly_boss", "Unknown", t.weekly_boss)
+            addItem("weekly_boss", "Unknown", t.weekly_boss, 3)
           if (t.credits) addItem("other", "Shell Credit", t.credits, 2)
           credits += t.credits || 0
         }
@@ -782,9 +814,9 @@ export function useWwPlanner() {
           }
           const weekly = detail?.materials?.weekly_boss
           if (weekly && t.weekly_boss)
-            addItem("weekly_boss", weekly.name, t.weekly_boss, weekly.rarity)
+            addItem("weekly_boss", weekly.name, t.weekly_boss, 3)
           else if (t.weekly_boss)
-            addItem("weekly_boss", "Unknown", t.weekly_boss)
+            addItem("weekly_boss", "Unknown", t.weekly_boss, 3)
           if (t.credits) addItem("other", "Shell Credit", t.credits, 2)
           credits += t.credits || 0
         }
@@ -814,6 +846,12 @@ export function useWwPlanner() {
                     talentMats[i].rarity,
                   )
               }
+            } else if (Array.isArray(t.talent_upgrade)) {
+              const tiers = t.talent_upgrade as number[]
+              for (let i = 0; i < tiers.length; i++) {
+                const qty = tiers[i] || 0
+                if (qty) addItem("talent_upgrade", "Unknown", qty, i + 1)
+              }
             }
             if (enemyMats && Array.isArray(t.enemy_drop)) {
               for (
@@ -830,10 +868,16 @@ export function useWwPlanner() {
                     enemyMats[i].rarity,
                   )
               }
+            } else if (Array.isArray(t.enemy_drop)) {
+              const tiers = t.enemy_drop as number[]
+              for (let i = 0; i < tiers.length; i++) {
+                const qty = tiers[i] || 0
+                if (qty) addItem("enemy_drop", "Unknown", qty, i + 1)
+              }
             }
             const weekly = detail?.materials?.weekly_boss
             if (weekly && t.weekly_boss)
-              addItem("weekly_boss", weekly.name, t.weekly_boss, weekly.rarity)
+              addItem("weekly_boss", weekly.name, t.weekly_boss, 3)
             if (t.credits) addItem("other", "Shell Credit", t.credits, 2)
             credits += t.credits || 0
           }
@@ -858,6 +902,12 @@ export function useWwPlanner() {
                     talentMats[i].rarity,
                   )
               }
+            } else if (Array.isArray(t.talent_upgrade)) {
+              const tiers = t.talent_upgrade as number[]
+              for (let i = 0; i < tiers.length; i++) {
+                const qty = tiers[i] || 0
+                if (qty) addItem("talent_upgrade", "Unknown", qty, i + 1)
+              }
             }
             if (enemyMats && Array.isArray(t.enemy_drop)) {
               for (
@@ -874,12 +924,18 @@ export function useWwPlanner() {
                     enemyMats[i].rarity,
                   )
               }
+            } else if (Array.isArray(t.enemy_drop)) {
+              const tiers = t.enemy_drop as number[]
+              for (let i = 0; i < tiers.length; i++) {
+                const qty = tiers[i] || 0
+                if (qty) addItem("enemy_drop", "Unknown", qty, i + 1)
+              }
             }
             const weekly = detail?.materials?.weekly_boss
             if (weekly && t.weekly_boss)
-              addItem("weekly_boss", weekly.name, t.weekly_boss, weekly.rarity)
+              addItem("weekly_boss", weekly.name, t.weekly_boss, 3)
             else if (t.weekly_boss)
-              addItem("weekly_boss", "Unknown", t.weekly_boss)
+              addItem("weekly_boss", "Unknown", t.weekly_boss, 3)
             if (t.credits) addItem("other", "Shell Credit", t.credits, 2)
             credits += t.credits || 0
           }

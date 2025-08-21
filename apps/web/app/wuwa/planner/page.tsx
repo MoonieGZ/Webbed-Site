@@ -55,6 +55,9 @@ export default function WuwaPlannerPage() {
               key={idx}
               name={p.characterName}
               icon={p.characterIcon}
+              elementIcon={p.characterElementIcon}
+              elementName={p.characterElement}
+              weaponType={p.characterWeaponType}
               breakdown={planner.getPlanBreakdown(p)}
             />
           ))}

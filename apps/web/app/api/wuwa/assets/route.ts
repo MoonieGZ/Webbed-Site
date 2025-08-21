@@ -9,8 +9,14 @@ import {
 export async function GET() {
   try {
     const charRows = (await query(
-      "SELECT id, name, element, rarity FROM ww_characters ORDER BY element, rarity DESC, name",
-    )) as Array<{ id: number; name: string; element: string; rarity: number }>
+      "SELECT id, name, element, weapon_type, rarity FROM ww_characters ORDER BY element, rarity DESC, name",
+    )) as Array<{
+      id: number
+      name: string
+      element: string
+      weapon_type: string
+      rarity: number
+    }>
 
     // Character groups with materials
     const charGroupRows = (await query(
@@ -101,6 +107,7 @@ export async function GET() {
       id: row.id,
       name: row.name,
       element: row.element,
+      weaponType: row.weapon_type,
       rarity: row.rarity,
       icon: getCharacterIconUrl(row.element, row.name),
       elementIcon: getElementIconUrl(row.element),

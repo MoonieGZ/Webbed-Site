@@ -8,6 +8,12 @@ import {
 } from "@/components/animate-ui/radix/dialog"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
+import { useMemo } from "react"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/animate-ui/base/toggle-group"
+import { useAddCharacterFilters } from "@/hooks/wuwa/use-add-character-filters"
 
 export function AddCharacterDialog({
   open,
@@ -27,6 +33,7 @@ export function AddCharacterDialog({
     element: string
     icon: string
     elementIcon: string
+    weaponType: string
     rarity: number
   }>
   onChoose: (c: {
@@ -35,9 +42,32 @@ export function AddCharacterDialog({
     element: string
     icon: string
     elementIcon: string
+    weaponType: string
     rarity: number
   }) => void
 }) {
+  const {
+    elementFilter,
+    setElementFilter,
+    weaponFilter,
+    setWeaponFilter,
+    elementOptions,
+    weaponOptions,
+    clearFilters,
+  } = useAddCharacterFilters()
+
+  const sortedCharacters = useMemo(
+    () => [...characters].sort((a, b) => a.name.localeCompare(b.name)),
+    [characters],
+  )
+
+  const filteredCharacters = useMemo(() => {
+    return sortedCharacters.filter((c) => {
+      if (elementFilter && c.element !== elementFilter) return false
+      if (weaponFilter && c.weaponType !== weaponFilter) return false
+      return true
+    })
+  }, [sortedCharacters, elementFilter, weaponFilter])
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
@@ -51,14 +81,58 @@ export function AddCharacterDialog({
             onChange={(e) => setSearch(e.target.value)}
             autoFocus
           />
+          <div className="flex flex-wrap gap-2 items-center">
+            <div className="text-xs text-muted-foreground">Filter:</div>
+            <ToggleGroup
+              toggleMultiple
+              value={elementFilter ? [elementFilter] : []}
+              onValueChange={(arr) => {
+                const vals = (arr as readonly string[]) || []
+                const next = vals.includes("__all_el") ? "" : vals[0] || ""
+                setElementFilter(next as any)
+              }}
+              className="flex flex-wrap"
+              aria-label="Filter by element"
+            >
+              <ToggleGroupItem value="__all_el" aria-label="All elements">
+                All Elements
+              </ToggleGroupItem>
+              {elementOptions.map((el) => (
+                <ToggleGroupItem key={el} value={el} aria-label={el}>
+                  {el}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+            <ToggleGroup
+              toggleMultiple
+              value={weaponFilter ? [weaponFilter] : []}
+              onValueChange={(arr) => {
+                const vals = (arr as readonly string[]) || []
+                const next = vals.includes("__all_wp") ? "" : vals[0] || ""
+                setWeaponFilter(next as any)
+              }}
+              className="flex flex-wrap"
+              aria-label="Filter by weapon"
+            >
+              <ToggleGroupItem value="__all_wp" aria-label="All weapons">
+                All Weapons
+              </ToggleGroupItem>
+              {weaponOptions.map((wp) => (
+                <ToggleGroupItem key={wp} value={wp} aria-label={wp}>
+                  {wp}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
+
           <div className="max-h-[60vh] overflow-y-auto rounded-md border">
-            {characters.length === 0 ? (
+            {filteredCharacters.length === 0 ? (
               <div className="p-3 text-sm text-muted-foreground">
                 No results
               </div>
             ) : (
               <ul className="divide-y">
-                {characters.map((c) => (
+                {filteredCharacters.map((c) => (
                   <li
                     key={c.id}
                     className="flex items-center justify-between gap-3 p-2 hover:bg-muted/30 cursor-pointer"
@@ -77,7 +151,7 @@ export function AddCharacterDialog({
                             width={16}
                             height={16}
                           />
-                          {c.element}
+                          {c.element} {c.weaponType}
                         </div>
                       </div>
                     </div>

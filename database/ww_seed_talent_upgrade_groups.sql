@@ -36,12 +36,12 @@ SELECT w.id, g.id
   JOIN ww_groups g ON g.name = 'Helix' AND g.type = 'talent_upgrade'
  WHERE w.weapon_type = 'Rectifier';
 
--- Map Pistol -> Phlogiston
+-- Map Pistols -> Phlogiston
 INSERT IGNORE INTO ww_weapon_groups (weapon_id, group_id)
 SELECT w.id, g.id
   FROM ww_weapons w
   JOIN ww_groups g ON g.name = 'Phlogiston' AND g.type = 'talent_upgrade'
- WHERE w.weapon_type = 'Pistol';
+ WHERE w.weapon_type = 'Pistols';
 
 -- Also assign characters to the corresponding talent_upgrade group based on their weapon type
 
@@ -73,12 +73,12 @@ SELECT c.id, g.id
   JOIN ww_groups g ON g.name = 'Helix' AND g.type = 'talent_upgrade'
  WHERE c.weapon_type = 'Rectifier';
 
--- Pistol -> Phlogiston
+-- Pistols -> Phlogiston
 INSERT IGNORE INTO ww_character_groups (character_id, group_id)
 SELECT c.id, g.id
   FROM ww_characters c
   JOIN ww_groups g ON g.name = 'Phlogiston' AND g.type = 'talent_upgrade'
- WHERE c.weapon_type = 'Pistol';
+ WHERE c.weapon_type = 'Pistols';
 
 -- ============================
 -- Weapon Upgrade Groups by Weapon Type (enemy_drop)
