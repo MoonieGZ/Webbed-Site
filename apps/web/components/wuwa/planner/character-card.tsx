@@ -44,7 +44,7 @@ export function CharacterCard({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="inline-grid grid-cols-4 gap-2 mx-auto w-full">
+        <div className="flex flex-wrap gap-2 mx-auto justify-around">
           {mats.map((s, idx) => (
             <div
               key={idx}
@@ -57,6 +57,7 @@ export function CharacterCard({
                   width={50}
                   height={50}
                 />
+
                 <div className="text-xs">{s.qty.toLocaleString()}</div>
               </div>
             </div>
