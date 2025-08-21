@@ -44,6 +44,23 @@ export async function GET() {
 			groupEntry.materials.push({ id: r.materialId, name: r.materialName, rarity: r.materialRarity })
 		}
 
+		// Character direct materials (weekly_boss, boss_drop, collectible)
+		const charMatRows = (await query(
+			`SELECT cm.character_id as characterId,
+			        cm.type as materialType,
+			        m.id as materialId,
+			        m.name as materialName,
+			        m.rarity as materialRarity
+			   FROM ww_character_materials cm
+			   JOIN ww_materials m ON m.id = cm.material_id`,
+		)) as Array<{ characterId: number; materialType: string; materialId: number; materialName: string; materialRarity: number }>
+
+		const characterMaterials: Record<number, Record<string, { id: number; name: string; rarity: number }>> = {}
+		for (const r of charMatRows) {
+			if (!characterMaterials[r.characterId]) characterMaterials[r.characterId] = {}
+			characterMaterials[r.characterId][r.materialType] = { id: r.materialId, name: r.materialName, rarity: r.materialRarity }
+		}
+
 		const characters = charRows.map((row) => ({
 			id: row.id,
 			name: row.name,
@@ -52,6 +69,7 @@ export async function GET() {
 			icon: getCharacterIconUrl(row.element, row.name),
 			elementIcon: getElementIconUrl(row.element),
 			groups: characterGroups[row.id] || {},
+			materials: characterMaterials[row.id] || {},
 		}))
 
 		const weaponRows = (await query(
