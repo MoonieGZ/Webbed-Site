@@ -126,9 +126,7 @@ export function useGiSettingsCharacters() {
         enabledMap: fullMap,
       }),
     }).catch(() => {})
-    const updated = await fetch("/api/games/gi/profiles").then((r) =>
-      r.json(),
-    )
+    const updated = await fetch("/api/games/gi/profiles").then((r) => r.json())
     setProfiles(Array.isArray(updated) ? updated : [])
     setSelectedProfile(profileIndex)
   }

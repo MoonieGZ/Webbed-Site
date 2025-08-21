@@ -28,12 +28,12 @@ export function PlannerTopBar({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={onAddWeapon}>Add Weapon</Button>
+          <Button variant="outline" onClick={onAddWeapon}>
+            Add Weapon
+          </Button>
           <Button onClick={onAddCharacter}>Add Character</Button>
         </div>
       </CardContent>
     </Card>
   )
 }
-
-

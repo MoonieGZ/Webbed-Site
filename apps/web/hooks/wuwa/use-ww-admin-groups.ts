@@ -8,8 +8,17 @@ type GroupType = "talent_upgrade" | "enemy_drop" | "other"
 type MaterialType = "weekly_boss" | "boss_drop" | "collectible"
 type CombinedType = GroupType | MaterialType
 
-type Character = { id: number; name: string; element: string; weaponType: string; rarity: number }
-type GroupsByType = Record<string, Array<{ id: number; name: string; previewMaterialName?: string }>>
+type Character = {
+  id: number
+  name: string
+  element: string
+  weaponType: string
+  rarity: number
+}
+type GroupsByType = Record<
+  string,
+  Array<{ id: number; name: string; previewMaterialName?: string }>
+>
 type MaterialsByType = Record<string, Array<{ id: number; name: string }>>
 type CurrentAssignments = Record<number, Partial<Record<CombinedType, number>>>
 
@@ -67,28 +76,34 @@ export function useWwAdminGroups() {
     return map
   }, [filtered])
 
-  const updateAssignment = useCallback(async (characterId: number, type: CombinedType, groupId: number | null) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await fetch("/api/admin/wuwa/groups", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ characterId, type, groupId }),
-      })
-      if (!res.ok) throw new Error("Failed to update")
-      setCurrent((prev) => ({
-        ...prev,
-        [characterId]: { ...(prev[characterId] || {}), [type]: groupId ?? undefined },
-      }))
-      toast.success("Saved", toastStyles.success)
-    } catch (err: any) {
-      setError(err?.message || "Unknown error")
-      toast("Failed to save", toastStyles.error)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const updateAssignment = useCallback(
+    async (characterId: number, type: CombinedType, groupId: number | null) => {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await fetch("/api/admin/wuwa/groups", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ characterId, type, groupId }),
+        })
+        if (!res.ok) throw new Error("Failed to update")
+        setCurrent((prev) => ({
+          ...prev,
+          [characterId]: {
+            ...(prev[characterId] || {}),
+            [type]: groupId ?? undefined,
+          },
+        }))
+        toast.success("Saved", toastStyles.success)
+      } catch (err: any) {
+        setError(err?.message || "Unknown error")
+        toast("Failed to save", toastStyles.error)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [],
+  )
 
   return {
     loading,
@@ -102,5 +117,3 @@ export function useWwAdminGroups() {
     updateAssignment,
   }
 }
-
-

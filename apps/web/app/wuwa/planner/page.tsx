@@ -2,7 +2,13 @@
 
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/animate-ui/radix/sidebar"
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 import { PlannerTopBar } from "@/components/wuwa/planner/planner-top-bar"
 import { AddCharacterDialog } from "@/components/wuwa/planner/add-character-dialog"
 import { CharacterConfigDialog } from "@/components/wuwa/planner/character-config-dialog"
@@ -17,7 +23,10 @@ export default function WuwaPlannerPage() {
       <header className="flex h-16 shrink-0 items-center gap-2">
         <div className="flex items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
+          <Separator
+            orientation="vertical"
+            className="mr-2 data-[orientation=vertical]:h-4"
+          />
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
@@ -54,7 +63,9 @@ export default function WuwaPlannerPage() {
 
       <AddCharacterDialog
         open={planner.showAddCharacter}
-        onOpenChange={(o) => (o ? planner.openAddCharacter() : planner.closeAddCharacter())}
+        onOpenChange={(o) =>
+          o ? planner.openAddCharacter() : planner.closeAddCharacter()
+        }
         search={planner.search}
         setSearch={planner.setSearch}
         characters={planner.filteredCharacters}

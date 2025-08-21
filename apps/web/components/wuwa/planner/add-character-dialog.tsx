@@ -1,6 +1,11 @@
 "use client"
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/animate-ui/radix/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/animate-ui/radix/dialog"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
 
@@ -16,8 +21,22 @@ export function AddCharacterDialog({
   onOpenChange: (o: boolean) => void
   search: string
   setSearch: (v: string) => void
-  characters: Array<{ id: number; name: string; element: string; icon: string; elementIcon: string; rarity: number }>
-  onChoose: (c: { id: number; name: string; element: string; icon: string; elementIcon: string; rarity: number }) => void
+  characters: Array<{
+    id: number
+    name: string
+    element: string
+    icon: string
+    elementIcon: string
+    rarity: number
+  }>
+  onChoose: (c: {
+    id: number
+    name: string
+    element: string
+    icon: string
+    elementIcon: string
+    rarity: number
+  }) => void
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -34,7 +53,9 @@ export function AddCharacterDialog({
           />
           <div className="max-h-[60vh] overflow-y-auto rounded-md border">
             {characters.length === 0 ? (
-              <div className="p-3 text-sm text-muted-foreground">No results</div>
+              <div className="p-3 text-sm text-muted-foreground">
+                No results
+              </div>
             ) : (
               <ul className="divide-y">
                 {characters.map((c) => (
@@ -46,9 +67,16 @@ export function AddCharacterDialog({
                     <div className="flex items-center gap-3 min-w-0">
                       <Image src={c.icon} alt={c.name} width={36} height={36} />
                       <div className="min-w-0">
-                        <div className="text-sm font-medium truncate">{c.name}</div>
+                        <div className="text-sm font-medium truncate">
+                          {c.name}
+                        </div>
                         <div className="text-xs text-muted-foreground truncate flex items-center gap-1">
-                          <Image src={c.elementIcon} alt={c.element} width={16} height={16} />
+                          <Image
+                            src={c.elementIcon}
+                            alt={c.element}
+                            width={16}
+                            height={16}
+                          />
                           {c.element}
                         </div>
                       </div>
@@ -63,5 +91,3 @@ export function AddCharacterDialog({
     </Dialog>
   )
 }
-
-

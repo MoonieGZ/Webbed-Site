@@ -3,7 +3,13 @@ import { getUserBySession } from "@/lib/session"
 import { ADMIN_USER_ID } from "@/lib/admin"
 import { query } from "@/lib/db"
 
-type GroupType = "boss_drop" | "talent_upgrade" | "collectible" | "weekly_boss" | "enemy_drop" | "other"
+type GroupType =
+  | "boss_drop"
+  | "talent_upgrade"
+  | "collectible"
+  | "weekly_boss"
+  | "enemy_drop"
+  | "other"
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,7 +23,13 @@ export async function GET(request: NextRequest) {
       `SELECT id, name, element, weapon_type as weaponType, rarity
          FROM ww_characters
         ORDER BY element, rarity DESC, name`,
-    )) as Array<{ id: number; name: string; element: string; weaponType: string; rarity: number }>
+    )) as Array<{
+      id: number
+      name: string
+      element: string
+      weaponType: string
+      rarity: number
+    }>
 
     const groupRows = (await query(
       `SELECT id, name, type
@@ -32,16 +44,29 @@ export async function GET(request: NextRequest) {
          JOIN ww_group_items gi ON gi.group_id = g.id
          JOIN ww_materials m ON m.id = gi.material_id
         ORDER BY m.rarity DESC, m.name ASC`,
-    )) as Array<{ groupId: number; groupType: GroupType; materialName: string; materialRarity: number }>
+    )) as Array<{
+      groupId: number
+      groupType: GroupType
+      materialName: string
+      materialRarity: number
+    }>
     const previews = new Map<number, { name: string }>()
     for (const r of previewRows) {
-      if (!previews.has(r.groupId)) previews.set(r.groupId, { name: r.materialName })
+      if (!previews.has(r.groupId))
+        previews.set(r.groupId, { name: r.materialName })
     }
 
-    const groupsByType: Record<string, Array<{ id: number; name: string; previewMaterialName?: string }>> = {}
+    const groupsByType: Record<
+      string,
+      Array<{ id: number; name: string; previewMaterialName?: string }>
+    > = {}
     for (const g of groupRows) {
       if (!groupsByType[g.type]) groupsByType[g.type] = []
-      groupsByType[g.type].push({ id: g.id, name: g.name, previewMaterialName: previews.get(g.id)?.name })
+      groupsByType[g.type].push({
+        id: g.id,
+        name: g.name,
+        previewMaterialName: previews.get(g.id)?.name,
+      })
     }
 
     const assignmentRows = (await query(
@@ -54,7 +79,12 @@ export async function GET(request: NextRequest) {
       `SELECT cm.character_id as characterId, cm.type as materialType, m.id as materialId, m.name as materialName
          FROM ww_character_materials cm
          JOIN ww_materials m ON m.id = cm.material_id`,
-    )) as Array<{ characterId: number; materialType: "weekly_boss" | "boss_drop" | "collectible"; materialId: number; materialName: string }>
+    )) as Array<{
+      characterId: number
+      materialType: "weekly_boss" | "boss_drop" | "collectible"
+      materialId: number
+      materialName: string
+    }>
 
     const current: Record<number, any> = {}
     for (const r of assignmentRows) {
@@ -73,16 +103,27 @@ export async function GET(request: NextRequest) {
         WHERE type IN ('weekly_boss','boss_drop','collectible')
         ORDER BY type, name`,
     )) as Array<{ id: number; name: string; type: string }>
-    const materialsByType: Record<string, Array<{ id: number; name: string }>> = {}
+    const materialsByType: Record<
+      string,
+      Array<{ id: number; name: string }>
+    > = {}
     for (const m of materialOptions) {
       if (!materialsByType[m.type]) materialsByType[m.type] = []
       materialsByType[m.type].push({ id: m.id, name: m.name })
     }
 
-    return NextResponse.json({ characters, groupsByType, current, materialsByType })
+    return NextResponse.json({
+      characters,
+      groupsByType,
+      current,
+      materialsByType,
+    })
   } catch (error) {
     console.error("Admin WW groups GET error:", error)
-    return NextResponse.json({ error: "Failed to load WW groups" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to load WW groups" },
+      { status: 500 },
+    )
   }
 }
 
@@ -105,14 +146,21 @@ export async function PUT(request: NextRequest) {
     }
 
     // If type is one of the direct material-selection types
-    if (type === "weekly_boss" || type === "boss_drop" || type === "collectible") {
+    if (
+      type === "weekly_boss" ||
+      type === "boss_drop" ||
+      type === "collectible"
+    ) {
       if (groupId != null) {
         const check = (await query(
           `SELECT id FROM ww_materials WHERE id = ? AND type = ? LIMIT 1`,
           [groupId, type],
         )) as Array<{ id: number }>
         if (check.length === 0) {
-          return NextResponse.json({ error: "Material does not match type" }, { status: 400 })
+          return NextResponse.json(
+            { error: "Material does not match type" },
+            { status: 400 },
+          )
         }
       }
 
@@ -137,7 +185,10 @@ export async function PUT(request: NextRequest) {
         [groupId, type],
       )) as Array<{ id: number }>
       if (check.length === 0) {
-        return NextResponse.json({ error: "Group does not match type" }, { status: 400 })
+        return NextResponse.json(
+          { error: "Group does not match type" },
+          { status: 400 },
+        )
       }
     }
 
@@ -159,8 +210,9 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Admin WW groups PUT error:", error)
-    return NextResponse.json({ error: "Failed to update group assignment" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to update group assignment" },
+      { status: 500 },
+    )
   }
 }
-
-
