@@ -20,8 +20,8 @@ export type WeaponType =
   | "Unknown"
 
 export function useAddCharacterFilters() {
-  const [elementFilter, setElementFilter] = useState<ElementType | "">("")
-  const [weaponFilter, setWeaponFilter] = useState<WeaponType | "">("")
+  const [elementFilters, setElementFilters] = useState<ElementType[]>([])
+  const [weaponFilters, setWeaponFilters] = useState<WeaponType[]>([])
 
   const elementOptions: ElementType[] = useMemo(
     () => [
@@ -49,15 +49,15 @@ export function useAddCharacterFilters() {
   )
 
   const clearFilters = () => {
-    setElementFilter("")
-    setWeaponFilter("")
+    setElementFilters([])
+    setWeaponFilters([])
   }
 
   return {
-    elementFilter,
-    setElementFilter,
-    weaponFilter,
-    setWeaponFilter,
+    elementFilters,
+    setElementFilters,
+    weaponFilters,
+    setWeaponFilters,
     elementOptions,
     weaponOptions,
     clearFilters,

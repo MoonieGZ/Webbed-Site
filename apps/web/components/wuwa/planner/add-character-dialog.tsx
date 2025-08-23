@@ -14,6 +14,12 @@ import {
   ToggleGroupItem,
 } from "@/components/animate-ui/base/toggle-group"
 import { useAddCharacterFilters } from "@/hooks/wuwa/use-add-character-filters"
+import { Search } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/animate-ui/radix/tooltip"
 
 export function AddCharacterDialog({
   open,
@@ -47,13 +53,12 @@ export function AddCharacterDialog({
   }) => void
 }) {
   const {
-    elementFilter,
-    setElementFilter,
-    weaponFilter,
-    setWeaponFilter,
+    elementFilters,
+    setElementFilters,
+    weaponFilters,
+    setWeaponFilters,
     elementOptions,
     weaponOptions,
-    clearFilters,
   } = useAddCharacterFilters()
 
   const sortedCharacters = useMemo(
@@ -63,69 +68,85 @@ export function AddCharacterDialog({
 
   const filteredCharacters = useMemo(() => {
     return sortedCharacters.filter((c) => {
-      if (elementFilter && c.element !== elementFilter) return false
-      if (weaponFilter && c.weaponType !== weaponFilter) return false
+      if (elementFilters.length && !elementFilters.includes(c.element as any))
+        return false
+      if (weaponFilters.length && !weaponFilters.includes(c.weaponType as any))
+        return false
       return true
     })
-  }, [sortedCharacters, elementFilter, weaponFilter])
+  }, [sortedCharacters, elementFilters, weaponFilters])
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl h-[75vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Add Character</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <Input
-            placeholder="Search characters..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            autoFocus
-          />
-          <div className="flex flex-wrap gap-2 items-center">
-            <div className="text-xs text-muted-foreground">Filter:</div>
-            <ToggleGroup
-              toggleMultiple
-              value={elementFilter ? [elementFilter] : []}
-              onValueChange={(arr) => {
-                const vals = (arr as readonly string[]) || []
-                const next = vals.includes("__all_el") ? "" : vals[0] || ""
-                setElementFilter(next as any)
-              }}
-              className="flex flex-wrap"
-              aria-label="Filter by element"
-            >
-              <ToggleGroupItem value="__all_el" aria-label="All elements">
-                All Elements
-              </ToggleGroupItem>
-              {elementOptions.map((el) => (
-                <ToggleGroupItem key={el} value={el} aria-label={el}>
-                  {el}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-            <ToggleGroup
-              toggleMultiple
-              value={weaponFilter ? [weaponFilter] : []}
-              onValueChange={(arr) => {
-                const vals = (arr as readonly string[]) || []
-                const next = vals.includes("__all_wp") ? "" : vals[0] || ""
-                setWeaponFilter(next as any)
-              }}
-              className="flex flex-wrap"
-              aria-label="Filter by weapon"
-            >
-              <ToggleGroupItem value="__all_wp" aria-label="All weapons">
-                All Weapons
-              </ToggleGroupItem>
-              {weaponOptions.map((wp) => (
-                <ToggleGroupItem key={wp} value={wp} aria-label={wp}>
-                  {wp}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-muted-foreground">Filters:</div>
+            <div className="flex flex-wrap items-center gap-2 justify-end">
+              <ToggleGroup
+                toggleMultiple
+                value={elementFilters}
+                onValueChange={(arr) => setElementFilters([...(arr as any[])])}
+                className="flex flex-wrap"
+                aria-label="Filter by element"
+              >
+                {elementOptions.map((el) => (
+                  <Tooltip key={el}> // TODO: fix tooltip to not create one per element
+                    <TooltipTrigger asChild>
+                      <ToggleGroupItem value={el} aria-label={el}>
+                        <Image
+                          src={`/games/ww/elements/${el}.webp`}
+                          alt={el}
+                          width={24}
+                          height={24}
+                        />
+                      </ToggleGroupItem>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{el}</TooltipContent>
+                  </Tooltip>
+                ))}
+              </ToggleGroup>
+              <ToggleGroup
+                toggleMultiple
+                value={weaponFilters}
+                onValueChange={(arr) => setWeaponFilters([...(arr as any[])])}
+                className="flex flex-wrap"
+                aria-label="Filter by weapon"
+              >
+                {weaponOptions.map((wp) => (
+                  <Tooltip key={wp}>
+                    <TooltipTrigger asChild>
+                      <ToggleGroupItem value={wp} aria-label={wp}>
+                        <Image
+                          src={`/games/ww/weapon_types/${wp}_Icon.png`}
+                          alt={wp}
+                          width={24}
+                          height={24}
+                        />
+                      </ToggleGroupItem>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">{wp}</TooltipContent>
+                  </Tooltip>
+                ))}
+              </ToggleGroup>
+            </div>
+          </div>
+          <div className="relative">
+            <div className="text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-end ps-3 peer-disabled:opacity-50">
+              <Search className="size-4" />
+            </div>
+            <Input
+              placeholder="Search characters..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="ps-9"
+              autoFocus
+            />
           </div>
 
-          <div className="max-h-[60vh] overflow-y-auto rounded-md border">
+          <div className="max-h-[60vh] overflow-y-auto rounded-md border h-[45vh]">
             {filteredCharacters.length === 0 ? (
               <div className="p-3 text-sm text-muted-foreground">
                 No results
