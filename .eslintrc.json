@@ -1,4 +1,5 @@
 {
+  "root": true,
   "extends": ["next/core-web-vitals", "next/typescript", "prettier"],
   "plugins": ["prettier"],
   "rules": {
@@ -15,7 +16,7 @@
   "overrides": [
     {
       "files": ["**/*.{ts,tsx}"],
-      "excludedFiles": ["types/**"],
+      "excludedFiles": ["types/**", ".next/**"],
       "rules": {
         "no-restricted-syntax": "off"
       }

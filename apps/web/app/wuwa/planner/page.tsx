@@ -13,11 +13,14 @@ import { PlannerTopBar } from "@/components/games/ww/planner/planner-top-bar"
 import { AddCharacterDialog } from "@/components/games/ww/planner/add-character-dialog"
 import { CharacterConfigDialog } from "@/components/games/ww/planner/character-config-dialog"
 import { CharacterCard } from "@/components/games/ww/planner/character-card"
+import { InventoryDialog } from "@/components/games/ww/planner/inventory-dialog"
 import { useWwPlanner } from "@/hooks/games/ww/use-ww-planner"
 import { AnimatePresence } from "motion/react"
+import { useState } from "react"
 
 export default function WuWaPlannerPage() {
   const planner = useWwPlanner()
+  const [showInventory, setShowInventory] = useState(false)
 
   return (
     <>
@@ -48,6 +51,7 @@ export default function WuWaPlannerPage() {
           totalCredits={planner.totalResources.credits}
           onAddCharacter={planner.openAddCharacter}
           onAddWeapon={() => {}}
+          onManageInventory={() => setShowInventory(true)}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -99,6 +103,11 @@ export default function WuWaPlannerPage() {
         statBoosts={planner.statBoosts}
         setStatBoosts={planner.setStatBoosts}
         onConfirm={planner.confirmCharacterPlan}
+      />
+
+      <InventoryDialog
+        open={showInventory}
+        onOpenChange={(o) => setShowInventory(o)}
       />
     </>
   )

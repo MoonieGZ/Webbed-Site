@@ -24,6 +24,9 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - SidebarProvider, SidebarInset, SidebarTrigger (from animate-ui/radix/sidebar)
   - MotionEffect (from animate-ui/effects/motion-effect)
   - Progress (from animate-ui/radix/progress)
+  - Dialog (from animate-ui/radix/dialog)
+  - Dropdown Menu (from animate-ui/radix/dropdown-menu)
+  - Collapsible (from animate-ui/radix/collapsible)
   - Tabs (from animate-ui/components/tabs)
   - Tooltip (from animate-ui/components/tooltip)
 
@@ -46,6 +49,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - FriendsRequestsCard (tabs for received/sent/blocked requests)
   - FriendsManagementBar (pagination-only variant of management bar)
   - WwGroupsTable (admin WW grouping management)
+  - InventoryDialog (WW planner inventory management)
 
 - **Custom Hooks Built**:
   - useGiData (GI data fetch + local caching + persistence)
@@ -67,6 +71,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - useFriends (friends and friend-requests state management)
   - useFriendRealtime (websocket client for pending friend request count)
   - useWwAdminGroups (admin WW grouping state and actions)
+  - useWwInventory (WW inventory state & localStorage persistence)
 
 ## Installation History
 

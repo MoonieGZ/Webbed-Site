@@ -1,12 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getMaterialIconUrl } from "@/lib/games/ww/icons"
 import { CircleHelp, EllipsisVertical, Pencil, Trash2 } from "lucide-react"
 import {
@@ -17,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/animate-ui/radix/dropdown-menu"
 import { MotionEffect } from "@/components/animate-ui/effects/motion-effect"
+import { Button } from "@/components/ui/button"
 
 type MaterialEntry = {
   type: string
@@ -84,12 +80,9 @@ export function CharacterCard({
             <div className="ml-auto">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button
-                    aria-label="Character actions"
-                    className="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-muted/40 border"
-                  >
-                    <EllipsisVertical className="h-5 w-5" />
-                  </button>
+                  <Button variant="outline" className="h-8 w-8">
+                    <EllipsisVertical />
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem onClick={onEdit}>

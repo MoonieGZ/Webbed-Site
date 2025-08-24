@@ -92,7 +92,6 @@ export function AddCharacterDialog({
                 className="flex flex-wrap"
                 aria-label="Filter by element"
               >
-                {/* TODO: fix tooltip to not create one per element */}
                 {elementOptions.map((el) => (
                   <Tooltip key={el}>
                     <TooltipTrigger>

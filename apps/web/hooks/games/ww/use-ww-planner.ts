@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   ASCENSION_TEMPLATES,
   SKILL_TEMPLATES,
@@ -53,6 +53,8 @@ export function useWwPlanner() {
   >({})
   const [plans, setPlans] = useState<CharacterPlan[]>([])
   const [editingPlanIndex, setEditingPlanIndex] = useState<number | null>(null)
+  const [accountId, setAccountId] = useState<number>(0)
+  const hasHydratedFromStorage = useRef<boolean>(false)
 
   // UI state
   const [showAddCharacter, setShowAddCharacter] = useState(false)
@@ -147,6 +149,170 @@ export function useWwPlanner() {
   useEffect(() => {
     fetchAssets()
   }, [fetchAssets])
+
+  // ---- LocalStorage persistence (compact schema) ----
+  type StoredPlanV1 = [
+    number, // characterId
+    number, // fromAscension
+    number, // toAscension
+    number, // fromLevel
+    number, // toLevel
+    number, // bitmask for inherent + stat nodes
+    [
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+    ], // flattened skill ranges (r0f,r0t,...,r4f,r4t)
+  ]
+
+  const STORAGE_PREFIX = "ww:planner:v1"
+  const storageKey = useMemo(
+    () => `${STORAGE_PREFIX}:acct:${accountId}`,
+    [accountId],
+  )
+
+  const packBits = (
+    inherent: [boolean, boolean],
+    statBoostsSel: [
+      [boolean, boolean],
+      [boolean, boolean],
+      [boolean, boolean],
+      [boolean, boolean],
+    ],
+  ): number => {
+    let mask = 0
+    // inherentSelected is [L2, L1]
+    if (inherent?.[1]) mask |= 1 << 0 // L1
+    if (inherent?.[0]) mask |= 1 << 1 // L2
+    for (let i = 0; i < 4; i++) {
+      const pair = statBoostsSel?.[i] || [false, false]
+      const base = 2 + i * 2
+      if (pair[1]) mask |= 1 << base // L1
+      if (pair[0]) mask |= 1 << (base + 1) // L2
+    }
+    return mask
+  }
+
+  const unpackBits = (
+    mask: number,
+  ): {
+    inherent: [boolean, boolean]
+    statBoosts: [
+      [boolean, boolean],
+      [boolean, boolean],
+      [boolean, boolean],
+      [boolean, boolean],
+    ]
+  } => {
+    const inherent: [boolean, boolean] = [false, false]
+    // order [L2, L1]
+    inherent[1] = Boolean(mask & (1 << 0)) // L1
+    inherent[0] = Boolean(mask & (1 << 1)) // L2
+    const statBoosts: [
+      [boolean, boolean],
+      [boolean, boolean],
+      [boolean, boolean],
+      [boolean, boolean],
+    ] = [
+      [false, false],
+      [false, false],
+      [false, false],
+      [false, false],
+    ]
+    for (let i = 0; i < 4; i++) {
+      const base = 2 + i * 2
+      const L1 = Boolean(mask & (1 << base))
+      const L2 = Boolean(mask & (1 << (base + 1)))
+      statBoosts[i] = [L2, L1]
+    }
+    return { inherent, statBoosts }
+  }
+
+  const packPlan = (p: CharacterPlan): StoredPlanV1 => {
+    return [
+      p.characterId,
+      p.fromAscension,
+      p.toAscension,
+      p.fromLevel,
+      p.toLevel,
+      packBits(p.inherentSelected, p.statBoostsSelected),
+      [
+        p.skillRanges[0][0],
+        p.skillRanges[0][1],
+        p.skillRanges[1][0],
+        p.skillRanges[1][1],
+        p.skillRanges[2][0],
+        p.skillRanges[2][1],
+        p.skillRanges[3][0],
+        p.skillRanges[3][1],
+        p.skillRanges[4][0],
+        p.skillRanges[4][1],
+      ],
+    ]
+  }
+
+  const unpackPlan = (sp: StoredPlanV1): CharacterPlan => {
+    const [cid, fa, ta, fl, tl, bits, flat] = sp
+    const char = characters.find((c) => c.id === cid) || null
+    const { inherent, statBoosts } = unpackBits(bits)
+    return {
+      characterId: cid,
+      characterName: char?.name || String(cid),
+      characterIcon: char?.icon || "/games/ww/characters/Unknown.webp",
+      characterElement: char?.element || "Unknown",
+      characterElementIcon:
+        char?.elementIcon || "/games/ww/elements/Unknown.webp",
+      characterWeaponType: char?.weaponType || "",
+      fromAscension: fa,
+      toAscension: ta,
+      fromLevel: fl,
+      toLevel: tl,
+      skillRanges: [
+        [flat[0] ?? 1, flat[1] ?? 10],
+        [flat[2] ?? 1, flat[3] ?? 10],
+        [flat[4] ?? 1, flat[5] ?? 10],
+        [flat[6] ?? 1, flat[7] ?? 10],
+        [flat[8] ?? 1, flat[9] ?? 10],
+      ],
+      inherentSelected: inherent,
+      statBoostsSelected: statBoosts,
+    }
+  }
+
+  // Load from storage after characters are available and only once per account
+  useEffect(() => {
+    if (hasHydratedFromStorage.current) return
+    if (!characters || characters.length === 0) return
+    try {
+      const raw = localStorage.getItem(storageKey)
+      if (raw) {
+        const parsed = JSON.parse(raw) as { v?: number; p?: StoredPlanV1[] }
+        if (Array.isArray(parsed?.p)) {
+          const rebuilt = parsed.p.map(unpackPlan)
+          setPlans(rebuilt)
+        }
+      }
+    } catch {}
+    hasHydratedFromStorage.current = true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [characters, storageKey])
+
+  // Save to storage whenever plans change
+  useEffect(() => {
+    if (!hasHydratedFromStorage.current) return
+    try {
+      const packed = plans.map(packPlan)
+      const payload = JSON.stringify({ v: 1, p: packed })
+      localStorage.setItem(storageKey, payload)
+    } catch {}
+  }, [plans, storageKey])
 
   const filteredCharacters = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -1076,5 +1242,9 @@ export function useWwPlanner() {
     // plan ops
     removePlan,
     beginEditPlan,
+
+    // multi-account state
+    accountId,
+    setAccountId,
   }
 }

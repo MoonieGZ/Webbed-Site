@@ -2,18 +2,27 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Swords, UserPlus } from "lucide-react"
+import { LayoutList, ListPlus, Swords, UserPlus } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/animate-ui/radix/dropdown-menu"
 
 export function PlannerTopBar({
   totalItems,
   totalCredits,
   onAddCharacter,
   onAddWeapon,
+  onManageInventory,
 }: {
   totalItems: number
   totalCredits: number
   onAddCharacter: () => void
   onAddWeapon: () => void
+  onManageInventory: () => void
 }) {
   return (
     <Card>
@@ -29,14 +38,29 @@ export function PlannerTopBar({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={onAddCharacter}>
-            <UserPlus />
-            Add Character
-          </Button>
-          <Button onClick={onAddWeapon}>
-            <Swords />
-            Add Weapon
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <ListPlus />
+                Menu
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={onAddCharacter}>
+                <UserPlus />
+                Add Character
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onAddWeapon}>
+                <Swords />
+                Add Weapon
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onManageInventory}>
+                <LayoutList />
+                Manage Inventory
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardContent>
     </Card>
