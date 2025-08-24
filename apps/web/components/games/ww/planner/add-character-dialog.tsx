@@ -13,7 +13,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/animate-ui/base/toggle-group"
-import { useAddCharacterFilters } from "@/hooks/wuwa/use-add-character-filters"
+import { useAddCharacterFilters } from "@/hooks/games/ww/use-add-character-filters"
 import { Search } from "lucide-react"
 import {
   Tooltip,

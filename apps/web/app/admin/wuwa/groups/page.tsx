@@ -9,7 +9,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { WwGroupsTable } from "@/components/admin/wuwa/ww-groups-table"
+import { WwGroupsTable } from "@/components/admin/ww/ww-groups-table"
 
 export default function AdminWwGroupsPage() {
   return (

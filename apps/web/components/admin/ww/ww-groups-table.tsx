@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useWwAdminGroups } from "@/hooks/wuwa/use-ww-admin-groups"
+import { useWwAdminGroups } from "@/hooks/games/ww/use-ww-admin-groups"
 import { getCharacterIconUrl, getElementIconUrl } from "@/lib/games/ww/icons"
 import Image from "next/image"
 

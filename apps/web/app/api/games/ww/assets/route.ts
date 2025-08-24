@@ -276,7 +276,7 @@ export async function GET() {
       materialsByType,
     })
   } catch (err) {
-    console.error("/api/wuwa/assets error", err)
+    console.error("/api/games/ww/assets error", err)
     return NextResponse.json(
       { error: "Failed to load assets" },
       { status: 500 },

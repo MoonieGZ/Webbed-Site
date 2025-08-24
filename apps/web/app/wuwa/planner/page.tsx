@@ -9,14 +9,14 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { PlannerTopBar } from "@/components/wuwa/planner/planner-top-bar"
-import { AddCharacterDialog } from "@/components/wuwa/planner/add-character-dialog"
-import { CharacterConfigDialog } from "@/components/wuwa/planner/character-config-dialog"
-import { CharacterCard } from "@/components/wuwa/planner/character-card"
-import { useWwPlanner } from "@/hooks/wuwa/use-ww-planner"
+import { PlannerTopBar } from "@/components/games/ww/planner/planner-top-bar"
+import { AddCharacterDialog } from "@/components/games/ww/planner/add-character-dialog"
+import { CharacterConfigDialog } from "@/components/games/ww/planner/character-config-dialog"
+import { CharacterCard } from "@/components/games/ww/planner/character-card"
+import { useWwPlanner } from "@/hooks/games/ww/use-ww-planner"
 import { AnimatePresence } from "motion/react"
 
-export default function WuwaPlannerPage() {
+export default function WuWaPlannerPage() {
   const planner = useWwPlanner()
 
   return (

@@ -35,7 +35,7 @@ export function useWwAdminGroups() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch("/api/admin/wuwa/groups", { cache: "no-store" })
+      const res = await fetch("/api/admin/games/ww/groups", { cache: "no-store" })
       if (!res.ok) throw new Error("Failed to load groups")
       const data = (await res.json()) as {
         characters: Character[]
@@ -81,7 +81,7 @@ export function useWwAdminGroups() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch("/api/admin/wuwa/groups", {
+        const res = await fetch("/api/admin/games/ww/groups", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ characterId, type, groupId }),
