@@ -1,6 +1,13 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+  useState,
+} from "react"
 
 type Material = { id: number; name: string; rarity?: number }
 type Group = { groupId: number; groupName: string; materials: Material[] }
@@ -24,6 +31,29 @@ type AssetsResponse = {
 type InventoryMap = Record<number, number>
 
 const STORAGE_KEY = "ww:inventory:v1"
+
+// Simple shared store so multiple hook instances stay in sync
+let sharedCounts: InventoryMap = {}
+let sharedInitialized = false
+const subscribers = new Set<() => void>()
+const INVENTORY_EVENT = "ww:inventory:change"
+
+function notifySubscribers() {
+  for (const fn of subscribers) fn()
+}
+
+function subscribe(fn: () => void) {
+  subscribers.add(fn)
+  return () => subscribers.delete(fn)
+}
+
+function getSnapshot() {
+  return sharedCounts
+}
+
+function getServerSnapshot() {
+  return {}
+}
 
 function readLocalStorage(): InventoryMap {
   if (typeof window === "undefined") return {}
@@ -64,12 +94,13 @@ export type UseWwInventoryReturn = {
   setCount: (materialId: number, count: number) => void
   increment: (materialId: number, delta?: number) => void
   resetAll: () => void
+  getCountFor: (type: string, name: string) => number
 }
 
 export function useWwInventory(): UseWwInventoryReturn {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [counts, setCounts] = useState<InventoryMap>({})
+  const counts = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 
   const [standaloneByType, setStandaloneByType] = useState<
     Record<string, Material[]>
@@ -78,43 +109,70 @@ export function useWwInventory(): UseWwInventoryReturn {
 
   const initializedRef = useRef(false)
 
-  // Load counts once
+  // Load counts once and bridge cross-bundle updates via DOM event
   useEffect(() => {
     if (initializedRef.current) return
     initializedRef.current = true
-    setCounts(readLocalStorage())
+    if (!sharedInitialized) {
+      sharedCounts = readLocalStorage()
+      sharedInitialized = true
+      notifySubscribers()
+    }
+    const onDomEvent = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent<InventoryMap>).detail
+        if (detail) {
+          sharedCounts = { ...detail }
+          writeLocalStorage(sharedCounts)
+          notifySubscribers()
+        }
+      } catch {}
+    }
+    if (typeof window !== "undefined")
+      window.addEventListener(INVENTORY_EVENT, onDomEvent as any)
+    return () => {
+      if (typeof window !== "undefined")
+        window.removeEventListener(INVENTORY_EVENT, onDomEvent as any)
+    }
   }, [])
 
-  // Persist on changes
-  useEffect(() => {
-    writeLocalStorage(counts)
-  }, [counts])
-
   const setCount = useCallback((materialId: number, count: number) => {
-    setCounts((prev) => {
-      const next = { ...prev }
-      const sanitized = Math.max(0, Math.floor(Number(count) || 0))
-      if (sanitized === 0) delete next[materialId]
-      else next[materialId] = sanitized
-      return next
-    })
+    const next = { ...sharedCounts }
+    const sanitized = Math.max(0, Math.floor(Number(count) || 0))
+    if (sanitized === 0) delete next[materialId]
+    else next[materialId] = sanitized
+    sharedCounts = next
+    writeLocalStorage(sharedCounts)
+    notifySubscribers()
+    if (typeof window !== "undefined")
+      window.dispatchEvent(
+        new CustomEvent(INVENTORY_EVENT, { detail: { ...sharedCounts } }),
+      )
   }, [])
 
   const increment = useCallback((materialId: number, delta = 1) => {
-    setCounts((prev) => {
-      const current = prev[materialId] || 0
-      const nextVal = Math.max(0, Math.floor(current + delta))
-      if (nextVal === 0) {
-        const copy = { ...prev }
-        delete copy[materialId]
-        return copy
-      }
-      return { ...prev, [materialId]: nextVal }
-    })
+    const current = sharedCounts[materialId] || 0
+    const nextVal = Math.max(0, Math.floor(current + delta))
+    const next = { ...sharedCounts }
+    if (nextVal === 0) delete next[materialId]
+    else next[materialId] = nextVal
+    sharedCounts = next
+    writeLocalStorage(sharedCounts)
+    notifySubscribers()
+    if (typeof window !== "undefined")
+      window.dispatchEvent(
+        new CustomEvent(INVENTORY_EVENT, { detail: { ...sharedCounts } }),
+      )
   }, [])
 
   const resetAll = useCallback(() => {
-    setCounts({})
+    sharedCounts = {}
+    writeLocalStorage(sharedCounts)
+    notifySubscribers()
+    if (typeof window !== "undefined")
+      window.dispatchEvent(
+        new CustomEvent(INVENTORY_EVENT, { detail: { ...sharedCounts } }),
+      )
   }, [])
 
   // Fetch taxonomy of materials
@@ -182,5 +240,32 @@ export function useWwInventory(): UseWwInventoryReturn {
     setCount,
     increment,
     resetAll,
+    getCountFor: (type: string, name: string) => {
+      // Prefer exact match by id if known via taxonomy
+      const fromStandalone = (standaloneByType[type] || []).find(
+        (m) => m.name === name,
+      )
+      if (fromStandalone) {
+        const id = Number(fromStandalone.id)
+        const val = (counts as Record<number, number>)[id]
+        if (val != null) return val || 0
+      }
+      // Search group materials as a fallback
+      for (const g of groupsByType[type] || []) {
+        const m = g.materials.find((x) => x.name === name)
+        if (m) {
+          const id = Number(m.id)
+          const val = (counts as Record<number, number>)[id]
+          if (val != null) return val || 0
+        }
+      }
+      // Special-case Shell Credit (DB id 89)
+      if (name === "Shell Credit") {
+        const id = 89
+        const val = (counts as Record<number, number>)[id]
+        return val || 0
+      }
+      return 0
+    },
   }
 }

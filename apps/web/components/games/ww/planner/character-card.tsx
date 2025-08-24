@@ -13,6 +13,13 @@ import {
 } from "@/components/animate-ui/radix/dropdown-menu"
 import { MotionEffect } from "@/components/animate-ui/effects/motion-effect"
 import { Button } from "@/components/ui/button"
+import { useWwInventory } from "@/hooks/games/ww/use-ww-inventory"
+import { Check } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/animate-ui/components/tooltip"
 
 type MaterialEntry = {
   type: string
@@ -41,6 +48,7 @@ export function CharacterCard({
   onRemove?: () => void
 }) {
   const mats = breakdown.materials
+  const { getCountFor, counts } = useWwInventory()
   const getGlow = (rarity?: number) => {
     if (rarity === 1)
       return { base: "#81e6be", light: "#c7f3e1", line: "#81e6be" }
@@ -99,50 +107,76 @@ export function CharacterCard({
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2 mx-auto justify-around">
-            {mats.map((s, idx) => (
-              <div
-                key={idx}
-                className="group rounded-md border bg-background/50 p-2 flex items-center justify-center overflow-hidden"
-              >
-                <div className="relative flex flex-col items-center gap-1">
-                  <div className="relative flex justify-center w-full">
-                    {s.name === "Unknown" ? (
-                      <div className="h-12 w-12 rounded-full bg-muted/30 flex items-center justify-center opacity-85 transition-opacity group-hover:opacity-100">
-                        <CircleHelp className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                    ) : (
-                      <Image
-                        src={getMaterialIconUrl(s.type, s.name)}
-                        alt={s.name}
-                        width={50}
-                        height={50}
-                        className="opacity-85 transition-opacity group-hover:opacity-100"
-                      />
-                    )}
-
-                    <div className="absolute bottom-0 w-3/4">
-                      <div className="relative flex w-full items-center">
-                        <div className="absolute h-4 w-full -bottom-1">
-                          <div
-                            className="absolute bottom-0 h-1 w-full blur-lg transition-all duration-200 group-hover:h-4 group-hover:blur opacity-40"
-                            style={{ background: getGlow(s.rarity).base }}
-                          />
-                          <div
-                            className="absolute bottom-0 h-2 w-full blur transition-all duration-200 group-hover:h-2 group-hover:blur-sm opacity-60"
-                            style={{ background: getGlow(s.rarity).light }}
-                          />
+            {mats.map((s, idx) => {
+              const have = getCountFor(s.type, s.name)
+              const required = s.qty
+              const complete = have >= required && required > 0
+              const isCredit = s.type === "other" && s.name === "Shell Credit"
+              const compactFmt = new Intl.NumberFormat(undefined, {
+                notation: "compact",
+                maximumFractionDigits: 1,
+              })
+              return (
+                <div
+                  key={idx}
+                  className={`group rounded-md border p-2 flex items-center justify-center overflow-hidden ${complete ? "bg-background/40 grayscale-[0.6] opacity-70 hover:opacity-100 hover:grayscale-0" : "bg-background/50"}`}
+                >
+                  <div className="relative flex flex-col items-center gap-1">
+                    <div className="relative flex justify-center w-full">
+                      {s.name === "Unknown" ? (
+                        <div className="h-12 w-12 rounded-full bg-muted/30 flex items-center justify-center opacity-85 transition-opacity group-hover:opacity-100">
+                          <CircleHelp className="h-8 w-8 text-muted-foreground" />
                         </div>
+                      ) : (
+                        <Image
+                          src={getMaterialIconUrl(s.type, s.name)}
+                          alt={s.name}
+                          width={50}
+                          height={50}
+                          className="opacity-85 transition-opacity group-hover:opacity-100"
+                        />
+                      )}
+
+                      {complete && (
+                        <div className="absolute bg-emerald-500 text-white rounded-full h-5 w-5 flex items-center justify-center shadow -top-1 -right-1">
+                          <Check className="h-4 w-4" />
+                        </div>
+                      )}
+
+                      <div className="absolute bottom-0 w-3/4">
+                        <div className="relative flex w-full items-center">
+                          <div className="absolute h-4 w-full -bottom-1">
+                            <div
+                              className="absolute bottom-0 h-1 w-full blur-lg transition-all duration-200 group-hover:h-4 group-hover:blur opacity-40"
+                              style={{ background: getGlow(s.rarity).base }}
+                            />
+                            <div
+                              className="absolute bottom-0 h-2 w-full blur transition-all duration-200 group-hover:h-2 group-hover:blur-sm opacity-60"
+                              style={{ background: getGlow(s.rarity).light }}
+                            />
+                          </div>
+                        </div>
+                        <div
+                          className="h-[3px] opacity-40"
+                          style={{ backgroundColor: getGlow(s.rarity).line }}
+                        />
                       </div>
-                      <div
-                        className="h-[3px] opacity-40"
-                        style={{ backgroundColor: getGlow(s.rarity).line }}
-                      />
                     </div>
+
+                    <Tooltip key={s.name} side="bottom">
+                      <TooltipTrigger>
+                        <div className="text-xs">
+                          {isCredit
+                            ? `${compactFmt.format(Math.max(0, required - have))}`
+                            : `${Math.max(0, required - have).toLocaleString()}`}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>{`${have.toLocaleString()}/${required.toLocaleString()}`}</TooltipContent>
+                    </Tooltip>
                   </div>
-                  <div className="text-xs">{s.qty.toLocaleString()}</div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </CardContent>
       </Card>

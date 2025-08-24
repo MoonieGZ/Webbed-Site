@@ -80,7 +80,8 @@ export function InventoryDialog({
         typeKey === "exp" &&
         !Array.from(map.values()).some((x) => x.name === "Shell Credit")
       ) {
-        map.set(-1, { id: -1, name: "Shell Credit", rarity: 2 })
+        // Use actual DB id for Shell Credit so counts map aligns across UI
+        map.set(89, { id: 89, name: "Shell Credit", rarity: 2 })
       }
 
       let arr = Array.from(map.values())
@@ -186,14 +187,16 @@ export function InventoryDialog({
                             <Input
                               type="text"
                               inputMode="numeric"
-                              pattern="[0-9]*"
+                              pattern="[0-9,]*"
                               value={
-                                counts[m.id] != null ? String(counts[m.id]) : ""
+                                counts[m.id] != null
+                                  ? Number(counts[m.id]).toLocaleString()
+                                  : ""
                               }
                               onChange={(e) =>
                                 onChangeCount(m.id, e.target.value)
                               }
-                              className="w-24 h-8 text-center mx-auto"
+                              className="w-28 h-8 text-center mx-auto"
                             />
                           </div>
                         </div>
@@ -277,16 +280,16 @@ export function InventoryDialog({
                                 <Input
                                   type="text"
                                   inputMode="numeric"
-                                  pattern="[0-9]*"
+                                  pattern="[0-9,]*"
                                   value={
                                     counts[m.id] != null
-                                      ? String(counts[m.id])
+                                      ? Number(counts[m.id]).toLocaleString()
                                       : ""
                                   }
                                   onChange={(e) =>
                                     onChangeCount(m.id, e.target.value)
                                   }
-                                  className="w-24 h-8 text-center mx-auto"
+                                  className="w-28 h-8 text-center mx-auto"
                                 />
                               </div>
                             </div>
