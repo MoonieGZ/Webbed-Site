@@ -20,6 +20,7 @@ type MotionEffectProps = HTMLMotionProps<"div"> & {
   inViewMargin?: UseInViewOptions["margin"]
   inViewOnce?: boolean
   blur?: string | boolean
+  withPresence?: boolean
   slide?:
     | {
         direction?: "up" | "down" | "left" | "right"
@@ -45,6 +46,7 @@ function MotionEffect({
   inViewMargin = "0px",
   inViewOnce = true,
   blur = false,
+  withPresence = false,
   slide = false,
   fade = false,
   zoom = false,
@@ -90,29 +92,32 @@ function MotionEffect({
     visibleVariant.filter = "blur(0px)"
   }
 
-  return (
-    <AnimatePresence>
-      <motion.div
-        ref={localRef}
-        data-slot="motion-effect"
-        initial="hidden"
-        animate={isInView ? "visible" : "hidden"}
-        exit="hidden"
-        variants={{
-          hidden: hiddenVariant,
-          visible: visibleVariant,
-        }}
-        transition={{
-          ...transition,
-          delay: (transition?.delay ?? 0) + delay,
-        }}
-        className={className}
-        {...props}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+  const content = (
+    <motion.div
+      ref={localRef}
+      data-slot="motion-effect"
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      exit="hidden"
+      variants={{
+        hidden: hiddenVariant,
+        visible: visibleVariant,
+      }}
+      transition={{
+        ...transition,
+        delay: (transition?.delay ?? 0) + delay,
+      }}
+      className={className}
+      {...props}
+    >
+      {children}
+    </motion.div>
   )
+
+  if (withPresence) {
+    return <AnimatePresence>{content}</AnimatePresence>
+  }
+  return content
 }
 
 export { MotionEffect, type MotionEffectProps }

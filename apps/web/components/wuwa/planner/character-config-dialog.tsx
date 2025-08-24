@@ -231,7 +231,7 @@ export function CharacterConfigDialog({
               className="rounded-md bg-primary px-3 py-2 text-sm text-primary-foreground"
               onClick={onConfirm}
             >
-              Add Plan
+              Save Plan
             </button>
           </div>
         </div>

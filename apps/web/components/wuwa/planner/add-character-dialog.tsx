@@ -19,7 +19,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/animate-ui/radix/tooltip"
+} from "@/components/animate-ui/components/tooltip"
 
 export function AddCharacterDialog({
   open,
@@ -95,7 +95,7 @@ export function AddCharacterDialog({
                 {/* TODO: fix tooltip to not create one per element */}
                 {elementOptions.map((el) => (
                   <Tooltip key={el}>
-                    <TooltipTrigger asChild>
+                    <TooltipTrigger>
                       <ToggleGroupItem value={el} aria-label={el}>
                         <Image
                           src={`/games/ww/elements/${el}.webp`}
@@ -105,7 +105,7 @@ export function AddCharacterDialog({
                         />
                       </ToggleGroupItem>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom">{el}</TooltipContent>
+                    <TooltipContent>{el}</TooltipContent>
                   </Tooltip>
                 ))}
               </ToggleGroup>
@@ -118,7 +118,7 @@ export function AddCharacterDialog({
               >
                 {weaponOptions.map((wp) => (
                   <Tooltip key={wp}>
-                    <TooltipTrigger asChild>
+                    <TooltipTrigger>
                       <ToggleGroupItem value={wp} aria-label={wp}>
                         <Image
                           src={`/games/ww/weapon_types/${wp}_Icon.png`}
@@ -128,7 +128,7 @@ export function AddCharacterDialog({
                         />
                       </ToggleGroupItem>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom">{wp}</TooltipContent>
+                    <TooltipContent>{wp}</TooltipContent>
                   </Tooltip>
                 ))}
               </ToggleGroup>

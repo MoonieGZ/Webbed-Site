@@ -52,6 +52,7 @@ export function useWwPlanner() {
     Record<number, any>
   >({})
   const [plans, setPlans] = useState<CharacterPlan[]>([])
+  const [editingPlanIndex, setEditingPlanIndex] = useState<number | null>(null)
 
   // UI state
   const [showAddCharacter, setShowAddCharacter] = useState(false)
@@ -184,6 +185,7 @@ export function useWwPlanner() {
   const cancelCharacterConfig = () => {
     setShowCharacterConfig(false)
     setSelectedCharacter(null)
+    setEditingPlanIndex(null)
   }
 
   const confirmCharacterPlan = () => {
@@ -203,9 +205,51 @@ export function useWwPlanner() {
       inherentSelected: inherentLevels, // [L2, L1]
       statBoostsSelected: statBoosts, // 4 pairs, each [L2, L1]
     }
-    setPlans((prev) => [...prev, plan])
+    setPlans((prev) => {
+      if (
+        editingPlanIndex !== null &&
+        editingPlanIndex >= 0 &&
+        editingPlanIndex < prev.length
+      ) {
+        return prev.map((p, i) => (i === editingPlanIndex ? plan : p))
+      }
+      return [...prev, plan]
+    })
     setShowCharacterConfig(false)
     setSelectedCharacter(null)
+    setEditingPlanIndex(null)
+  }
+
+  const removePlan = (index: number) => {
+    setPlans((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const beginEditPlan = (index: number) => {
+    const plan = plans[index]
+    if (!plan) return
+    // Find the character asset from loaded characters; fallback to plan data
+    const char =
+      characters.find((c) => c.id === plan.characterId) ||
+      ({
+        id: plan.characterId,
+        name: plan.characterName,
+        element: plan.characterElement,
+        weaponType: plan.characterWeaponType,
+        rarity: 0,
+        icon: plan.characterIcon,
+        elementIcon: plan.characterElementIcon,
+      } as CharacterAsset)
+
+    setSelectedCharacter(char)
+    setFromAscension(plan.fromAscension)
+    setToAscension(plan.toAscension)
+    setFromLevel(plan.fromLevel)
+    setToLevel(plan.toLevel)
+    setSkillRanges(plan.skillRanges)
+    setInherentLevels(plan.inherentSelected)
+    setStatBoosts(plan.statBoostsSelected)
+    setEditingPlanIndex(index)
+    setShowCharacterConfig(true)
   }
 
   // Compute total required materials across all plans
@@ -1028,5 +1072,9 @@ export function useWwPlanner() {
     setInherentLevels,
     statBoosts,
     setStatBoosts,
+
+    // plan ops
+    removePlan,
+    beginEditPlan,
   }
 }

@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Swords, UserPlus } from "lucide-react"
 
 export function PlannerTopBar({
   totalItems,
@@ -28,10 +29,14 @@ export function PlannerTopBar({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={onAddWeapon}>
+          <Button onClick={onAddCharacter}>
+            <UserPlus />
+            Add Character
+          </Button>
+          <Button onClick={onAddWeapon}>
+            <Swords />
             Add Weapon
           </Button>
-          <Button onClick={onAddCharacter}>Add Character</Button>
         </div>
       </CardContent>
     </Card>

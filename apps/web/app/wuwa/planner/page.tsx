@@ -14,6 +14,7 @@ import { AddCharacterDialog } from "@/components/wuwa/planner/add-character-dial
 import { CharacterConfigDialog } from "@/components/wuwa/planner/character-config-dialog"
 import { CharacterCard } from "@/components/wuwa/planner/character-card"
 import { useWwPlanner } from "@/hooks/wuwa/use-ww-planner"
+import { AnimatePresence } from "motion/react"
 
 export default function WuwaPlannerPage() {
   const planner = useWwPlanner()
@@ -50,17 +51,21 @@ export default function WuwaPlannerPage() {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {planner.plans.map((p, idx) => (
-            <CharacterCard
-              key={idx}
-              name={p.characterName}
-              icon={p.characterIcon}
-              elementIcon={p.characterElementIcon}
-              elementName={p.characterElement}
-              weaponType={p.characterWeaponType}
-              breakdown={planner.getPlanBreakdown(p)}
-            />
-          ))}
+          <AnimatePresence>
+            {planner.plans.map((p, idx) => (
+              <CharacterCard
+                key={`${p.characterId}-${idx}`}
+                name={p.characterName}
+                icon={p.characterIcon}
+                elementIcon={p.characterElementIcon}
+                elementName={p.characterElement}
+                weaponType={p.characterWeaponType}
+                breakdown={planner.getPlanBreakdown(p)}
+                onEdit={() => planner.beginEditPlan(idx)}
+                onRemove={() => planner.removePlan(idx)}
+              />
+            ))}
+          </AnimatePresence>
         </div>
       </div>
 
