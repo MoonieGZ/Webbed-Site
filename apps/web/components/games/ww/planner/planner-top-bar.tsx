@@ -47,7 +47,7 @@ export function PlannerTopBar({
           <br />
           <span className="text-amber-500 flex items-center gap-1">
             <TriangleAlert className="w-4 h-4" />
-            Calculations for multiple characters and weapons are coming soon!
+            Weapons are coming soon!
             <TriangleAlert className="w-4 h-4" />
           </span>
         </div>
