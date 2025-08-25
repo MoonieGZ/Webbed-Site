@@ -20,111 +20,123 @@ import { WwInventoryProvider } from "@/hooks/games/ww/use-ww-inventory"
 import { AnimatePresence } from "motion/react"
 import { useState } from "react"
 
-export default function WuWaPlannerPage() {
+function PlannerContent() {
   const planner = useWwPlanner()
   const [showInventory, setShowInventory] = useState(false)
 
   return (
-    <WwInventoryProvider>
-      <>
-        <header className="flex h-16 shrink-0 items-center gap-2">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>Wuthering Waves</BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>Planner</BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
-
-        <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
-          <PlannerTopBar
-            onAddCharacter={planner.openAddCharacter}
-            onAddWeapon={() => {}}
-            onManageInventory={() => setShowInventory(true)}
-            onReorderPlans={planner.openReorderPlans}
+    <>
+      <header className="flex h-16 shrink-0 items-center gap-2">
+        <div className="flex items-center gap-2 px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator
+            orientation="vertical"
+            className="mr-2 data-[orientation=vertical]:h-4"
           />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            <AnimatePresence mode="popLayout">
-              {planner.plans.map((p, idx) => (
-                <CharacterCard
-                  key={p.planId}
-                  name={p.characterName}
-                  icon={p.characterIcon}
-                  elementIcon={p.characterElementIcon}
-                  elementName={p.characterElement}
-                  weaponType={p.characterWeaponType}
-                  breakdown={planner.getPlanBreakdown(p)}
-                  onEdit={() => planner.beginEditPlan(idx)}
-                  onRemove={() => planner.removePlan(idx)}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>Wuthering Waves</BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>Planner</BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
+      </header>
 
-        <AddCharacterDialog
-          open={planner.showAddCharacter}
-          onOpenChange={(o) =>
-            o ? planner.openAddCharacter() : planner.closeAddCharacter()
-          }
-          search={planner.search}
-          setSearch={planner.setSearch}
-          characters={planner.filteredCharacters}
-          onChoose={planner.chooseCharacter}
+      <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
+        <PlannerTopBar
+          onAddCharacter={planner.openAddCharacter}
+          onAddWeapon={() => {}}
+          onManageInventory={() => setShowInventory(true)}
+          onReorderPlans={planner.openReorderPlans}
         />
 
-        <CharacterConfigDialog
-          open={planner.showCharacterConfig}
-          onOpenChange={(o) => (!o ? planner.cancelCharacterConfig() : null)}
-          character={planner.selectedCharacter}
-          fromAscension={planner.fromAscension}
-          toAscension={planner.toAscension}
-          setFromAscension={planner.setFromAscension}
-          setToAscension={planner.setToAscension}
-          fromLevel={planner.fromLevel}
-          toLevel={planner.toLevel}
-          setFromLevel={planner.setFromLevel}
-          setToLevel={planner.setToLevel}
-          skillRanges={planner.skillRanges}
-          setSkillRange={planner.setSkillRange}
-          inherentLevels={planner.inherentLevels}
-          setInherentLevels={planner.setInherentLevels}
-          statBoosts={planner.statBoosts}
-          setStatBoosts={planner.setStatBoosts}
-          onConfirm={planner.confirmCharacterPlan}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <AnimatePresence mode="popLayout">
+            {planner.plans.map((p, idx) => (
+              <CharacterCard
+                key={p.planId}
+                name={p.characterName}
+                icon={p.characterIcon}
+                elementIcon={p.characterElementIcon}
+                elementName={p.characterElement}
+                weaponType={p.characterWeaponType}
+                breakdown={planner.getPlanBreakdown(p)}
+                onEdit={() => planner.beginEditPlan(idx)}
+                onRemove={() => planner.removePlan(idx)}
+                availableFor={(type, name) =>
+                  planner.getAvailableForPlan(idx, type, name)
+                }
+                availableExp={() =>
+                  planner.getTotalExpForPlan(idx, "CHARACTER")
+                }
+              />
+            ))}
+          </AnimatePresence>
+        </div>
+      </div>
 
-        <InventoryDialog
-          open={showInventory}
-          onOpenChange={(o) => setShowInventory(o)}
-        />
+      <AddCharacterDialog
+        open={planner.showAddCharacter}
+        onOpenChange={(o) =>
+          o ? planner.openAddCharacter() : planner.closeAddCharacter()
+        }
+        search={planner.search}
+        setSearch={planner.setSearch}
+        characters={planner.filteredCharacters}
+        onChoose={planner.chooseCharacter}
+      />
 
-        <ReorderPlansDialog
-          open={planner.showReorderPlans}
-          onOpenChange={(o) =>
-            o ? planner.openReorderPlans() : planner.closeReorderPlans()
-          }
-          plans={planner.plans.map((p) => ({
-            characterId: p.characterId,
-            characterName: p.characterName,
-            characterIcon: p.characterIcon,
-          }))}
-          onConfirm={(order) => planner.applyPlanOrder(order)}
-        />
-      </>
+      <CharacterConfigDialog
+        open={planner.showCharacterConfig}
+        onOpenChange={(o) => (!o ? planner.cancelCharacterConfig() : null)}
+        character={planner.selectedCharacter}
+        fromAscension={planner.fromAscension}
+        toAscension={planner.toAscension}
+        setFromAscension={planner.setFromAscension}
+        setToAscension={planner.setToAscension}
+        fromLevel={planner.fromLevel}
+        toLevel={planner.toLevel}
+        setFromLevel={planner.setFromLevel}
+        setToLevel={planner.setToLevel}
+        skillRanges={planner.skillRanges}
+        setSkillRange={planner.setSkillRange}
+        inherentLevels={planner.inherentLevels}
+        setInherentLevels={planner.setInherentLevels}
+        statBoosts={planner.statBoosts}
+        setStatBoosts={planner.setStatBoosts}
+        onConfirm={planner.confirmCharacterPlan}
+      />
+
+      <InventoryDialog
+        open={showInventory}
+        onOpenChange={(o) => setShowInventory(o)}
+      />
+
+      <ReorderPlansDialog
+        open={planner.showReorderPlans}
+        onOpenChange={(o) =>
+          o ? planner.openReorderPlans() : planner.closeReorderPlans()
+        }
+        plans={planner.plans.map((p) => ({
+          characterId: p.characterId,
+          characterName: p.characterName,
+          characterIcon: p.characterIcon,
+        }))}
+        onConfirm={(order) => planner.applyPlanOrder(order)}
+      />
+    </>
+  )
+}
+
+export default function WuWaPlannerPage() {
+  return (
+    <WwInventoryProvider>
+      <PlannerContent />
     </WwInventoryProvider>
   )
 }

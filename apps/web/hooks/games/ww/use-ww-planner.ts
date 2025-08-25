@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useWwInventory } from "@/hooks/games/ww/use-ww-inventory"
 import {
   ASCENSION_TEMPLATES,
   SKILL_TEMPLATES,
@@ -1225,6 +1226,167 @@ export function useWwPlanner() {
     [characterDetailsById],
   )
 
+  // Access inventory and taxonomy
+  const { getCountFor, getTotalExp, groupsByType } = useWwInventory()
+
+  // Build a snapshot of remaining inventory after allocating prior plans,
+  // using crafting (3:1) for grouped types before moving to later plans.
+  const getAvailabilityForPlan = useCallback(
+    (
+      planIndex: number,
+    ): {
+      availableFor: (type: string, name: string) => number
+      availableExp: (category?: "CHARACTER" | "WEAPON") => number
+    } => {
+      const groupedTypes = ["enemy_drop", "talent_upgrade"] as const
+
+      // Group cache for quick lookup by material name
+      type GroupCacheEntry = {
+        type: string
+        groupId: number
+        matsAsc: Array<{ id: number; name: string; rarity?: number }>
+        idxByName: Record<string, number>
+        counts: number[]
+      }
+      const groupCache = new Map<string, GroupCacheEntry>()
+
+      const getGroupEntry = (
+        type: string,
+        name: string,
+      ): GroupCacheEntry | null => {
+        const typeGroups = (groupsByType as any)?.[type] as
+          | Array<{
+              groupId: number
+              groupName: string
+              materials: Array<{ id: number; name: string; rarity?: number }>
+            }>
+          | undefined
+        if (!typeGroups || typeGroups.length === 0) return null
+        for (const g of typeGroups) {
+          const found = g.materials.find((m) => m.name === name)
+          if (!found) continue
+          const key = `${type}:${g.groupId}`
+          let entry = groupCache.get(key)
+          if (!entry) {
+            const matsAsc = [...g.materials].sort(
+              (a, b) => (a.rarity || 0) - (b.rarity || 0),
+            )
+            const idxByName: Record<string, number> = {}
+            matsAsc.forEach((m, i) => {
+              idxByName[m.name] = i
+            })
+            const counts = matsAsc.map((m) => getCountFor(type, m.name))
+            entry = { type, groupId: g.groupId, matsAsc, idxByName, counts }
+            groupCache.set(key, entry)
+          }
+          return entry
+        }
+        return null
+      }
+
+      // Non-grouped remaining counts by type+name
+      const remainingMap = new Map<string, number>()
+      const getRemaining = (type: string, name: string): number => {
+        const k = `${type}:${name}`
+        if (!remainingMap.has(k)) remainingMap.set(k, getCountFor(type, name))
+        return remainingMap.get(k) || 0
+      }
+      const decRemaining = (type: string, name: string, qty: number) => {
+        const k = `${type}:${name}`
+        const curr = getRemaining(type, name)
+        remainingMap.set(k, Math.max(0, curr - Math.max(0, qty || 0)))
+      }
+
+      // Credits and EXP pools
+      let creditsRemaining = getRemaining("other", "Shell Credit")
+      let expRemaining = getTotalExp("CHARACTER")
+
+      // Helper: allocate grouped material with crafting
+      const allocateGrouped = (type: string, name: string, qty: number) => {
+        const entry = getGroupEntry(type, name)
+        if (!entry) return
+        const targetIdx = entry.idxByName[name]
+        if (targetIdx == null) return
+        let needed = Math.max(0, qty || 0)
+        // Consume same tier
+        const take = Math.min(needed, entry.counts[targetIdx] || 0)
+        if (take > 0) {
+          entry.counts[targetIdx] -= take
+          needed -= take
+        }
+        if (needed <= 0) return
+        // Craft upwards from lower tiers (closest first)
+        for (let k = targetIdx - 1; k >= 0 && needed > 0; k--) {
+          const distance = targetIdx - k
+          const factor = Math.pow(3, distance)
+          const possible = Math.floor((entry.counts[k] || 0) / factor)
+          if (possible <= 0) continue
+          const produce = Math.min(needed, possible)
+          entry.counts[k] -= produce * factor
+          // directly consumed; do not add to target tier then remove
+          needed -= produce
+        }
+        // If needed > 0 here, it remains unmet, which is fine for availability calc
+      }
+
+      // Simulate allocations for all prior plans
+      for (let i = 0; i < Math.min(planIndex, plans.length); i++) {
+        const bd = getPlanBreakdown(plans[i])
+        for (const m of bd.materials) {
+          if (!m || !m.qty) continue
+          if (m.type === "exp") {
+            expRemaining = Math.max(0, expRemaining - (m.qty || 0))
+            continue
+          }
+          if (m.type === "other" && m.name === "Shell Credit") {
+            creditsRemaining = Math.max(0, creditsRemaining - (m.qty || 0))
+            continue
+          }
+          if ((groupedTypes as readonly string[]).includes(m.type)) {
+            allocateGrouped(m.type, m.name, m.qty)
+          } else {
+            decRemaining(m.type, m.name, m.qty)
+          }
+        }
+      }
+
+      return {
+        availableFor: (type: string, name: string) => {
+          if (type === "other" && name === "Shell Credit")
+            return creditsRemaining
+          if ((groupedTypes as readonly string[]).includes(type)) {
+            const entry = getGroupEntry(type, name)
+            if (!entry) return 0
+            const idx = entry.idxByName[name]
+            if (idx == null) return 0
+            return entry.counts[idx] || 0
+          }
+          return getRemaining(type, name)
+        },
+        availableExp: (category: "CHARACTER" | "WEAPON" = "CHARACTER") => {
+          // Only CHARACTER EXP supported currently
+          return category === "CHARACTER" ? expRemaining : 0
+        },
+      }
+    },
+    [plans, getPlanBreakdown, getCountFor, getTotalExp, groupsByType],
+  )
+
+  // Public helpers that expose per-plan availability
+  const getAvailableForPlan = useCallback(
+    (planIndex: number, type: string, name: string): number => {
+      return getAvailabilityForPlan(planIndex).availableFor(type, name)
+    },
+    [getAvailabilityForPlan],
+  )
+
+  const getTotalExpForPlan = useCallback(
+    (planIndex: number, category: "CHARACTER" | "WEAPON" = "CHARACTER") => {
+      return getAvailabilityForPlan(planIndex).availableExp(category)
+    },
+    [getAvailabilityForPlan],
+  )
+
   // Skill helpers
   const setSkillRange = (index: number, from: number, to: number) => {
     setSkillRanges((prev) => {
@@ -1287,6 +1449,10 @@ export function useWwPlanner() {
     removePlan,
     beginEditPlan,
     applyPlanOrder,
+
+    // priority allocation helpers
+    getAvailableForPlan,
+    getTotalExpForPlan,
 
     // multi-account state
     accountId,

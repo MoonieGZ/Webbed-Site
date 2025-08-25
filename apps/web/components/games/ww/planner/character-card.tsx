@@ -47,6 +47,8 @@ export function CharacterCard({
   breakdown,
   onEdit,
   onRemove,
+  availableFor,
+  availableExp,
 }: {
   name: string
   icon: string
@@ -56,6 +58,8 @@ export function CharacterCard({
   breakdown: { credits: number; materials: MaterialEntry[] }
   onEdit?: () => void
   onRemove?: () => void
+  availableFor?: (type: string, name: string) => number
+  availableExp?: () => number
 }) {
   const mats = breakdown.materials
   const { getCountFor, getTotalExp, groupsByType, counts } = useWwInventory()
@@ -77,7 +81,9 @@ export function CharacterCard({
     const available: number[] = new Array(targetIdx + 1).fill(0)
     for (let i = 0; i <= targetIdx; i++) {
       const m = matsAsc[i]
-      const have = (counts as Record<number, number>)[Number(m.id)] || 0
+      const have = availableFor
+        ? availableFor(entry.type, m.name)
+        : (counts as Record<number, number>)[Number(m.id)] || 0
       const reqEntry = mats.find(
         (x) => x.type === entry.type && x.name === m.name,
       )
@@ -171,12 +177,15 @@ export function CharacterCard({
             const renderItem = (s: MaterialEntry, key: string) => {
               const isExp =
                 s.type === "exp" && s.name === "Premium Resonance Potion"
-              const have = getCountFor(s.type, s.name)
+              const have = availableFor
+                ? availableFor(s.type, s.name)
+                : getCountFor(s.type, s.name)
               const required = s.qty
               const isCredit = s.type === "other" && s.name === "Shell Credit"
               const craftableExtra = !isExp ? computeCraftableExtra(s) : 0
               const complete = isExp
-                ? getTotalExp("CHARACTER") >= required
+                ? (availableExp ? availableExp() : getTotalExp("CHARACTER")) >=
+                  required
                 : (() => {
                     if (!(required > 0)) return false
                     if (have >= required) return true
@@ -204,7 +213,7 @@ export function CharacterCard({
                   <div className="relative flex flex-col items-center gap-1">
                     <div className="relative flex justify-center w-full">
                       {s.name === "Unknown" ? (
-                        <div className="h-12 w-12 rounded-full bg-muted/30 flex items-center justify-center opacity-85 transition-opacity group-hover:opacity-100">
+                        <div className="h-12.5 w-12.5 rounded-full bg-muted/30 flex items-center justify-center opacity-85 transition-opacity group-hover:opacity-100">
                           <CircleHelp className="h-8 w-8 text-muted-foreground" />
                         </div>
                       ) : (
@@ -258,7 +267,7 @@ export function CharacterCard({
                           {isCredit
                             ? `${compactFmt.format(Math.max(0, required - have))}`
                             : isExp
-                              ? `${compactFmt.format(Math.max(0, required - getTotalExp("CHARACTER")))}`
+                              ? `${compactFmt.format(Math.max(0, required - (availableExp ? availableExp() : getTotalExp("CHARACTER"))))}`
                               : (() => {
                                   const missing = Math.max(0, required - have)
                                   const afterCraft = Math.max(
@@ -271,7 +280,7 @@ export function CharacterCard({
                       </TooltipTrigger>
                       <TooltipContent>
                         {isExp
-                          ? `${getTotalExp("CHARACTER").toLocaleString()} / ${required.toLocaleString()} EXP`
+                          ? `${(availableExp ? availableExp() : getTotalExp("CHARACTER")).toLocaleString()} / ${required.toLocaleString()} EXP`
                           : `${have.toLocaleString()}/${required.toLocaleString()}`}
                       </TooltipContent>
                     </Tooltip>
