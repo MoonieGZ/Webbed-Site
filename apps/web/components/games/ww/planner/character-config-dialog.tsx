@@ -6,7 +6,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/animate-ui/radix/dialog"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
@@ -16,6 +15,7 @@ import { ChevronDown, Minus, Plus, Sparkle } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/animate-ui/radix/dropdown-menu"
 
@@ -184,32 +184,27 @@ export function CharacterConfigDialog({
               asc === getStarAsc(lvl)
             const labelFor = (_asc: number, lvl: number): string => String(lvl)
 
-            const renderMenu = (
-              onPick: (asc: number, lvl: number) => void,
-              disableBelowIdx?: number,
-            ) => (
+            const renderMenu = (onPick: (asc: number, lvl: number) => void) => (
               <div className="p-2">
                 <div className="grid grid-cols-2 gap-2 w-[160px]">
                   {milestoneOptions.map((opt) => {
-                    const idx = toIndex(opt.asc, opt.level)
-                    const disabled =
-                      disableBelowIdx !== undefined && idx < disableBelowIdx
                     return (
-                      <button
+                      <div
                         key={opt.key}
-                        className={`rounded-md border px-3 py-2 text-sm ${
-                          opt.span ? "col-span-2" : ""
-                        } ${disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-muted"}`}
-                        onClick={() => !disabled && onPick(opt.asc, opt.level)}
-                        disabled={disabled}
+                        className={opt.span ? "col-span-2" : ""}
                       >
-                        <span className="inline-flex items-center gap-1">
-                          <span>{opt.level}</span>
-                          {opt.key.endsWith("*") ? (
-                            <Sparkle className="h-4 w-4" />
-                          ) : null}
-                        </span>
-                      </button>
+                        <DropdownMenuItem
+                          className="rounded-md border px-3 py-2 text-sm"
+                          onSelect={() => onPick(opt.asc, opt.level)}
+                        >
+                          <span className="inline-flex items-center gap-1 w-full justify-center">
+                            <span>{opt.level}</span>
+                            {opt.key.endsWith("*") ? (
+                              <Sparkle className="h-4 w-4" />
+                            ) : null}
+                          </span>
+                        </DropdownMenuItem>
+                      </div>
                     )
                   })}
                 </div>
@@ -327,7 +322,7 @@ export function CharacterConfigDialog({
                                   const pickIdx = toIndex(asc, lvl)
                                   const floored = Math.max(pickIdx, currentIdx)
                                   clampTo(floored)
-                                }, currentIdx)}
+                                })}
                               </DropdownMenuContent>
                             </DropdownMenu>
                             <Button
