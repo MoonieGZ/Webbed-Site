@@ -844,12 +844,18 @@ export function useWwPlanner() {
         credits += step.credits || 0
       }
 
-      // Character leveling credits (milestones between fromLevel -> toLevel)
+      // Character leveling EXP & credits (milestones between fromLevel -> toLevel)
+      let requiredExp = 0
       for (const row of EXP_TEMPLATES.CHARACTER) {
         if (row.level > plan.fromLevel && row.level <= plan.toLevel) {
+          requiredExp += row.exp || 0
           if (row.credits) addItem("other", "Shell Credit", row.credits, 2)
           credits += row.credits || 0
         }
+      }
+      if (requiredExp > 0) {
+        // Use premium item representation; qty holds EXP total, not item count
+        addItem("exp", "Premium Resonance Potion", requiredExp, 4)
       }
 
       // Skills
@@ -1152,7 +1158,7 @@ export function useWwPlanner() {
         }
       }
 
-      // Order: enemy_drop asc rarity, talent_upgrade asc rarity, boss_drop, collectible, weekly_boss, then credits (Shell Credit)
+      // Order: enemy_drop asc rarity, talent_upgrade asc rarity, boss_drop, collectible, weekly_boss, EXP, then credits
       const entries = Object.values(items) as Array<{
         type: string
         name: string
@@ -1162,6 +1168,7 @@ export function useWwPlanner() {
       const creditsEntry = entries.filter(
         (e) => e.type === "other" && e.name === "Shell Credit",
       )
+      const expEntries = entries.filter((e) => e.type === "exp")
       const enemyEntries = entries
         .filter((e) => e.type === "enemy_drop")
         .sort((a, b) => (a.rarity ?? 0) - (b.rarity ?? 0))
@@ -1177,6 +1184,7 @@ export function useWwPlanner() {
         ...bossEntries,
         ...collEntries,
         ...weeklyEntries,
+        ...expEntries,
         ...creditsEntry,
       ]
       return { credits, materials: ordered }

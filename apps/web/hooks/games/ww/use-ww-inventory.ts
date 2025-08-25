@@ -1,13 +1,15 @@
 "use client"
 
-import {
+import React, {
   useCallback,
   useEffect,
   useMemo,
   useRef,
-  useSyncExternalStore,
   useState,
+  useContext,
+  createContext,
 } from "react"
+import { EXP_MATERIALS } from "@/lib/games/ww/templates"
 
 type Material = { id: number; name: string; rarity?: number }
 type Group = { groupId: number; groupName: string; materials: Material[] }
@@ -31,29 +33,6 @@ type AssetsResponse = {
 type InventoryMap = Record<number, number>
 
 const STORAGE_KEY = "ww:inventory:v1"
-
-// Simple shared store so multiple hook instances stay in sync
-let sharedCounts: InventoryMap = {}
-let sharedInitialized = false
-const subscribers = new Set<() => void>()
-const INVENTORY_EVENT = "ww:inventory:change"
-
-function notifySubscribers() {
-  for (const fn of subscribers) fn()
-}
-
-function subscribe(fn: () => void) {
-  subscribers.add(fn)
-  return () => subscribers.delete(fn)
-}
-
-function getSnapshot() {
-  return sharedCounts
-}
-
-function getServerSnapshot() {
-  return {}
-}
 
 function readLocalStorage(): InventoryMap {
   if (typeof window === "undefined") return {}
@@ -95,12 +74,35 @@ export type UseWwInventoryReturn = {
   increment: (materialId: number, delta?: number) => void
   resetAll: () => void
   getCountFor: (type: string, name: string) => number
+  getTotalExp: (category: "CHARACTER" | "WEAPON") => number
+}
+
+const WwInventoryContext = createContext<UseWwInventoryReturn | null>(null)
+
+export function WwInventoryProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const value = useWwInventoryInternal()
+  return React.createElement(
+    WwInventoryContext.Provider,
+    { value },
+    children as any,
+  )
 }
 
 export function useWwInventory(): UseWwInventoryReturn {
+  // If a context is provided higher up (preferred), use it.
+  const ctx = useContext(WwInventoryContext)
+  if (ctx) return ctx
+  return useWwInventoryInternal()
+}
+
+function useWwInventoryInternal(): UseWwInventoryReturn {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const counts = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  const [counts, setCounts] = useState<InventoryMap>({})
 
   const [standaloneByType, setStandaloneByType] = useState<
     Record<string, Material[]>
@@ -109,70 +111,42 @@ export function useWwInventory(): UseWwInventoryReturn {
 
   const initializedRef = useRef(false)
 
-  // Load counts once and bridge cross-bundle updates via DOM event
+  // Load counts once
   useEffect(() => {
     if (initializedRef.current) return
     initializedRef.current = true
-    if (!sharedInitialized) {
-      sharedCounts = readLocalStorage()
-      sharedInitialized = true
-      notifySubscribers()
-    }
-    const onDomEvent = (e: Event) => {
-      try {
-        const detail = (e as CustomEvent<InventoryMap>).detail
-        if (detail) {
-          sharedCounts = { ...detail }
-          writeLocalStorage(sharedCounts)
-          notifySubscribers()
-        }
-      } catch {}
-    }
-    if (typeof window !== "undefined")
-      window.addEventListener(INVENTORY_EVENT, onDomEvent as any)
-    return () => {
-      if (typeof window !== "undefined")
-        window.removeEventListener(INVENTORY_EVENT, onDomEvent as any)
-    }
+    setCounts(readLocalStorage())
   }, [])
 
+  // Persist on changes
+  useEffect(() => {
+    if (!initializedRef.current) return
+    writeLocalStorage(counts)
+  }, [counts])
+
   const setCount = useCallback((materialId: number, count: number) => {
-    const next = { ...sharedCounts }
-    const sanitized = Math.max(0, Math.floor(Number(count) || 0))
-    if (sanitized === 0) delete next[materialId]
-    else next[materialId] = sanitized
-    sharedCounts = next
-    writeLocalStorage(sharedCounts)
-    notifySubscribers()
-    if (typeof window !== "undefined")
-      window.dispatchEvent(
-        new CustomEvent(INVENTORY_EVENT, { detail: { ...sharedCounts } }),
-      )
+    setCounts((prev) => {
+      const next = { ...prev }
+      const sanitized = Math.max(0, Math.floor(Number(count) || 0))
+      if (sanitized === 0) delete next[materialId]
+      else next[materialId] = sanitized
+      return next
+    })
   }, [])
 
   const increment = useCallback((materialId: number, delta = 1) => {
-    const current = sharedCounts[materialId] || 0
-    const nextVal = Math.max(0, Math.floor(current + delta))
-    const next = { ...sharedCounts }
-    if (nextVal === 0) delete next[materialId]
-    else next[materialId] = nextVal
-    sharedCounts = next
-    writeLocalStorage(sharedCounts)
-    notifySubscribers()
-    if (typeof window !== "undefined")
-      window.dispatchEvent(
-        new CustomEvent(INVENTORY_EVENT, { detail: { ...sharedCounts } }),
-      )
+    setCounts((prev) => {
+      const current = prev[materialId] || 0
+      const nextVal = Math.max(0, Math.floor(current + delta))
+      const next = { ...prev }
+      if (nextVal === 0) delete next[materialId]
+      else next[materialId] = nextVal
+      return next
+    })
   }, [])
 
   const resetAll = useCallback(() => {
-    sharedCounts = {}
-    writeLocalStorage(sharedCounts)
-    notifySubscribers()
-    if (typeof window !== "undefined")
-      window.dispatchEvent(
-        new CustomEvent(INVENTORY_EVENT, { detail: { ...sharedCounts } }),
-      )
+    setCounts({})
   }, [])
 
   // Fetch taxonomy of materials
@@ -228,7 +202,6 @@ export function useWwInventory(): UseWwInventoryReturn {
   }, [fetchAssets])
 
   // Derived sums per type (not currently returned but may be helpful)
-  // Example usage could compute totals within the dialog
   useMemo(() => counts, [counts])
 
   return {
@@ -266,6 +239,18 @@ export function useWwInventory(): UseWwInventoryReturn {
         return val || 0
       }
       return 0
+    },
+    getTotalExp: (category: "CHARACTER" | "WEAPON") => {
+      const mats = EXP_MATERIALS[category]
+      if (!mats) return 0
+      let total = 0
+      for (const m of mats) {
+        const id = Number(m.id)
+        const have = (counts as Record<number, number>)[id] || 0
+        const value = Number((m as any).value) || 0
+        if (have > 0 && value > 0) total += have * value
+      }
+      return total
     },
   }
 }

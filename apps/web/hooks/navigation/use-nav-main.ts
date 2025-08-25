@@ -1,4 +1,4 @@
-import { Dices, FishSymbol, Users } from "lucide-react"
+import { Dices, FishSymbol, NotebookPen, Users } from "lucide-react"
 import { useFriendRealtime } from "@/hooks/account/use-friend-realtime"
 import { useSidebarData } from "@/hooks/navigation/use-sidebar-data"
 
@@ -33,6 +33,17 @@ export function useNavMain() {
       icon: Dices,
     },
     {
+      title: "Planners",
+      url: "/wuwa/planner",
+      icon: NotebookPen,
+      items: [
+        {
+          title: "Wuthering Waves",
+          url: "/wuwa/planner",
+        },
+      ],
+    },
+    {
       title: "Friends",
       url: "/friends",
       icon: Users,
@@ -44,17 +55,6 @@ export function useNavMain() {
   const filtered = navMain.filter(
     (item) => !item.requiresAccount || isAuthenticated,
   )
-  // Temporarily disabled submenu filtering until items are reintroduced.
-  // .map((item) =>
-  //   item.items
-  //     ? {
-  //         ...item,
-  //         items: item.items.filter(
-  //           (sub) => !sub.requiresAccount || isAuthenticated,
-  //         ),
-  //       }
-  //     : item,
-  // )
 
   return { navMain: filtered }
 }

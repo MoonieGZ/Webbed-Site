@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getMaterialIconUrl } from "@/lib/games/ww/icons"
 import { CircleHelp, EllipsisVertical, Pencil, Trash2 } from "lucide-react"
@@ -20,6 +21,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/animate-ui/components/tooltip"
+import { TargetedInventoryDialog } from "./targeted-inventory-dialog"
+import { getGlow } from "@/lib/games/ww/glow"
 
 type MaterialEntry = {
   type: string
@@ -48,18 +51,12 @@ export function CharacterCard({
   onRemove?: () => void
 }) {
   const mats = breakdown.materials
-  const { getCountFor, counts } = useWwInventory()
-  const getGlow = (rarity?: number) => {
-    if (rarity === 1)
-      return { base: "#81e6be", light: "#c7f3e1", line: "#81e6be" }
-    if (rarity === 2)
-      return { base: "#8fd6fa", light: "#c9ebfd", line: "#8fd6fa" }
-    if (rarity === 3)
-      return { base: "#d0a2fd", light: "#e6cffd", line: "#d0a2fd" }
-    if (rarity === 4)
-      return { base: "#f9d852", light: "#fdeea6", line: "#f9d852" }
-    return { base: "#a1a1aa", light: "#d4d4d8", line: "#a1a1aa" }
-  }
+  const { getCountFor, getTotalExp } = useWwInventory()
+  const [openDialog, setOpenDialog] = useState<null | {
+    type: string
+    name: string
+    context?: "CHARACTER" | "WEAPON"
+  }>(null)
 
   return (
     <MotionEffect slide={{ direction: "down" }} fade>
@@ -98,7 +95,7 @@ export function CharacterCard({
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive" onClick={onRemove}>
-                    <Trash2 /> Remove character
+                    <Trash2 /> Remove plan
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -106,20 +103,45 @@ export function CharacterCard({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2 mx-auto justify-around">
-            {mats.map((s, idx) => {
+          {(() => {
+            const specials = mats.filter(
+              (s) =>
+                (s.type === "other" && s.name === "Shell Credit") ||
+                (s.type === "exp" && s.name === "Premium Resonance Potion"),
+            )
+            const others = mats.filter(
+              (s) =>
+                !(
+                  (s.type === "other" && s.name === "Shell Credit") ||
+                  (s.type === "exp" && s.name === "Premium Resonance Potion")
+                ),
+            )
+
+            const compactFmt = new Intl.NumberFormat(undefined, {
+              notation: "compact",
+              maximumFractionDigits: 1,
+            })
+
+            const renderItem = (s: MaterialEntry, key: string) => {
+              const isExp =
+                s.type === "exp" && s.name === "Premium Resonance Potion"
               const have = getCountFor(s.type, s.name)
               const required = s.qty
-              const complete = have >= required && required > 0
+              const complete = isExp
+                ? getTotalExp("CHARACTER") >= required
+                : have >= required && required > 0
               const isCredit = s.type === "other" && s.name === "Shell Credit"
-              const compactFmt = new Intl.NumberFormat(undefined, {
-                notation: "compact",
-                maximumFractionDigits: 1,
-              })
               return (
                 <div
-                  key={idx}
-                  className={`group rounded-md border p-2 flex items-center justify-center overflow-hidden ${complete ? "bg-background/40 grayscale-[0.6] opacity-70 hover:opacity-100 hover:grayscale-0" : "bg-background/50"}`}
+                  key={key}
+                  className={`group rounded-md border p-2 flex items-center justify-center overflow-hidden cursor-pointer ${complete ? "bg-background/40 grayscale-[0.6] opacity-70 hover:opacity-100 hover:grayscale-0" : "bg-background/50"}`}
+                  onClick={() =>
+                    setOpenDialog({
+                      type: s.type,
+                      name: s.name,
+                      context: isExp ? "CHARACTER" : undefined,
+                    })
+                  }
                 >
                   <div className="relative flex flex-col items-center gap-1">
                     <div className="relative flex justify-center w-full">
@@ -129,7 +151,10 @@ export function CharacterCard({
                         </div>
                       ) : (
                         <Image
-                          src={getMaterialIconUrl(s.type, s.name)}
+                          src={getMaterialIconUrl(
+                            isExp ? "exp" : s.type,
+                            s.name,
+                          )}
                           alt={s.name}
                           width={50}
                           height={50}
@@ -168,16 +193,42 @@ export function CharacterCard({
                         <div className="text-xs">
                           {isCredit
                             ? `${compactFmt.format(Math.max(0, required - have))}`
-                            : `${Math.max(0, required - have).toLocaleString()}`}
+                            : isExp
+                              ? `${compactFmt.format(Math.max(0, required - getTotalExp("CHARACTER")))}`
+                              : `${Math.max(0, required - have).toLocaleString()}`}
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent>{`${have.toLocaleString()}/${required.toLocaleString()}`}</TooltipContent>
+                      <TooltipContent>
+                        {isExp
+                          ? `${getTotalExp("CHARACTER").toLocaleString()} / ${required.toLocaleString()} EXP`
+                          : `${have.toLocaleString()}/${required.toLocaleString()}`}
+                      </TooltipContent>
                     </Tooltip>
                   </div>
                 </div>
               )
-            })}
-          </div>
+            }
+
+            return (
+              <>
+                <div className="flex flex-wrap gap-2 mx-auto justify-around mb-2">
+                  {specials.map((s, idx) =>
+                    renderItem(s, `spec-${idx}-${s.type}-${s.name}`),
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2 mx-auto justify-around">
+                  {others.map((s, idx) =>
+                    renderItem(s, `rest-${idx}-${s.type}-${s.name}`),
+                  )}
+                </div>
+                <TargetedInventoryDialog
+                  open={Boolean(openDialog)}
+                  onOpenChange={(o) => !o && setOpenDialog(null)}
+                  target={openDialog}
+                />
+              </>
+            )
+          })()}
         </CardContent>
       </Card>
     </MotionEffect>

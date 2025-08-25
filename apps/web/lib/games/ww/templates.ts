@@ -274,3 +274,19 @@ export const SKILL_TEMPLATES = {
     },
   ],
 }
+
+export const EXP_MATERIALS = {
+  CHARACTER: [
+    { id: 59, name: "Basic Resonance Potion", rarity: 1, value: 1000 },
+    { id: 60, name: "Medium Resonance Potion", rarity: 2, value: 3000 },
+    { id: 61, name: "Advanced Resonance Potion", rarity: 3, value: 8000 },
+    { id: 62, name: "Premium Resonance Potion", rarity: 4, value: 20000 },
+  ],
+
+  WEAPON: [
+    { id: 90, name: "Basic Energy Core", rarity: 1, value: 1000 },
+    { id: 91, name: "Medium Energy Core", rarity: 2, value: 3000 },
+    { id: 92, name: "Advanced Energy Core", rarity: 3, value: 8000 },
+    { id: 93, name: "Premium Energy Core", rarity: 4, value: 20000 },
+  ],
+}

@@ -1,8 +1,15 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { LayoutList, ListPlus, Swords, UserPlus } from "lucide-react"
+import {
+  LayoutList,
+  ListPlus,
+  NotebookPen,
+  Swords,
+  TriangleAlert,
+  UserPlus,
+} from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,30 +19,34 @@ import {
 } from "@/components/animate-ui/radix/dropdown-menu"
 
 export function PlannerTopBar({
-  totalItems,
-  totalCredits,
   onAddCharacter,
   onAddWeapon,
   onManageInventory,
 }: {
-  totalItems: number
-  totalCredits: number
   onAddCharacter: () => void
   onAddWeapon: () => void
   onManageInventory: () => void
 }) {
   return (
     <Card>
-      <CardContent className="flex items-center justify-between gap-3 p-3">
-        <div className="flex items-center gap-6 text-sm">
-          <div>
-            <span className="text-muted-foreground">Total Items:</span>{" "}
-            <span className="font-medium">{totalItems}</span>
-          </div>
-          <div>
-            <span className="text-muted-foreground">Credits:</span>{" "}
-            <span className="font-medium">{totalCredits.toLocaleString()}</span>
-          </div>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <NotebookPen className="w-4 h-4" />
+          Planner
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          Plan your <strong>Wuthering Waves</strong> ascensions with this tool.
+          <br />
+          Add characters, manage your inventory, and see exactly what materials
+          you need to collect.
+          <br />
+          <span className="text-amber-500 flex items-center gap-1">
+            <TriangleAlert className="w-4 h-4" />
+            Calculations for multiple characters and weapons are coming soon!
+            <TriangleAlert className="w-4 h-4" />
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -50,7 +61,7 @@ export function PlannerTopBar({
                 <UserPlus />
                 Add Character
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onAddWeapon}>
+              <DropdownMenuItem onClick={onAddWeapon} disabled>
                 <Swords />
                 Add Weapon
               </DropdownMenuItem>

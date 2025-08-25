@@ -20,7 +20,6 @@ import {
 } from "@/components/animate-ui/radix/sidebar"
 import { useNavMain } from "@/hooks/navigation/use-nav-main"
 import Link from "next/link"
-import { Badge } from "../ui/badge"
 
 export function NavMain() {
   const { navMain } = useNavMain()
@@ -44,8 +43,7 @@ export function NavMain() {
                   <span className="flex items-center gap-2">{item.title}</span>
                 </Link>
               </SidebarMenuButton>
-              {/* TODO: Reintroduce submenu filtering */}
-              {false && (item as any).items?.length ? (
+              {(item as any).items?.length ? (
                 <>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuAction className="data-[state=open]:rotate-90">
