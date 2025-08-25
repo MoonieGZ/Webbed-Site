@@ -322,9 +322,11 @@ export function useWwPlanner() {
 
   const filteredCharacters = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return characters
-    return characters.filter((c) => c.name.toLowerCase().includes(q))
-  }, [characters, search])
+    const existing = new Set(plans.map((p) => p.characterId))
+    const available = characters.filter((c) => !existing.has(c.id))
+    if (!q) return available
+    return available.filter((c) => c.name.toLowerCase().includes(q))
+  }, [characters, search, plans])
 
   const openAddCharacter = () => setShowAddCharacter(true)
   const closeAddCharacter = () => setShowAddCharacter(false)
