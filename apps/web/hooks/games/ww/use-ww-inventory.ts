@@ -75,6 +75,7 @@ export type UseWwInventoryReturn = {
   resetAll: () => void
   getCountFor: (type: string, name: string) => number
   getTotalExp: (category: "CHARACTER" | "WEAPON") => number
+  getCraftableExtraFor: (type: string, name: string) => number
 }
 
 const WwInventoryContext = createContext<UseWwInventoryReturn | null>(null)
@@ -251,6 +252,36 @@ function useWwInventoryInternal(): UseWwInventoryReturn {
         if (have > 0 && value > 0) total += have * value
       }
       return total
+    },
+    getCraftableExtraFor: (type: string, name: string) => {
+      // Only for grouped craftable types
+      if (type !== "enemy_drop" && type !== "talent_upgrade") return 0
+      const groups = groupsByType[type] || []
+      const group = groups.find((g) => g.materials.some((m) => m.name === name))
+      if (!group) return 0
+      // Sort by rarity ascending (tier 0 -> lowest)
+      const mats = [...group.materials].sort(
+        (a, b) => (a.rarity || 0) - (b.rarity || 0),
+      )
+      const targetIdx = mats.findIndex((m) => m.name === name)
+      if (targetIdx < 0) return 0
+      // Build counts up to target tier
+      const tierCounts: number[] = []
+      for (let i = 0; i <= targetIdx; i++) {
+        const id = Number(mats[i].id)
+        tierCounts[i] = (counts as Record<number, number>)[id] || 0
+      }
+      const baseAtTarget = tierCounts[targetIdx] || 0
+      // Cascade convert lower tiers upwards with 3:1 ratio
+      for (let i = 0; i < targetIdx; i++) {
+        const convertible = Math.floor((tierCounts[i] || 0) / 3)
+        if (convertible > 0) {
+          tierCounts[i] -= convertible * 3
+          tierCounts[i + 1] = (tierCounts[i + 1] || 0) + convertible
+        }
+      }
+      const afterAtTarget = tierCounts[targetIdx] || 0
+      return Math.max(0, afterAtTarget - baseAtTarget)
     },
   }
 }

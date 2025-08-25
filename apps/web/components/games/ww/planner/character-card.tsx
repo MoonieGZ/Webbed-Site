@@ -4,7 +4,13 @@ import Image from "next/image"
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getMaterialIconUrl } from "@/lib/games/ww/icons"
-import { CircleHelp, EllipsisVertical, Pencil, Trash2 } from "lucide-react"
+import {
+  CircleHelp,
+  EllipsisVertical,
+  FlaskConical,
+  Pencil,
+  Trash2,
+} from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +28,7 @@ import {
   TooltipTrigger,
 } from "@/components/animate-ui/components/tooltip"
 import { TargetedInventoryDialog } from "./targeted-inventory-dialog"
+import { CraftingRecapDialog } from "./crafting-recap-dialog"
 import { getGlow } from "@/lib/games/ww/glow"
 
 type MaterialEntry = {
@@ -51,15 +58,50 @@ export function CharacterCard({
   onRemove?: () => void
 }) {
   const mats = breakdown.materials
-  const { getCountFor, getTotalExp } = useWwInventory()
+  const { getCountFor, getTotalExp, groupsByType, counts } = useWwInventory()
+
+  const computeCraftableExtra = (entry: MaterialEntry): number => {
+    if (!(entry.type === "enemy_drop" || entry.type === "talent_upgrade"))
+      return 0
+    const groups = groupsByType[entry.type] || []
+    const group = groups.find((g) =>
+      g.materials.some((m) => m.name === entry.name),
+    )
+    if (!group) return 0
+    const matsAsc = [...group.materials].sort(
+      (a, b) => (a.rarity || 0) - (b.rarity || 0),
+    )
+    const targetIdx = matsAsc.findIndex((m) => m.name === entry.name)
+    if (targetIdx <= 0) return 0
+
+    const available: number[] = new Array(targetIdx + 1).fill(0)
+    for (let i = 0; i <= targetIdx; i++) {
+      const m = matsAsc[i]
+      const have = (counts as Record<number, number>)[Number(m.id)] || 0
+      const reqEntry = mats.find(
+        (x) => x.type === entry.type && x.name === m.name,
+      )
+      const req = reqEntry ? reqEntry.qty : 0
+      available[i] = Math.max(0, have - req)
+    }
+    for (let i = 0; i < targetIdx; i++) {
+      const up = Math.floor((available[i] || 0) / 3)
+      if (up > 0) {
+        available[i] -= up * 3
+        available[i + 1] += up
+      }
+    }
+    return available[targetIdx] || 0
+  }
   const [openDialog, setOpenDialog] = useState<null | {
     type: string
     name: string
     context?: "CHARACTER" | "WEAPON"
   }>(null)
+  const [showCraftRecap, setShowCraftRecap] = useState(false)
 
   return (
-    <MotionEffect slide={{ direction: "down" }} fade>
+    <MotionEffect slide={{ direction: "down" }} fade layout>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-6">
@@ -91,11 +133,15 @@ export function CharacterCard({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem onClick={onEdit}>
-                    <Pencil /> Edit plan
+                    <Pencil /> Edit Plan
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setShowCraftRecap(true)}>
+                    <FlaskConical /> Crafting Recap
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive" onClick={onRemove}>
-                    <Trash2 /> Remove plan
+                    <Trash2 /> Remove Plan
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -127,10 +173,22 @@ export function CharacterCard({
                 s.type === "exp" && s.name === "Premium Resonance Potion"
               const have = getCountFor(s.type, s.name)
               const required = s.qty
+              const isCredit = s.type === "other" && s.name === "Shell Credit"
+              const craftableExtra = !isExp ? computeCraftableExtra(s) : 0
               const complete = isExp
                 ? getTotalExp("CHARACTER") >= required
-                : have >= required && required > 0
-              const isCredit = s.type === "other" && s.name === "Shell Credit"
+                : (() => {
+                    if (!(required > 0)) return false
+                    if (have >= required) return true
+                    if (
+                      s.type === "enemy_drop" ||
+                      s.type === "talent_upgrade"
+                    ) {
+                      const covered = have + (craftableExtra || 0)
+                      return covered >= required
+                    }
+                    return false
+                  })()
               return (
                 <div
                   key={key}
@@ -168,6 +226,12 @@ export function CharacterCard({
                         </div>
                       )}
 
+                      {craftableExtra > 0 && (
+                        <div className="absolute bg-orange-500 text-white rounded-full h-5 w-5 flex items-center justify-center shadow -top-1 -left-1">
+                          <FlaskConical className="h-4 w-4" />
+                        </div>
+                      )}
+
                       <div className="absolute bottom-0 w-3/4">
                         <div className="relative flex w-full items-center">
                           <div className="absolute h-4 w-full -bottom-1">
@@ -195,7 +259,14 @@ export function CharacterCard({
                             ? `${compactFmt.format(Math.max(0, required - have))}`
                             : isExp
                               ? `${compactFmt.format(Math.max(0, required - getTotalExp("CHARACTER")))}`
-                              : `${Math.max(0, required - have).toLocaleString()}`}
+                              : (() => {
+                                  const missing = Math.max(0, required - have)
+                                  const afterCraft = Math.max(
+                                    0,
+                                    missing - (craftableExtra || 0),
+                                  )
+                                  return `${afterCraft.toLocaleString()}`
+                                })()}
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -225,6 +296,11 @@ export function CharacterCard({
                   open={Boolean(openDialog)}
                   onOpenChange={(o) => !o && setOpenDialog(null)}
                   target={openDialog}
+                />
+                <CraftingRecapDialog
+                  open={showCraftRecap}
+                  onOpenChange={setShowCraftRecap}
+                  materials={others}
                 />
               </>
             )

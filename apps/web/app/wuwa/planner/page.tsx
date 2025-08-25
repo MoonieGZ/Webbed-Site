@@ -14,6 +14,7 @@ import { AddCharacterDialog } from "@/components/games/ww/planner/add-character-
 import { CharacterConfigDialog } from "@/components/games/ww/planner/character-config-dialog"
 import { CharacterCard } from "@/components/games/ww/planner/character-card"
 import { InventoryDialog } from "@/components/games/ww/planner/inventory-dialog"
+import { ReorderPlansDialog } from "@/components/games/ww/planner/reorder-plans-dialog"
 import { useWwPlanner } from "@/hooks/games/ww/use-ww-planner"
 import { WwInventoryProvider } from "@/hooks/games/ww/use-ww-inventory"
 import { AnimatePresence } from "motion/react"
@@ -52,13 +53,14 @@ export default function WuWaPlannerPage() {
             onAddCharacter={planner.openAddCharacter}
             onAddWeapon={() => {}}
             onManageInventory={() => setShowInventory(true)}
+            onReorderPlans={planner.openReorderPlans}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            <AnimatePresence>
+            <AnimatePresence mode="popLayout">
               {planner.plans.map((p, idx) => (
                 <CharacterCard
-                  key={`${p.characterId}-${idx}`}
+                  key={p.planId}
                   name={p.characterName}
                   icon={p.characterIcon}
                   elementIcon={p.characterElementIcon}
@@ -108,6 +110,19 @@ export default function WuWaPlannerPage() {
         <InventoryDialog
           open={showInventory}
           onOpenChange={(o) => setShowInventory(o)}
+        />
+
+        <ReorderPlansDialog
+          open={planner.showReorderPlans}
+          onOpenChange={(o) =>
+            o ? planner.openReorderPlans() : planner.closeReorderPlans()
+          }
+          plans={planner.plans.map((p) => ({
+            characterId: p.characterId,
+            characterName: p.characterName,
+            characterIcon: p.characterIcon,
+          }))}
+          onConfirm={(order) => planner.applyPlanOrder(order)}
         />
       </>
     </WwInventoryProvider>

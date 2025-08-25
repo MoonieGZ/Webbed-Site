@@ -9,6 +9,7 @@ import {
   Swords,
   TriangleAlert,
   UserPlus,
+  ListOrdered,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -22,10 +23,12 @@ export function PlannerTopBar({
   onAddCharacter,
   onAddWeapon,
   onManageInventory,
+  onReorderPlans,
 }: {
   onAddCharacter: () => void
   onAddWeapon: () => void
   onManageInventory: () => void
+  onReorderPlans: () => void
 }) {
   return (
     <Card>
@@ -69,6 +72,10 @@ export function PlannerTopBar({
               <DropdownMenuItem onClick={onManageInventory}>
                 <LayoutList />
                 Manage Inventory
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onReorderPlans}>
+                <ListOrdered />
+                Re-order Plan
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

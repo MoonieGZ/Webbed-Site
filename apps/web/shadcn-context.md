@@ -50,6 +50,7 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - FriendsManagementBar (pagination-only variant of management bar)
   - WwGroupsTable (admin WW grouping management)
   - InventoryDialog (WW planner inventory management)
+  - ReorderPlansDialog (WW planner reorder UI)
 
 - **Custom Hooks Built**:
   - useGiData (GI data fetch + local caching + persistence)

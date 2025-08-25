@@ -18,6 +18,7 @@ type CharacterAsset = {
 }
 
 export type CharacterPlan = {
+  planId: string
   characterId: number
   characterName: string
   characterIcon: string
@@ -62,6 +63,7 @@ export function useWwPlanner() {
   const [selectedCharacter, setSelectedCharacter] =
     useState<CharacterAsset | null>(null)
   const [search, setSearch] = useState("")
+  const [showReorderPlans, setShowReorderPlans] = useState(false)
 
   // Temp config state for character dialog
   const [fromAscension, setFromAscension] = useState(0)
@@ -263,6 +265,10 @@ export function useWwPlanner() {
     const char = characters.find((c) => c.id === cid) || null
     const { inherent, statBoosts } = unpackBits(bits)
     return {
+      planId:
+        typeof crypto !== "undefined" && (crypto as any)?.randomUUID
+          ? (crypto as any).randomUUID()
+          : `plan_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       characterId: cid,
       characterName: char?.name || String(cid),
       characterIcon: char?.icon || "/games/ww/characters/Unknown.webp",
@@ -323,6 +329,9 @@ export function useWwPlanner() {
   const openAddCharacter = () => setShowAddCharacter(true)
   const closeAddCharacter = () => setShowAddCharacter(false)
 
+  const openReorderPlans = () => setShowReorderPlans(true)
+  const closeReorderPlans = () => setShowReorderPlans(false)
+
   const chooseCharacter = (c: CharacterAsset) => {
     setSelectedCharacter(c)
     setShowAddCharacter(false)
@@ -357,6 +366,15 @@ export function useWwPlanner() {
   const confirmCharacterPlan = () => {
     if (!selectedCharacter) return
     const plan: CharacterPlan = {
+      planId:
+        editingPlanIndex != null && editingPlanIndex >= 0
+          ? plans[editingPlanIndex]?.planId ||
+            (typeof crypto !== "undefined" && (crypto as any)?.randomUUID
+              ? (crypto as any).randomUUID()
+              : `plan_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`)
+          : typeof crypto !== "undefined" && (crypto as any)?.randomUUID
+            ? (crypto as any).randomUUID()
+            : `plan_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       characterId: selectedCharacter.id,
       characterName: selectedCharacter.name,
       characterIcon: selectedCharacter.icon,
@@ -388,6 +406,19 @@ export function useWwPlanner() {
 
   const removePlan = (index: number) => {
     setPlans((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const applyPlanOrder = (order: number[]) => {
+    setPlans((prev) => {
+      if (!Array.isArray(order) || order.length !== prev.length) return prev
+      const next: CharacterPlan[] = []
+      for (const idx of order) {
+        const item = prev[idx]
+        if (item) next.push(item)
+      }
+      return next.length === prev.length ? next : prev
+    })
+    setShowReorderPlans(false)
   }
 
   const beginEditPlan = (index: number) => {
@@ -1227,6 +1258,9 @@ export function useWwPlanner() {
     openAddCharacter,
     closeAddCharacter,
     chooseCharacter,
+    showReorderPlans,
+    openReorderPlans,
+    closeReorderPlans,
     showCharacterConfig,
     selectedCharacter,
     cancelCharacterConfig,
@@ -1250,6 +1284,7 @@ export function useWwPlanner() {
     // plan ops
     removePlan,
     beginEditPlan,
+    applyPlanOrder,
 
     // multi-account state
     accountId,

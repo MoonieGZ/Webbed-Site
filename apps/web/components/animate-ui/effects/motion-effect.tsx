@@ -16,6 +16,7 @@ type MotionEffectProps = HTMLMotionProps<"div"> & {
   className?: string
   transition?: Transition
   delay?: number
+  layout?: boolean
   inView?: boolean
   inViewMargin?: UseInViewOptions["margin"]
   inViewOnce?: boolean
@@ -50,6 +51,7 @@ function MotionEffect({
   slide = false,
   fade = false,
   zoom = false,
+  layout = false,
   ...props
 }: MotionEffectProps) {
   const localRef = React.useRef<HTMLDivElement>(null)
@@ -96,6 +98,7 @@ function MotionEffect({
     <motion.div
       ref={localRef}
       data-slot="motion-effect"
+      layout={layout}
       initial="hidden"
       animate={isInView ? "visible" : "hidden"}
       exit="hidden"
