@@ -60,7 +60,7 @@ export function TargetedInventoryDialog({
         const group = grpArr.find((g) => g.groupId === groupId)
         const mats = (group?.materials || [])
           .slice()
-          .sort((a, b) => (a.rarity || 0) - (b.rarity || 0))
+          .sort((a, b) => (b.rarity || 0) - (a.rarity || 0))
         return mats.map((m) => ({
           id: m.id,
           name: m.name,
@@ -77,7 +77,7 @@ export function TargetedInventoryDialog({
       if (group) {
         const mats = (group.materials || [])
           .slice()
-          .sort((a, b) => (a.rarity || 0) - (b.rarity || 0))
+          .sort((a, b) => (b.rarity || 0) - (a.rarity || 0))
         return mats.map((m) => ({
           id: m.id,
           name: m.name,
