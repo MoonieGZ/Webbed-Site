@@ -84,7 +84,7 @@ export function InventoryDialog({
         map.set(89, { id: 89, name: "Shell Credit", rarity: 2 })
       }
 
-      let arr = Array.from(map.values())
+      const arr = Array.from(map.values())
         .filter((m) => filter(m.name))
         .sort(
           (a, b) =>

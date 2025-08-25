@@ -71,11 +71,11 @@ export function WwGroupsTable() {
           {Object.entries(groupedByElement).map(([element, chars]) => (
             <div key={element} className="space-y-2">
               <div className="flex items-center gap-2">
-                {/* TODO: Replace with Image component */}
-                <img
+                <Image
                   src={getElementIconUrl(element)}
                   alt={element}
-                  className="h-6 w-6"
+                  width={24}
+                  height={24}
                 />
                 <div className="font-medium">{element}</div>
               </div>
@@ -93,11 +93,11 @@ export function WwGroupsTable() {
                       className="grid grid-cols-[180px_repeat(4,minmax(160px,1fr))] items-center gap-3 px-3 py-2 border-t"
                     >
                       <div className="flex items-center gap-2">
-                        {/* TODO: Replace with Image component */}
-                        <img
+                        <Image
                           src={getCharacterIconUrl(element, c.name)}
                           alt={c.name}
-                          className="h-8 w-8"
+                          width={32}
+                          height={32}
                         />
                         <div className="truncate text-sm">{c.name}</div>
                       </div>
