@@ -10,13 +10,13 @@ import Image from "next/image"
 import { useMemo } from "react"
 import { useWwInventory } from "@/hooks/games/ww/use-ww-inventory"
 import { getMaterialIconUrl } from "@/lib/games/ww/icons"
-import { getGlow } from "@/lib/games/ww/glow"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/animate-ui/components/tooltip"
-import { FlaskConical } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useWwCraftingRecap } from "@/hooks/games/ww/use-ww-crafting-recap"
 
 type MaterialEntry = {
   type: string
@@ -35,6 +35,7 @@ export function CraftingRecapDialog({
   materials: MaterialEntry[]
 }) {
   const { groupsByType, counts } = useWwInventory()
+  const { applyCraftStep } = useWwCraftingRecap()
 
   const itemsToCraft = useMemo(() => {
     const result: Array<{
@@ -73,15 +74,11 @@ export function CraftingRecapDialog({
 
       // Top-down allocation: use excess to cover own deficit; remaining must be crafted from below
       for (let i = T; i >= 1; i--) {
-        // Use excess at this level to cover its own deficit
         const useHere = Math.min(excess[i], deficit[i])
         deficit[i] -= useHere
         excess[i] -= useHere
-        // Remaining deficit at i must be crafted from i-1
         craftsStep[i - 1] += deficit[i]
-        // This requires inputs at level i-1
         deficit[i - 1] += 3 * deficit[i]
-        // Deficit at i satisfied now
         deficit[i] = 0
       }
 
@@ -159,42 +156,61 @@ export function CraftingRecapDialog({
                   <div className="text-xs text-muted-foreground mb-2">
                     Step {idx + 1}
                   </div>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">Use</span>
-                        <span className="inline-flex items-center gap-1">
-                          <Image
-                            src={getMaterialIconUrl(m.type, m.fromName)}
-                            alt={m.fromName}
-                            width={36}
-                            height={36}
-                            className="rounded-sm shrink-0"
-                          />
-                          <span className="text-sm leading-none">
-                            x {m.inputQty.toLocaleString()}
+                  <div className="flex items-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">Use</span>
+                          <span className="inline-flex items-center gap-1">
+                            <Image
+                              src={getMaterialIconUrl(m.type, m.fromName)}
+                              alt={m.fromName}
+                              width={36}
+                              height={36}
+                              className="rounded-sm shrink-0"
+                            />
+                            <span className="text-sm leading-none">
+                              x {m.inputQty.toLocaleString()}
+                            </span>
                           </span>
-                        </span>
-                        <span className="text-sm">to craft</span>
-                        <span className="inline-flex items-center gap-1">
-                          <Image
-                            src={getMaterialIconUrl(m.type, m.toName)}
-                            alt={m.toName}
-                            width={36}
-                            height={36}
-                            className="rounded-sm shrink-0"
-                          />
-                          <span className="text-sm leading-none">
-                            x {m.qty.toLocaleString()}
+                          <span className="text-sm">to craft</span>
+                          <span className="inline-flex items-center gap-1">
+                            <Image
+                              src={getMaterialIconUrl(m.type, m.toName)}
+                              alt={m.toName}
+                              width={36}
+                              height={36}
+                              className="rounded-sm shrink-0"
+                            />
+                            <span className="text-sm leading-none">
+                              x {m.qty.toLocaleString()}
+                            </span>
                           </span>
-                        </span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Craft {m.qty.toLocaleString()} {m.toName} using{" "}
-                      {m.inputQty.toLocaleString()} {m.fromName}
-                    </TooltipContent>
-                  </Tooltip>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Craft {m.qty.toLocaleString()} {m.toName} using{" "}
+                        {m.inputQty.toLocaleString()} {m.fromName}
+                      </TooltipContent>
+                    </Tooltip>
+                    <div className="ml-auto">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          applyCraftStep({
+                            type: m.type,
+                            fromName: m.fromName,
+                            toName: m.toName,
+                            qty: m.qty,
+                            inputQty: m.inputQty,
+                          })
+                        }
+                      >
+                        Done
+                      </Button>
+                    </div>
+                  </div>
                 </li>
               ))}
             </ol>
