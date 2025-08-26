@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getMaterialIconUrl } from "@/lib/games/ww/icons"
 import {
@@ -30,6 +30,9 @@ import {
 import { TargetedInventoryDialog } from "./targeted-inventory-dialog"
 import { CraftingRecapDialog } from "./crafting-recap-dialog"
 import { getGlow } from "@/lib/games/ww/glow"
+import { EXP_MATERIALS } from "@/lib/games/ww/templates"
+import { toast } from "sonner"
+import { toastStyles } from "@/lib/toast-styles"
 
 type MaterialEntry = {
   type: string
@@ -47,6 +50,7 @@ export function CharacterCard({
   breakdown,
   onEdit,
   onRemove,
+  onMarkDone,
   availableFor,
   availableExp,
 }: {
@@ -58,11 +62,12 @@ export function CharacterCard({
   breakdown: { credits: number; materials: MaterialEntry[] }
   onEdit?: () => void
   onRemove?: () => void
+  onMarkDone?: () => void
   availableFor?: (type: string, name: string) => number
   availableExp?: () => number
 }) {
   const mats = breakdown.materials
-  const { getCountFor, getTotalExp, groupsByType, counts } = useWwInventory()
+  const { getCountFor, getTotalExp, groupsByType, standaloneByType, counts, increment } = useWwInventory()
 
   const computeCraftableExtra = (entry: MaterialEntry): number => {
     if (!(entry.type === "enemy_drop" || entry.type === "talent_upgrade"))
@@ -81,9 +86,7 @@ export function CharacterCard({
     const available: number[] = new Array(targetIdx + 1).fill(0)
     for (let i = 0; i <= targetIdx; i++) {
       const m = matsAsc[i]
-      const have = availableFor
-        ? availableFor(entry.type, m.name)
-        : (counts as Record<number, number>)[Number(m.id)] || 0
+      const have = (counts as Record<number, number>)[Number(m.id)] || 0
       const reqEntry = mats.find(
         (x) => x.type === entry.type && x.name === m.name,
       )
@@ -105,6 +108,125 @@ export function CharacterCard({
     context?: "CHARACTER" | "WEAPON"
   }>(null)
   const [showCraftRecap, setShowCraftRecap] = useState(false)
+
+  const { specials, others, requiredExp } = useMemo(() => {
+    const specials = mats.filter(
+      (s) =>
+        (s.type === "other" && s.name === "Shell Credit") ||
+        (s.type === "exp" && s.name === "Premium Resonance Potion"),
+    )
+    const others = mats.filter(
+      (s) =>
+        !(
+          (s.type === "other" && s.name === "Shell Credit") ||
+          (s.type === "exp" && s.name === "Premium Resonance Potion")
+        ),
+    )
+    const expEntry = mats.find(
+      (s) => s.type === "exp" && s.name === "Premium Resonance Potion",
+    )
+    return { specials, others, requiredExp: expEntry?.qty || 0 }
+  }, [mats])
+
+  const findStandaloneId = (type: string, name: string): number | null => {
+    const list = standaloneByType[type] || []
+    const m = list.find((x) => x.name === name)
+    return m ? Number(m.id) : null
+  }
+
+  const findGroupedId = (type: string, name: string): number | null => {
+    const groups = groupsByType[type] || []
+    for (const g of groups) {
+      const m = g.materials.find((x) => x.name === name)
+      if (m) return Number(m.id)
+    }
+    return null
+  }
+
+  const handleMarkDone = () => {
+    // 1) Gate by availability; if grouped crafting needed, open recap
+    for (const s of others) {
+      const have = getCountFor(s.type, s.name)
+      if (s.type === "enemy_drop" || s.type === "talent_upgrade") {
+        if (have < s.qty) {
+          const extra = computeCraftableExtra(s)
+          if (have + extra >= s.qty) {
+            setShowCraftRecap(true)
+            toast("Some materials need crafting first.", toastStyles.info)
+            return
+          } else {
+            toast("Not enough materials to complete this plan.", toastStyles.error)
+            return
+          }
+        }
+      } else {
+        if (have < s.qty) {
+          toast("Not enough materials to complete this plan.", toastStyles.error)
+          return
+        }
+      }
+    }
+    const haveCredits = getCountFor("other", "Shell Credit")
+    const needCredits = (specials.find((s) => s.type === "other" && s.name === "Shell Credit")?.qty || 0)
+    if (haveCredits < needCredits) {
+      toast("Not enough Shell Credits.", toastStyles.error)
+      return
+    }
+    const haveExp = availableExp ? availableExp() : getTotalExp("CHARACTER")
+    if (requiredExp > 0 && haveExp < requiredExp) {
+      toast("Not enough Character EXP.", toastStyles.error)
+      return
+    }
+
+    // 2) Deduct materials from actual inventory (no crafting here)
+    for (const s of others) {
+      let id: number | null = null
+      if (s.type === "enemy_drop" || s.type === "talent_upgrade") id = findGroupedId(s.type, s.name)
+      else id = findStandaloneId(s.type, s.name)
+      if (id == null) continue
+      if (s.qty > 0) increment(id, -s.qty)
+    }
+
+    // 3) Deduct credits
+    if (needCredits > 0) {
+      const creditsId = 89
+      increment(creditsId, -needCredits)
+    }
+
+    // 4) Deduct EXP value greedily from highest value potions
+    let remainingExp = requiredExp
+    if (remainingExp > 0) {
+      const sorted = [...EXP_MATERIALS.CHARACTER].sort((a, b) => (b.value || 0) - (a.value || 0))
+      for (const em of sorted) {
+        if (remainingExp <= 0) break
+        const id = Number(em.id)
+        const have = (counts as Record<number, number>)[id] || 0
+        if (have <= 0) continue
+        const maxUsable = Math.floor(remainingExp / (em.value || 1))
+        const use = Math.min(have, Math.max(0, maxUsable))
+        if (use > 0) {
+          increment(id, -use)
+          remainingExp -= use * (em.value || 0)
+        }
+      }
+      // If there is still remainder, cover with smallest available units
+      if (remainingExp > 0) {
+        const asc = [...EXP_MATERIALS.CHARACTER].sort((a, b) => (a.value || 0) - (b.value || 0))
+        for (const em of asc) {
+          const id = Number(em.id)
+          const have = (counts as Record<number, number>)[id] || 0
+          if (have > 0) {
+            increment(id, -1)
+            remainingExp -= em.value || 0
+            if (remainingExp <= 0) break
+          }
+        }
+      }
+    }
+
+    toast("Plan applied to inventory.", toastStyles.success)
+    onMarkDone?.()
+  }
 
   return (
     <MotionEffect slide={{ direction: "down" }} fade layout>
@@ -141,9 +263,11 @@ export function CharacterCard({
                   <DropdownMenuItem onClick={onEdit}>
                     <Pencil /> Edit Plan
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setShowCraftRecap(true)}>
-                    <FlaskConical /> Crafting Recap
+                    <FlaskConical /> Craft for Plan
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleMarkDone}>
+                    <Check /> Complete Plan
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive" onClick={onRemove}>
@@ -177,9 +301,7 @@ export function CharacterCard({
             const renderItem = (s: MaterialEntry, key: string) => {
               const isExp =
                 s.type === "exp" && s.name === "Premium Resonance Potion"
-              const have = availableFor
-                ? availableFor(s.type, s.name)
-                : getCountFor(s.type, s.name)
+              const have = getCountFor(s.type, s.name)
               const required = s.qty
               const isCredit = s.type === "other" && s.name === "Shell Credit"
               const craftableExtra = !isExp ? computeCraftableExtra(s) : 0
@@ -235,7 +357,7 @@ export function CharacterCard({
                         </div>
                       )}
 
-                      {craftableExtra > 0 && (
+                      {craftableExtra > 0 && have < required && (
                         <div className="absolute bg-orange-500 text-white rounded-full h-5 w-5 flex items-center justify-center shadow -top-1 -left-1">
                           <FlaskConical className="h-4 w-4" />
                         </div>

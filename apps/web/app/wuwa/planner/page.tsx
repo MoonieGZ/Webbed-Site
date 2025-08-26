@@ -68,6 +68,7 @@ function PlannerContent() {
                 breakdown={planner.getPlanBreakdown(p)}
                 onEdit={() => planner.beginEditPlan(idx)}
                 onRemove={() => planner.removePlan(idx)}
+                onMarkDone={() => planner.markPlanAsDone(idx)}
                 availableFor={(type, name) =>
                   planner.getAvailableForPlan(idx, type, name)
                 }

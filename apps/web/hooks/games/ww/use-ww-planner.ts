@@ -1450,6 +1450,35 @@ export function useWwPlanner() {
     beginEditPlan,
     applyPlanOrder,
 
+    // Mark plan as done: update plan state to reflect desired achieved
+    markPlanAsDone: (index: number) => {
+      setPlans((prev) => {
+        if (index < 0 || index >= prev.length) return prev
+        const p = prev[index]
+        const next: CharacterPlan = {
+          ...p,
+          fromAscension: p.toAscension,
+          fromLevel: p.toLevel,
+          skillRanges: p.skillRanges.map(([from, to]) => [to, to]) as unknown as [
+            [number, number],
+            [number, number],
+            [number, number],
+            [number, number],
+            [number, number],
+          ],
+          // Clear selected nodes so no further materials are required
+          inherentSelected: [false, false],
+          statBoostsSelected: [
+            [false, false],
+            [false, false],
+            [false, false],
+            [false, false],
+          ],
+        }
+        return prev.map((it, i) => (i === index ? next : it))
+      })
+    },
+
     // priority allocation helpers
     getAvailableForPlan,
     getTotalExpForPlan,

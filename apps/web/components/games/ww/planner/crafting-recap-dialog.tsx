@@ -72,14 +72,10 @@ export function CraftingRecapDialog({
       const excess: number[] = req.map((r, i) => Math.max(0, have[i] - r))
       const craftsStep: number[] = new Array(asc.length).fill(0) // needed crafts from i->i+1 stored at index i
 
-      // Top-down allocation: use excess to cover own deficit; remaining must be crafted from below
+      // Each deficit at tier i must be crafted from tier i-1 (do not consume same-tier excess here)
       for (let i = T; i >= 1; i--) {
-        const useHere = Math.min(excess[i], deficit[i])
-        deficit[i] -= useHere
-        excess[i] -= useHere
-        craftsStep[i - 1] += deficit[i]
-        deficit[i - 1] += 3 * deficit[i]
-        deficit[i] = 0
+        const need = deficit[i]
+        if (need > 0) craftsStep[i - 1] += need
       }
 
       // Feasible crafts limited by available excess stock and chained outputs
