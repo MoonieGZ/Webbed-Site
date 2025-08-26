@@ -1459,7 +1459,10 @@ export function useWwPlanner() {
           ...p,
           fromAscension: p.toAscension,
           fromLevel: p.toLevel,
-          skillRanges: p.skillRanges.map(([from, to]) => [to, to]) as unknown as [
+          skillRanges: p.skillRanges.map(([from, to]) => [
+            to,
+            to,
+          ]) as unknown as [
             [number, number],
             [number, number],
             [number, number],

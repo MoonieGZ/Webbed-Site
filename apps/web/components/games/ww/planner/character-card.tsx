@@ -8,6 +8,7 @@ import {
   CircleHelp,
   EllipsisVertical,
   FlaskConical,
+  CheckCircle,
   Pencil,
   Trash2,
 } from "lucide-react"
@@ -67,7 +68,14 @@ export function CharacterCard({
   availableExp?: () => number
 }) {
   const mats = breakdown.materials
-  const { getCountFor, getTotalExp, groupsByType, standaloneByType, counts, increment } = useWwInventory()
+  const {
+    getCountFor,
+    getTotalExp,
+    groupsByType,
+    standaloneByType,
+    counts,
+    increment,
+  } = useWwInventory()
 
   const computeCraftableExtra = (entry: MaterialEntry): number => {
     if (!(entry.type === "enemy_drop" || entry.type === "talent_upgrade"))
@@ -155,19 +163,27 @@ export function CharacterCard({
             toast("Some materials need crafting first.", toastStyles.info)
             return
           } else {
-            toast("Not enough materials to complete this plan.", toastStyles.error)
+            toast(
+              "Not enough materials to complete this plan.",
+              toastStyles.error,
+            )
             return
           }
         }
       } else {
         if (have < s.qty) {
-          toast("Not enough materials to complete this plan.", toastStyles.error)
+          toast(
+            "Not enough materials to complete this plan.",
+            toastStyles.error,
+          )
           return
         }
       }
     }
     const haveCredits = getCountFor("other", "Shell Credit")
-    const needCredits = (specials.find((s) => s.type === "other" && s.name === "Shell Credit")?.qty || 0)
+    const needCredits =
+      specials.find((s) => s.type === "other" && s.name === "Shell Credit")
+        ?.qty || 0
     if (haveCredits < needCredits) {
       toast("Not enough Shell Credits.", toastStyles.error)
       return
@@ -181,7 +197,8 @@ export function CharacterCard({
     // 2) Deduct materials from actual inventory (no crafting here)
     for (const s of others) {
       let id: number | null = null
-      if (s.type === "enemy_drop" || s.type === "talent_upgrade") id = findGroupedId(s.type, s.name)
+      if (s.type === "enemy_drop" || s.type === "talent_upgrade")
+        id = findGroupedId(s.type, s.name)
       else id = findStandaloneId(s.type, s.name)
       if (id == null) continue
       if (s.qty > 0) increment(id, -s.qty)
@@ -196,7 +213,9 @@ export function CharacterCard({
     // 4) Deduct EXP value greedily from highest value potions
     let remainingExp = requiredExp
     if (remainingExp > 0) {
-      const sorted = [...EXP_MATERIALS.CHARACTER].sort((a, b) => (b.value || 0) - (a.value || 0))
+      const sorted = [...EXP_MATERIALS.CHARACTER].sort(
+        (a, b) => (b.value || 0) - (a.value || 0),
+      )
       for (const em of sorted) {
         if (remainingExp <= 0) break
         const id = Number(em.id)
@@ -211,7 +230,9 @@ export function CharacterCard({
       }
       // If there is still remainder, cover with smallest available units
       if (remainingExp > 0) {
-        const asc = [...EXP_MATERIALS.CHARACTER].sort((a, b) => (a.value || 0) - (b.value || 0))
+        const asc = [...EXP_MATERIALS.CHARACTER].sort(
+          (a, b) => (a.value || 0) - (b.value || 0),
+        )
         for (const em of asc) {
           const id = Number(em.id)
           const have = (counts as Record<number, number>)[id] || 0
@@ -280,6 +301,16 @@ export function CharacterCard({
         </CardHeader>
         <CardContent>
           {(() => {
+            if (mats.length === 0) {
+              return (
+                <div className="flex flex-col items-center justify-center py-10">
+                  <CheckCircle className="h-10 w-10 text-emerald-500" />
+                  <div className="mt-2 text-sm text-muted-foreground">
+                    Plan Complete!
+                  </div>
+                </div>
+              )
+            }
             const specials = mats.filter(
               (s) =>
                 (s.type === "other" && s.name === "Shell Credit") ||
