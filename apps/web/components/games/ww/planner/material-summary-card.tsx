@@ -12,6 +12,7 @@ import {
   TooltipProvider,
 } from "@/components/animate-ui/components/tooltip"
 import { useWwInventory } from "@/hooks/games/ww/use-ww-inventory"
+import { CircleHelp } from "lucide-react"
 
 export function MaterialSummaryCard({
   items,
@@ -47,16 +48,22 @@ export function MaterialSummaryCard({
               >
                 <div className="relative flex flex-col items-center gap-1">
                   <div className="relative flex justify-center w-full">
-                    <Image
-                      src={getMaterialIconUrl(
-                        s.type === "exp" ? "exp" : s.type,
-                        s.name,
-                      )}
-                      alt={s.name}
-                      width={50}
-                      height={50}
-                      className="opacity-85 transition-opacity group-hover:opacity-100"
-                    />
+                    {s.name === "Unknown" ? (
+                      <div className="h-12.5 w-12.5 rounded-full bg-muted/30 flex items-center justify-center opacity-85 transition-opacity group-hover:opacity-100">
+                        <CircleHelp className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    ) : (
+                      <Image
+                        src={getMaterialIconUrl(
+                          s.type === "exp" ? "exp" : s.type,
+                          s.name,
+                        )}
+                        alt={s.name}
+                        width={50}
+                        height={50}
+                        className="opacity-85 transition-opacity group-hover:opacity-100"
+                      />
+                    )}
                     <div className="absolute bottom-0 w-3/4">
                       <div className="relative flex w-full items-center">
                         <div className="absolute h-4 w-full -bottom-1">
