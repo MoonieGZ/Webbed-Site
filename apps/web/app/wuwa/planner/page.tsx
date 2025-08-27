@@ -13,6 +13,7 @@ import { PlannerTopBar } from "@/components/games/ww/planner/planner-top-bar"
 import { AddCharacterDialog } from "@/components/games/ww/planner/add-character-dialog"
 import { CharacterConfigDialog } from "@/components/games/ww/planner/character-config-dialog"
 import { CharacterCard } from "@/components/games/ww/planner/character-card"
+import { WeaponCard } from "@/components/games/ww/planner/weapon-card"
 import { InventoryDialog } from "@/components/games/ww/planner/inventory-dialog"
 import { ReorderPlansDialog } from "@/components/games/ww/planner/reorder-plans-dialog"
 import { AddWeaponDialog } from "@/components/games/ww/planner/add-weapon-dialog"
@@ -23,7 +24,7 @@ import { useWwPlanner } from "@/hooks/games/ww/use-ww-planner"
 import { WwInventoryProvider } from "@/hooks/games/ww/use-ww-inventory"
 import { AnimatePresence } from "motion/react"
 import { useMemo, useState } from "react"
-import { ChevronDown, ClipboardCheck, EyeOff } from "lucide-react"
+import { ClipboardCheck, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 function PlannerContent() {
@@ -136,9 +137,6 @@ function PlannerContent() {
                 )
                 const p = planner.weaponPlans[idx]
                 if (!p) return null
-                const {
-                  WeaponCard,
-                } = require("@/components/games/ww/planner/weapon-card")
                 return (
                   <WeaponCard
                     key={`W-${p.planId}`}
