@@ -41,7 +41,7 @@ export default function PrivacyPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4" />
+              <ShieldCheck className="w-5 h-5" />
               Privacy Policy
             </CardTitle>
           </CardHeader>

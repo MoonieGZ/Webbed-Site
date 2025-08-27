@@ -75,7 +75,7 @@ function PlannerContent() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <ClipboardCheck className="w-4 h-4" />
+                <ClipboardCheck className="w-5 h-5" />
                 Material Summary
                 <Button
                   variant="outline"

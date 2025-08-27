@@ -38,7 +38,7 @@ export function PlannerTopBar({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <NotebookPen className="w-4 h-4" />
+          <NotebookPen className="h-5 w-5" />
           Planner
         </CardTitle>
       </CardHeader>
