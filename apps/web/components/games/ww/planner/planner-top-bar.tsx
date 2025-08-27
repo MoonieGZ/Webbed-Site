@@ -7,9 +7,9 @@ import {
   ListPlus,
   NotebookPen,
   Swords,
-  TriangleAlert,
   UserPlus,
   ListOrdered,
+  ClipboardCheck,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -24,11 +24,15 @@ export function PlannerTopBar({
   onAddWeapon,
   onManageInventory,
   onReorderPlans,
+  summaryOpen,
+  setSummaryOpen,
 }: {
   onAddCharacter: () => void
   onAddWeapon: () => void
   onManageInventory: () => void
   onReorderPlans: () => void
+  summaryOpen: boolean
+  setSummaryOpen: (o: boolean) => void
 }) {
   return (
     <Card>
@@ -42,14 +46,8 @@ export function PlannerTopBar({
         <div className="text-sm text-muted-foreground">
           Plan your <strong>Wuthering Waves</strong> ascensions with this tool.
           <br />
-          Add characters, manage your inventory, and see exactly what materials
-          you need to collect.
-          <br />
-          <span className="text-amber-500 flex items-center gap-1">
-            <TriangleAlert className="w-4 h-4" />
-            Weapons are coming soon!
-            <TriangleAlert className="w-4 h-4" />
-          </span>
+          Add characters, weapons, and manage your inventory, and see exactly
+          what materials you need to collect.
         </div>
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -64,7 +62,7 @@ export function PlannerTopBar({
                 <UserPlus />
                 Add Character
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onAddWeapon} disabled>
+              <DropdownMenuItem onClick={onAddWeapon}>
                 <Swords />
                 Add Weapon
               </DropdownMenuItem>
@@ -75,7 +73,12 @@ export function PlannerTopBar({
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onReorderPlans}>
                 <ListOrdered />
-                Re-order Plan
+                Re-order Plans
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setSummaryOpen(!summaryOpen)}>
+                <ClipboardCheck />
+                Toggle Material Summary
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

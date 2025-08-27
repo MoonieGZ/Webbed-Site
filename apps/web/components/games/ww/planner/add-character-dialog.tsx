@@ -9,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import { useMemo } from "react"
+import { getGlow } from "@/lib/games/ww/glow"
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -82,9 +83,8 @@ export function AddCharacterDialog({
           <DialogTitle>Add Character</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="text-muted-foreground">Filters:</div>
-            <div className="flex flex-wrap items-center gap-2 justify-end">
+          <div className="flex flex-wrap items-center justify-between">
+            <div className="flex flex-wrap items-center justify-end">
               <ToggleGroup
                 toggleMultiple
                 value={elementFilters}
@@ -146,7 +146,7 @@ export function AddCharacterDialog({
             />
           </div>
 
-          <div className="max-h-[60vh] overflow-y-auto rounded-md border h-[45vh]">
+          <div className="max-h-[60vh] overflow-y-auto rounded-md border h-[50vh]">
             {filteredCharacters.length === 0 ? (
               <div className="p-3 text-sm text-muted-foreground">
                 No results
@@ -160,7 +160,23 @@ export function AddCharacterDialog({
                     onClick={() => onChoose(c)}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <Image src={c.icon} alt={c.name} width={36} height={36} />
+                      {(() => {
+                        const glow = getGlow(Math.max(0, (c.rarity ?? 0) - 1))
+                        return (
+                          <Image
+                            src={c.icon}
+                            alt={c.name}
+                            width={36}
+                            height={36}
+                            className="rounded-sm border"
+                            style={{
+                              borderColor: `${glow.line}80`,
+                              boxShadow: `0 0 0 1px ${glow.line}80 inset, 0 0 12px ${glow.base}66`,
+                              backgroundColor: `${glow.base}33`,
+                            }}
+                          />
+                        )
+                      })()}
                       <div className="min-w-0">
                         <div className="text-sm font-medium truncate">
                           {c.name}

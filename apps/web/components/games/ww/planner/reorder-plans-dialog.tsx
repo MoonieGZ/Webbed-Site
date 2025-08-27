@@ -20,9 +20,9 @@ export function ReorderPlansDialog({
   open: boolean
   onOpenChange: (o: boolean) => void
   plans: Array<{
-    characterId: number
-    characterName: string
-    characterIcon: string
+    id: string
+    name: string
+    icon: string
   }>
   onConfirm: (order: number[]) => void
 }) {
@@ -61,21 +61,21 @@ export function ReorderPlansDialog({
                 const canDown = pos < order.length - 1
                 return (
                   <li
-                    key={`${p.characterId}-${origIdx}`}
+                    key={`${p.id}-${origIdx}`}
                     className="rounded-md border bg-background/50 p-2 flex items-center gap-3"
                   >
                     <div className="text-xs text-muted-foreground w-6 text-center">
                       {pos + 1}
                     </div>
                     <Image
-                      src={p.characterIcon}
-                      alt={p.characterName}
+                      src={p.icon}
+                      alt={p.name}
                       width={36}
                       height={36}
                       className="rounded-sm"
                     />
                     <div className="text-sm font-medium truncate flex-1">
-                      {p.characterName}
+                      {p.name}
                     </div>
                     <div className="flex items-center gap-1">
                       <Button

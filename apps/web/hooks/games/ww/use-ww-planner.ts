@@ -18,6 +18,14 @@ type CharacterAsset = {
   elementIcon: string
 }
 
+type WeaponAsset = {
+  id: number
+  name: string
+  type: string
+  rarity: number
+  icon: string
+}
+
 export type CharacterPlan = {
   planId: string
   characterId: number
@@ -47,14 +55,35 @@ export type CharacterPlan = {
   ]
 }
 
+export type WeaponPlan = {
+  planId: string
+  weaponId: number
+  weaponName: string
+  weaponType: string
+  weaponIcon: string
+  weaponRarity: number
+  fromAscension: number
+  toAscension: number
+  fromLevel: number
+  toLevel: number
+}
+
 export function useWwPlanner() {
   const [loading, setLoading] = useState(false)
   const [characters, setCharacters] = useState<CharacterAsset[]>([])
   const [characterDetailsById, setCharacterDetailsById] = useState<
     Record<number, any>
   >({})
+  const [weapons, setWeapons] = useState<WeaponAsset[]>([])
+  const [weaponDetailsById, setWeaponDetailsById] = useState<
+    Record<number, any>
+  >({})
   const [plans, setPlans] = useState<CharacterPlan[]>([])
+  const [weaponPlans, setWeaponPlans] = useState<WeaponPlan[]>([])
   const [editingPlanIndex, setEditingPlanIndex] = useState<number | null>(null)
+  const [editingWeaponPlanIndex, setEditingWeaponPlanIndex] = useState<
+    number | null
+  >(null)
   const [accountId, setAccountId] = useState<number>(0)
   const hasHydratedFromStorage = useRef<boolean>(false)
 
@@ -63,8 +92,15 @@ export function useWwPlanner() {
   const [showCharacterConfig, setShowCharacterConfig] = useState(false)
   const [selectedCharacter, setSelectedCharacter] =
     useState<CharacterAsset | null>(null)
+  const [showAddWeapon, setShowAddWeapon] = useState(false)
+  const [showWeaponConfig, setShowWeaponConfig] = useState(false)
+  const [selectedWeapon, setSelectedWeapon] = useState<WeaponAsset | null>(null)
   const [search, setSearch] = useState("")
   const [showReorderPlans, setShowReorderPlans] = useState(false)
+  // Mixed ordering: display order of mixed character/weapon plans
+  const [displayOrder, setDisplayOrder] = useState<string[]>([])
+  // Mixed ordering: displayOrder as array of ids: "C:<planId>" or "W:<planId>"
+  // NOTE: declared later near mixed ordering helpers
 
   // Temp config state for character dialog
   const [fromAscension, setFromAscension] = useState(0)
@@ -103,6 +139,11 @@ export function useWwPlanner() {
     [true, true],
     [true, true],
   ])
+  // Weapon temp config
+  const [wFromAscension, setWFromAscension] = useState(0)
+  const [wToAscension, setWToAscension] = useState(6)
+  const [wFromLevel, setWFromLevel] = useState(1)
+  const [wToLevel, setWToLevel] = useState(90)
 
   const fetchAssets = useCallback(async () => {
     setLoading(true)
@@ -142,6 +183,24 @@ export function useWwPlanner() {
         map[c.id] = c
       }
       setCharacterDetailsById(map)
+      // Weapons
+      const wb: WeaponAsset[] = []
+      const wDetails: Record<number, any> = {}
+      const byType = (data.weaponsByType || {}) as Record<string, any[]>
+      for (const [type, list] of Object.entries(byType)) {
+        for (const w of list as any[]) {
+          wb.push({
+            id: w.id,
+            name: w.name,
+            type,
+            rarity: w.rarity,
+            icon: w.icon,
+          })
+          wDetails[w.id] = w
+        }
+      }
+      setWeapons(wb)
+      setWeaponDetailsById(wDetails)
     } catch {
       // noop for now
     } finally {
@@ -173,6 +232,13 @@ export function useWwPlanner() {
       number,
       number,
     ], // flattened skill ranges (r0f,r0t,...,r4f,r4t)
+  ]
+  type StoredWeaponPlanV1 = [
+    number, // weaponId
+    number, // fromAscension
+    number, // toAscension
+    number, // fromLevel
+    number, // toLevel
   ]
 
   const STORAGE_PREFIX = "ww:planner:v1"
@@ -293,33 +359,68 @@ export function useWwPlanner() {
     }
   }
 
-  // Load from storage after characters are available and only once per account
+  const packWeaponPlan = (p: WeaponPlan): StoredWeaponPlanV1 => {
+    return [p.weaponId, p.fromAscension, p.toAscension, p.fromLevel, p.toLevel]
+  }
+  const unpackWeaponPlan = (sw: StoredWeaponPlanV1): WeaponPlan => {
+    const [wid, fa, ta, fl, tl] = sw
+    const w = weapons.find((x) => x.id === wid) || null
+    return {
+      planId:
+        typeof crypto !== "undefined" && (crypto as any)?.randomUUID
+          ? (crypto as any).randomUUID()
+          : `wplan_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      weaponId: wid,
+      weaponName: w?.name || String(wid),
+      weaponType: w?.type || "",
+      weaponIcon: w?.icon || "/games/ww/weapons/Unknown.webp",
+      weaponRarity: w?.rarity || 4,
+      fromAscension: fa,
+      toAscension: ta,
+      fromLevel: fl,
+      toLevel: tl,
+    }
+  }
+
+  // Load from storage after assets are available and only once per account
   useEffect(() => {
     if (hasHydratedFromStorage.current) return
     if (!characters || characters.length === 0) return
+    if (!weapons || weapons.length === 0) return
     try {
       const raw = localStorage.getItem(storageKey)
       if (raw) {
-        const parsed = JSON.parse(raw) as { v?: number; p?: StoredPlanV1[] }
-        if (Array.isArray(parsed?.p)) {
-          const rebuilt = parsed.p.map(unpackPlan)
-          setPlans(rebuilt)
+        const parsed = JSON.parse(raw) as {
+          v?: number
+          p?: StoredPlanV1[]
+          w?: StoredWeaponPlanV1[]
+          o?: string[]
         }
+        if (Array.isArray(parsed?.p)) setPlans(parsed.p.map(unpackPlan))
+        if (Array.isArray(parsed?.w))
+          setWeaponPlans(parsed.w.map(unpackWeaponPlan))
+        if (Array.isArray(parsed?.o)) setDisplayOrder(parsed.o)
       }
     } catch {}
     hasHydratedFromStorage.current = true
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [characters, storageKey])
+  }, [characters, weapons, storageKey])
 
   // Save to storage whenever plans change
   useEffect(() => {
     if (!hasHydratedFromStorage.current) return
     try {
       const packed = plans.map(packPlan)
-      const payload = JSON.stringify({ v: 1, p: packed })
+      const packedW = weaponPlans.map(packWeaponPlan)
+      const payload = JSON.stringify({
+        v: 1,
+        p: packed,
+        w: packedW,
+        o: displayOrder,
+      })
       localStorage.setItem(storageKey, payload)
     } catch {}
-  }, [plans, storageKey])
+  }, [plans, weaponPlans, displayOrder, storageKey])
 
   const filteredCharacters = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -329,8 +430,59 @@ export function useWwPlanner() {
     return available.filter((c) => c.name.toLowerCase().includes(q))
   }, [characters, search, plans])
 
+  const filteredWeapons = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    const existing = new Set(weaponPlans.map((p) => p.weaponId))
+    const available = weapons.filter((w) => !existing.has(w.id))
+    if (!q) return available
+    return available.filter((w) => w.name.toLowerCase().includes(q))
+  }, [weapons, search, weaponPlans])
+
+  // Mixed ordering state & helpers
+  // (remove duplicate later)
+  const getOrderedIds = useCallback(() => {
+    if (displayOrder.length > 0) return displayOrder
+    const chars = plans.map((p) => `C:${p.planId}`)
+    const weaps = weaponPlans.map((p) => `W:${p.planId}`)
+    return [...chars, ...weaps]
+  }, [displayOrder, plans, weaponPlans])
+  const orderedItems = useMemo(() => {
+    const ids = getOrderedIds()
+    const result: Array<{
+      id: string
+      kind: "CHAR" | "WEAPON"
+      name: string
+      icon: string
+    }> = []
+    for (const id of ids) {
+      const [k, pid] = id.split(":")
+      if (k === "C") {
+        const p = plans.find((x) => x.planId === pid)
+        if (p)
+          result.push({
+            id: pid,
+            kind: "CHAR",
+            name: p.characterName,
+            icon: p.characterIcon,
+          })
+      } else if (k === "W") {
+        const p = weaponPlans.find((x) => x.planId === pid)
+        if (p)
+          result.push({
+            id: pid,
+            kind: "WEAPON",
+            name: p.weaponName,
+            icon: p.weaponIcon,
+          })
+      }
+    }
+    return result
+  }, [plans, weaponPlans, getOrderedIds])
+
   const openAddCharacter = () => setShowAddCharacter(true)
   const closeAddCharacter = () => setShowAddCharacter(false)
+  const openAddWeapon = () => setShowAddWeapon(true)
+  const closeAddWeapon = () => setShowAddWeapon(false)
 
   const openReorderPlans = () => setShowReorderPlans(true)
   const closeReorderPlans = () => setShowReorderPlans(false)
@@ -360,10 +512,25 @@ export function useWwPlanner() {
     setShowCharacterConfig(true)
   }
 
+  const chooseWeapon = (w: WeaponAsset) => {
+    setSelectedWeapon(w)
+    setShowAddWeapon(false)
+    setWFromAscension(0)
+    setWToAscension(6)
+    setWFromLevel(1)
+    setWToLevel(90)
+    setShowWeaponConfig(true)
+  }
+
   const cancelCharacterConfig = () => {
     setShowCharacterConfig(false)
     setSelectedCharacter(null)
     setEditingPlanIndex(null)
+  }
+  const cancelWeaponConfig = () => {
+    setShowWeaponConfig(false)
+    setSelectedWeapon(null)
+    setEditingWeaponPlanIndex(null)
   }
 
   const confirmCharacterPlan = () => {
@@ -402,24 +569,76 @@ export function useWwPlanner() {
       }
       return [...prev, plan]
     })
+    // Append to mixed display order if already established
+    setDisplayOrder((prev) => {
+      if (!prev || prev.length === 0) return prev
+      const id = `C:${plan.planId}`
+      if (prev.includes(id)) return prev
+      return [...prev, id]
+    })
     setShowCharacterConfig(false)
     setSelectedCharacter(null)
     setEditingPlanIndex(null)
   }
 
+  const confirmWeaponPlan = () => {
+    if (!selectedWeapon) return
+    const plan: WeaponPlan = {
+      planId:
+        editingWeaponPlanIndex != null && editingWeaponPlanIndex >= 0
+          ? weaponPlans[editingWeaponPlanIndex]?.planId ||
+            (typeof crypto !== "undefined" && (crypto as any)?.randomUUID
+              ? (crypto as any).randomUUID()
+              : `wplan_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`)
+          : typeof crypto !== "undefined" && (crypto as any)?.randomUUID
+            ? (crypto as any).randomUUID()
+            : `wplan_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      weaponId: selectedWeapon.id,
+      weaponName: selectedWeapon.name,
+      weaponType: selectedWeapon.type,
+      weaponIcon: selectedWeapon.icon,
+      weaponRarity: selectedWeapon.rarity,
+      fromAscension: wFromAscension,
+      toAscension: wToAscension,
+      fromLevel: wFromLevel,
+      toLevel: wToLevel,
+    }
+    setWeaponPlans((prev) => {
+      if (
+        editingWeaponPlanIndex !== null &&
+        editingWeaponPlanIndex >= 0 &&
+        editingWeaponPlanIndex < prev.length
+      ) {
+        return prev.map((p, i) => (i === editingWeaponPlanIndex ? plan : p))
+      }
+      return [...prev, plan]
+    })
+    // Append to mixed display order if already established
+    setDisplayOrder((prev) => {
+      if (!prev || prev.length === 0) return prev
+      const id = `W:${plan.planId}`
+      if (prev.includes(id)) return prev
+      return [...prev, id]
+    })
+    setShowWeaponConfig(false)
+    setSelectedWeapon(null)
+    setEditingWeaponPlanIndex(null)
+  }
+
   const removePlan = (index: number) => {
     setPlans((prev) => prev.filter((_, i) => i !== index))
   }
+  const removeWeaponPlan = (index: number) => {
+    setWeaponPlans((prev) => prev.filter((_, i) => i !== index))
+  }
 
   const applyPlanOrder = (order: number[]) => {
-    setPlans((prev) => {
-      if (!Array.isArray(order) || order.length !== prev.length) return prev
-      const next: CharacterPlan[] = []
-      for (const idx of order) {
-        const item = prev[idx]
-        if (item) next.push(item)
-      }
-      return next.length === prev.length ? next : prev
+    // Reorder display order only (mixed C/W).
+    setDisplayOrder((prev) => {
+      const curr = getOrderedIds()
+      if (order.length !== curr.length) return prev
+      const nextIds = order.map((i) => curr[i])
+      return nextIds
     })
     setShowReorderPlans(false)
   }
@@ -450,6 +669,27 @@ export function useWwPlanner() {
     setStatBoosts(plan.statBoostsSelected)
     setEditingPlanIndex(index)
     setShowCharacterConfig(true)
+  }
+
+  const beginEditWeaponPlan = (index: number) => {
+    const plan = weaponPlans[index]
+    if (!plan) return
+    const w = weapons.find((x) => x.id === plan.weaponId) || null
+    setSelectedWeapon(
+      w || {
+        id: plan.weaponId,
+        name: plan.weaponName,
+        type: plan.weaponType,
+        rarity: plan.weaponRarity,
+        icon: plan.weaponIcon,
+      },
+    )
+    setWFromAscension(plan.fromAscension)
+    setWToAscension(plan.toAscension)
+    setWFromLevel(plan.fromLevel)
+    setWToLevel(plan.toLevel)
+    setEditingWeaponPlanIndex(index)
+    setShowWeaponConfig(true)
   }
 
   // Compute total required materials across all plans
@@ -796,6 +1036,125 @@ export function useWwPlanner() {
     const totalItemsCount = Object.values(items).reduce((a, b) => a + b, 0)
     return { items: totalItemsCount, credits }
   }, [plans, characterDetailsById])
+
+  // Weapon breakdown helper
+  const getWeaponPlanBreakdown = useCallback(
+    (plan: WeaponPlan) => {
+      const detail = weaponDetailsById[plan.weaponId]
+      if (!detail)
+        return {
+          credits: 0,
+          materials: [] as Array<{ type: string; name: string; qty: number }>,
+        }
+      const items: Record<
+        string,
+        { type: string; name: string; qty: number; rarity?: number }
+      > = {}
+      let credits = 0
+      const addItem = (
+        type: string,
+        name: string,
+        qty: number,
+        rarity?: number,
+      ) => {
+        if (!qty) return
+        const key = `${type}:${name}:${rarity ?? 0}`
+        items[key] = items[key]
+          ? { ...items[key], qty: items[key].qty + qty }
+          : { type, name, qty, rarity }
+      }
+      const pickGroupMaterials = (
+        detail: any,
+        type: string,
+      ): Array<{ name: string; rarity: number }> | null => {
+        const groups = detail?.groups?.[type] as Array<
+          { materials: Array<{ name: string; rarity: number }> } | undefined
+        >
+        if (!groups || groups.length === 0) return null
+        const mats = [...(groups[0]?.materials ?? [])].sort(
+          (a, b) => (a.rarity ?? 0) - (b.rarity ?? 0),
+        )
+        return mats.map((m) => ({ name: m.name, rarity: m.rarity }))
+      }
+      const ascT =
+        plan.weaponRarity >= 5
+          ? ASCENSION_TEMPLATES.WEAPON_5
+          : ASCENSION_TEMPLATES.WEAPON_4
+      for (let a = plan.fromAscension + 1; a <= plan.toAscension; a++) {
+        const step = ascT.find((t) => t.ascension === a)
+        if (!step) continue
+        const talentMats = pickGroupMaterials(detail, "talent_upgrade")
+        if (talentMats && Array.isArray(step.talent_upgrade)) {
+          for (
+            let i = 0;
+            i < step.talent_upgrade.length && i < talentMats.length;
+            i++
+          ) {
+            const qty = (step as any).talent_upgrade?.[i]
+            if (qty)
+              addItem(
+                "talent_upgrade",
+                talentMats[i].name,
+                qty,
+                talentMats[i].rarity,
+              )
+          }
+        }
+        const enemyMats = pickGroupMaterials(detail, "enemy_drop")
+        if (enemyMats && Array.isArray(step.enemy_drop)) {
+          for (
+            let i = 0;
+            i < step.enemy_drop.length && i < enemyMats.length;
+            i++
+          ) {
+            const qty = (step as any).enemy_drop?.[i]
+            if (qty)
+              addItem("enemy_drop", enemyMats[i].name, qty, enemyMats[i].rarity)
+          }
+        }
+        if (step.credits) addItem("other", "Shell Credit", step.credits, 2)
+        credits += step.credits || 0
+      }
+      // EXP & credits milestones for weapons
+      const expT =
+        plan.weaponRarity >= 5
+          ? EXP_TEMPLATES.WEAPON_5_STAR
+          : EXP_TEMPLATES.WEAPON_4_STAR
+      let requiredExp = 0
+      for (const row of expT) {
+        if (row.level > plan.fromLevel && row.level <= plan.toLevel) {
+          requiredExp += row.exp || 0
+          if (row.credits) addItem("other", "Shell Credit", row.credits, 2)
+          credits += row.credits || 0
+        }
+      }
+      if (requiredExp > 0) addItem("exp", "Premium Energy Core", requiredExp, 4)
+      const entries = Object.values(items) as Array<{
+        type: string
+        name: string
+        qty: number
+        rarity?: number
+      }>
+      const enemyEntries = entries
+        .filter((e) => e.type === "enemy_drop")
+        .sort((a, b) => (a.rarity ?? 0) - (b.rarity ?? 0))
+      const talentEntries = entries
+        .filter((e) => e.type === "talent_upgrade")
+        .sort((a, b) => (a.rarity ?? 0) - (b.rarity ?? 0))
+      const expEntries = entries.filter((e) => e.type === "exp")
+      const creditEntries = entries.filter(
+        (e) => e.type === "other" && e.name === "Shell Credit",
+      )
+      const ordered = [
+        ...enemyEntries,
+        ...talentEntries,
+        ...expEntries,
+        ...creditEntries,
+      ]
+      return { credits, materials: ordered }
+    },
+    [weaponDetailsById],
+  )
 
   // Per-plan breakdown helper
   const getPlanBreakdown = useCallback(
@@ -1387,6 +1746,438 @@ export function useWwPlanner() {
     [getAvailabilityForPlan],
   )
 
+  // Mixed-order availability (characters + weapons), honoring display order and crafting
+  const getAvailabilityForMixedPosition = useCallback(
+    (
+      position: number,
+    ): {
+      availableFor: (type: string, name: string) => number
+      availableExp: (category?: "CHARACTER" | "WEAPON") => number
+    } => {
+      const groupedTypes = ["enemy_drop", "talent_upgrade"] as const
+
+      type GroupCacheEntry = {
+        type: string
+        groupId: number
+        matsAsc: Array<{ id: number; name: string; rarity?: number }>
+        idxByName: Record<string, number>
+        counts: number[]
+      }
+      const groupCache = new Map<string, GroupCacheEntry>()
+
+      const getGroupEntry = (
+        type: string,
+        name: string,
+      ): GroupCacheEntry | null => {
+        const typeGroups = (groupsByType as any)?.[type] as
+          | Array<{
+              groupId: number
+              groupName: string
+              materials: Array<{ id: number; name: string; rarity?: number }>
+            }>
+          | undefined
+        if (!typeGroups || typeGroups.length === 0) return null
+        for (const g of typeGroups) {
+          const found = g.materials.find((m) => m.name === name)
+          if (!found) continue
+          const key = `${type}:${g.groupId}`
+          let entry = groupCache.get(key)
+          if (!entry) {
+            const matsAsc = [...g.materials].sort(
+              (a, b) => (a.rarity || 0) - (b.rarity || 0),
+            )
+            const idxByName: Record<string, number> = {}
+            matsAsc.forEach((m, i) => {
+              idxByName[m.name] = i
+            })
+            const counts = matsAsc.map((m) => getCountFor(type, m.name))
+            entry = { type, groupId: g.groupId, matsAsc, idxByName, counts }
+            groupCache.set(key, entry)
+          }
+          return entry
+        }
+        return null
+      }
+
+      const remainingMap = new Map<string, number>()
+      const getRemaining = (type: string, name: string): number => {
+        const k = `${type}:${name}`
+        if (!remainingMap.has(k)) remainingMap.set(k, getCountFor(type, name))
+        return remainingMap.get(k) || 0
+      }
+      const decRemaining = (type: string, name: string, qty: number) => {
+        const k = `${type}:${name}`
+        const curr = getRemaining(type, name)
+        remainingMap.set(k, Math.max(0, curr - Math.max(0, qty || 0)))
+      }
+
+      let creditsRemaining = getRemaining("other", "Shell Credit")
+      let expCharacterRemaining = getTotalExp("CHARACTER")
+      let expWeaponRemaining = getTotalExp("WEAPON")
+
+      const allocateGrouped = (type: string, name: string, qty: number) => {
+        const entry = getGroupEntry(type, name)
+        if (!entry) return
+        const targetIdx = entry.idxByName[name]
+        if (targetIdx == null) return
+        let needed = Math.max(0, qty || 0)
+        const take = Math.min(needed, entry.counts[targetIdx] || 0)
+        if (take > 0) {
+          entry.counts[targetIdx] -= take
+          needed -= take
+        }
+        if (needed <= 0) return
+        for (let k = targetIdx - 1; k >= 0 && needed > 0; k--) {
+          const distance = targetIdx - k
+          const factor = Math.pow(3, distance)
+          const possible = Math.floor((entry.counts[k] || 0) / factor)
+          if (possible <= 0) continue
+          const produce = Math.min(needed, possible)
+          entry.counts[k] -= produce * factor
+          needed -= produce
+        }
+      }
+
+      const ids = getOrderedIds()
+      for (let i = 0; i < Math.min(position, ids.length); i++) {
+        const [k, pid] = String(ids[i]).split(":")
+        if (k === "C") {
+          const plan = plans.find((p) => p.planId === pid)
+          if (!plan) continue
+          const bd = getPlanBreakdown(plan)
+          for (const m of bd.materials) {
+            if (!m || !m.qty) continue
+            if (m.type === "exp") {
+              expCharacterRemaining = Math.max(
+                0,
+                expCharacterRemaining - (m.qty || 0),
+              )
+              continue
+            }
+            if (m.type === "other" && m.name === "Shell Credit") {
+              creditsRemaining = Math.max(0, creditsRemaining - (m.qty || 0))
+              continue
+            }
+            if ((groupedTypes as readonly string[]).includes(m.type)) {
+              allocateGrouped(m.type, m.name, m.qty)
+            } else {
+              decRemaining(m.type, m.name, m.qty)
+            }
+          }
+        } else if (k === "W") {
+          const plan = weaponPlans.find((p) => p.planId === pid)
+          if (!plan) continue
+          const bd = getWeaponPlanBreakdown(plan)
+          for (const m of bd.materials) {
+            if (!m || !m.qty) continue
+            if (m.type === "exp") {
+              expWeaponRemaining = Math.max(
+                0,
+                expWeaponRemaining - (m.qty || 0),
+              )
+              continue
+            }
+            if (m.type === "other" && m.name === "Shell Credit") {
+              creditsRemaining = Math.max(0, creditsRemaining - (m.qty || 0))
+              continue
+            }
+            if ((groupedTypes as readonly string[]).includes(m.type)) {
+              allocateGrouped(m.type, m.name, m.qty)
+            } else {
+              decRemaining(m.type, m.name, m.qty)
+            }
+          }
+        }
+      }
+
+      return {
+        availableFor: (type: string, name: string) => {
+          if (type === "other" && name === "Shell Credit")
+            return creditsRemaining
+          if ((groupedTypes as readonly string[]).includes(type)) {
+            const entry = getGroupEntry(type, name)
+            if (!entry) return 0
+            const idx = entry.idxByName[name]
+            if (idx == null) return 0
+            return entry.counts[idx] || 0
+          }
+          return getRemaining(type, name)
+        },
+        availableExp: (category: "CHARACTER" | "WEAPON" = "CHARACTER") => {
+          return category === "WEAPON"
+            ? expWeaponRemaining
+            : expCharacterRemaining
+        },
+      }
+    },
+    [
+      getOrderedIds,
+      plans,
+      weaponPlans,
+      getPlanBreakdown,
+      getWeaponPlanBreakdown,
+      groupsByType,
+      getCountFor,
+      getTotalExp,
+    ],
+  )
+
+  const getAvailableForMixedPositionValue = useCallback(
+    (position: number, type: string, name: string) => {
+      return getAvailabilityForMixedPosition(position).availableFor(type, name)
+    },
+    [getAvailabilityForMixedPosition],
+  )
+
+  const getTotalExpForMixedPositionValue = useCallback(
+    (position: number, category: "CHARACTER" | "WEAPON" = "CHARACTER") => {
+      return getAvailabilityForMixedPosition(position).availableExp(category)
+    },
+    [getAvailabilityForMixedPosition],
+  )
+
+  // Combined remaining materials needed after allocating inventory (with crafting) in mixed order
+  const getCombinedRemaining = useCallback(() => {
+    const groupedTypes = ["enemy_drop", "talent_upgrade"] as const
+    type Acc = Record<
+      string,
+      { type: string; name: string; qty: number; rarity?: number }
+    >
+    const deficits: Acc = {}
+
+    type GroupCacheEntry = {
+      type: string
+      groupId: number
+      matsAsc: Array<{ id: number; name: string; rarity?: number }>
+      idxByName: Record<string, number>
+      counts: number[]
+    }
+    const groupCache = new Map<string, GroupCacheEntry>()
+    const getGroupEntry = (
+      type: string,
+      name: string,
+    ): GroupCacheEntry | null => {
+      const typeGroups = (groupsByType as any)?.[type] as
+        | Array<{
+            groupId: number
+            groupName: string
+            materials: Array<{ id: number; name: string; rarity?: number }>
+          }>
+        | undefined
+      if (!typeGroups || typeGroups.length === 0) return null
+      for (const g of typeGroups) {
+        const found = g.materials.find((m) => m.name === name)
+        if (!found) continue
+        const key = `${type}:${g.groupId}`
+        let entry = groupCache.get(key)
+        if (!entry) {
+          const matsAsc = [...g.materials].sort(
+            (a, b) => (a.rarity || 0) - (b.rarity || 0),
+          )
+          const idxByName: Record<string, number> = {}
+          matsAsc.forEach((m, i) => (idxByName[m.name] = i))
+          const counts = matsAsc.map((m) => getCountFor(type, m.name))
+          entry = { type, groupId: g.groupId, matsAsc, idxByName, counts }
+          groupCache.set(key, entry)
+        }
+        return entry
+      }
+      return null
+    }
+
+    const remainingMap = new Map<string, number>()
+    const getRemaining = (type: string, name: string): number => {
+      const k = `${type}:${name}`
+      if (!remainingMap.has(k)) remainingMap.set(k, getCountFor(type, name))
+      return remainingMap.get(k) || 0
+    }
+    const decRemaining = (type: string, name: string, qty: number) => {
+      const k = `${type}:${name}`
+      const curr = getRemaining(type, name)
+      remainingMap.set(k, Math.max(0, curr - Math.max(0, qty || 0)))
+    }
+
+    let creditsRemaining = getRemaining("other", "Shell Credit")
+    let expCharacterRemaining = getTotalExp("CHARACTER")
+    let expWeaponRemaining = getTotalExp("WEAPON")
+
+    const addDeficit = (
+      type: string,
+      name: string,
+      qty: number,
+      rarity?: number,
+    ) => {
+      if (!qty) return
+      const key = `${type}:${name}:${rarity ?? 0}`
+      deficits[key] = deficits[key]
+        ? { ...deficits[key], qty: deficits[key].qty + qty }
+        : { type, name, qty, rarity }
+    }
+
+    const allocateGroupedWithShortage = (
+      type: string,
+      name: string,
+      qty: number,
+      rarity?: number,
+    ) => {
+      const entry = getGroupEntry(type, name)
+      if (!entry) {
+        addDeficit(type, name, Math.max(0, qty || 0), rarity)
+        return
+      }
+      const targetIdx = entry.idxByName[name]
+      if (targetIdx == null) {
+        addDeficit(type, name, Math.max(0, qty || 0), rarity)
+        return
+      }
+      let needed = Math.max(0, qty || 0)
+      // use same tier
+      const take = Math.min(needed, entry.counts[targetIdx] || 0)
+      if (take > 0) {
+        entry.counts[targetIdx] -= take
+        needed -= take
+      }
+      // craft up from lower tiers
+      for (let k = targetIdx - 1; k >= 0 && needed > 0; k--) {
+        const distance = targetIdx - k
+        const factor = Math.pow(3, distance)
+        const possible = Math.floor((entry.counts[k] || 0) / factor)
+        if (possible <= 0) continue
+        const produce = Math.min(needed, possible)
+        entry.counts[k] -= produce * factor
+        needed -= produce
+      }
+      if (needed > 0) addDeficit(type, name, needed, rarity)
+    }
+
+    const ids = getOrderedIds()
+    for (let i = 0; i < ids.length; i++) {
+      const [k, pid] = String(ids[i]).split(":")
+      const isChar = k === "C"
+      if (isChar) {
+        const plan = plans.find((p) => p.planId === pid)
+        if (!plan) continue
+        const bd = getPlanBreakdown(plan)
+        const mats = bd.materials as Array<{
+          type: string
+          name: string
+          qty: number
+          rarity?: number
+        }>
+        for (const m of mats) {
+          if (!m || !m.qty) continue
+          if (m.type === "exp") {
+            const avail = expCharacterRemaining
+            const deficit = Math.max(0, (m.qty || 0) - avail)
+            expCharacterRemaining = Math.max(0, avail - (m.qty || 0))
+            if (deficit > 0) addDeficit("exp", m.name, deficit, m.rarity)
+            continue
+          }
+          if (m.type === "other" && m.name === "Shell Credit") {
+            const avail = creditsRemaining
+            const deficit = Math.max(0, (m.qty || 0) - avail)
+            creditsRemaining = Math.max(0, avail - (m.qty || 0))
+            if (deficit > 0) addDeficit("other", m.name, deficit, m.rarity)
+            continue
+          }
+          if ((groupedTypes as readonly string[]).includes(m.type)) {
+            allocateGroupedWithShortage(m.type, m.name, m.qty, m.rarity)
+          } else {
+            const avail = getRemaining(m.type, m.name)
+            const take = Math.min(avail, m.qty || 0)
+            decRemaining(m.type, m.name, take)
+            const deficit = Math.max(0, (m.qty || 0) - take)
+            if (deficit > 0) addDeficit(m.type, m.name, deficit, m.rarity)
+          }
+        }
+      } else if (k === "W") {
+        const plan = weaponPlans.find((p) => p.planId === pid)
+        if (!plan) continue
+        const bd = getWeaponPlanBreakdown(plan)
+        const mats = bd.materials as Array<{
+          type: string
+          name: string
+          qty: number
+          rarity?: number
+        }>
+        for (const m of mats) {
+          if (!m || !m.qty) continue
+          if (m.type === "exp") {
+            const avail = expWeaponRemaining
+            const deficit = Math.max(0, (m.qty || 0) - avail)
+            expWeaponRemaining = Math.max(0, avail - (m.qty || 0))
+            if (deficit > 0) addDeficit("exp", m.name, deficit, m.rarity)
+            continue
+          }
+          if (m.type === "other" && m.name === "Shell Credit") {
+            const avail = creditsRemaining
+            const deficit = Math.max(0, (m.qty || 0) - avail)
+            creditsRemaining = Math.max(0, avail - (m.qty || 0))
+            if (deficit > 0) addDeficit("other", m.name, deficit, m.rarity)
+            continue
+          }
+          if ((groupedTypes as readonly string[]).includes(m.type)) {
+            allocateGroupedWithShortage(m.type, m.name, m.qty, m.rarity)
+          } else {
+            const avail = getRemaining(m.type, m.name)
+            const take = Math.min(avail, m.qty || 0)
+            decRemaining(m.type, m.name, take)
+            const deficit = Math.max(0, (m.qty || 0) - take)
+            if (deficit > 0) addDeficit(m.type, m.name, deficit, m.rarity)
+          }
+        }
+      }
+    }
+
+    const entries = Object.values(deficits) as Array<{
+      type: string
+      name: string
+      qty: number
+      rarity?: number
+    }>
+    const getGroupId = (type: string, name: string): number => {
+      if (!(type === "enemy_drop" || type === "talent_upgrade"))
+        return Number.MAX_SAFE_INTEGER
+      const entry = getGroupEntry(type, name)
+      return entry ? entry.groupId : Number.MAX_SAFE_INTEGER
+    }
+    const typeRank = (e: { type: string; name: string }) => {
+      if (e.type === "exp") return 0
+      if (e.type === "other" && e.name === "Shell Credit") return 1
+      if (e.type === "enemy_drop") return 2
+      if (e.type === "talent_upgrade") return 3
+      if (e.type === "boss_drop") return 4
+      if (e.type === "collectible") return 5
+      if (e.type === "weekly_boss") return 6
+      return 7
+    }
+    const ordered = [...entries].sort((a, b) => {
+      const ta = typeRank(a)
+      const tb = typeRank(b)
+      if (ta !== tb) return ta - tb
+      if (ta === 2 || ta === 3) {
+        const ga = getGroupId(a.type, a.name)
+        const gb = getGroupId(b.type, b.name)
+        if (ga !== gb) return ga - gb
+        const ra = a.rarity ?? 0
+        const rb = b.rarity ?? 0
+        if (ra !== rb) return ra - rb
+        return a.name.localeCompare(b.name)
+      }
+      return a.name.localeCompare(b.name)
+    })
+    return ordered
+  }, [
+    getOrderedIds,
+    plans,
+    weaponPlans,
+    getPlanBreakdown,
+    getWeaponPlanBreakdown,
+    groupsByType,
+    getCountFor,
+    getTotalExp,
+  ])
+
   // Skill helpers
   const setSkillRange = (index: number, from: number, to: number) => {
     setSkillRanges((prev) => {
@@ -1410,25 +2201,37 @@ export function useWwPlanner() {
   return {
     loading,
     characters,
+    weapons,
     plans,
+    weaponPlans,
     totalResources,
     getPlanBreakdown,
+    getWeaponPlanBreakdown,
 
     search,
     setSearch,
     filteredCharacters,
+    filteredWeapons,
 
     showAddCharacter,
     openAddCharacter,
     closeAddCharacter,
+    showAddWeapon,
+    openAddWeapon,
+    closeAddWeapon,
     chooseCharacter,
+    chooseWeapon,
     showReorderPlans,
     openReorderPlans,
     closeReorderPlans,
     showCharacterConfig,
+    showWeaponConfig,
     selectedCharacter,
+    selectedWeapon,
     cancelCharacterConfig,
+    cancelWeaponConfig,
     confirmCharacterPlan,
+    confirmWeaponPlan,
 
     fromAscension,
     toAscension,
@@ -1445,9 +2248,21 @@ export function useWwPlanner() {
     statBoosts,
     setStatBoosts,
 
+    // weapon config state
+    wFromAscension,
+    wToAscension,
+    setWFromAscension,
+    setWToAscension,
+    wFromLevel,
+    wToLevel,
+    setWFromLevel,
+    setWToLevel,
+
     // plan ops
     removePlan,
+    removeWeaponPlan,
     beginEditPlan,
+    beginEditWeaponPlan,
     applyPlanOrder,
 
     // Mark plan as done: update plan state to reflect desired achieved
@@ -1482,9 +2297,28 @@ export function useWwPlanner() {
       })
     },
 
+    // Mark weapon plan as done
+    markWeaponPlanAsDone: (index: number) => {
+      setWeaponPlans((prev) => {
+        if (index < 0 || index >= prev.length) return prev
+        const p = prev[index]
+        const next: WeaponPlan = {
+          ...p,
+          fromAscension: p.toAscension,
+          fromLevel: p.toLevel,
+        }
+        return prev.map((it, i) => (i === index ? next : it))
+      })
+    },
+
     // priority allocation helpers
     getAvailableForPlan,
     getTotalExpForPlan,
+    orderedItems,
+    // Mixed availability snapshot for a given mixed position
+    getMixedAvailability: (position: number) =>
+      getAvailabilityForMixedPosition(position),
+    getCombinedRemaining,
 
     // multi-account state
     accountId,

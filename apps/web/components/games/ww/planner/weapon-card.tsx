@@ -8,9 +8,10 @@ import {
   CircleHelp,
   EllipsisVertical,
   FlaskConical,
-  CheckCircle,
   Pencil,
   Trash2,
+  Check,
+  CheckCircle,
 } from "lucide-react"
 import {
   DropdownMenu,
@@ -22,7 +23,6 @@ import {
 import { MotionEffect } from "@/components/animate-ui/effects/motion-effect"
 import { Button } from "@/components/ui/button"
 import { useWwInventory } from "@/hooks/games/ww/use-ww-inventory"
-import { Check } from "lucide-react"
 import {
   Tooltip,
   TooltipContent,
@@ -42,13 +42,11 @@ type MaterialEntry = {
   rarity?: number
 }
 
-export function CharacterCard({
+export function WeaponCard({
   name,
   icon,
-  rarity,
-  elementIcon,
-  elementName,
   weaponType,
+  rarity,
   breakdown,
   onEdit,
   onRemove,
@@ -58,10 +56,8 @@ export function CharacterCard({
 }: {
   name: string
   icon: string
-  rarity?: number
-  elementIcon: string
-  elementName: string
   weaponType: string
+  rarity: number
   breakdown: { credits: number; materials: MaterialEntry[] }
   onEdit?: () => void
   onRemove?: () => void
@@ -132,17 +128,17 @@ export function CharacterCard({
     const specials = mats.filter(
       (s) =>
         (s.type === "other" && s.name === "Shell Credit") ||
-        (s.type === "exp" && s.name === "Premium Resonance Potion"),
+        (s.type === "exp" && s.name === "Premium Energy Core"),
     )
     const others = mats.filter(
       (s) =>
         !(
           (s.type === "other" && s.name === "Shell Credit") ||
-          (s.type === "exp" && s.name === "Premium Resonance Potion")
+          (s.type === "exp" && s.name === "Premium Energy Core")
         ),
     )
     const expEntry = mats.find(
-      (s) => s.type === "exp" && s.name === "Premium Resonance Potion",
+      (s) => s.type === "exp" && s.name === "Premium Energy Core",
     )
     return { specials, others, requiredExp: expEntry?.qty || 0 }
   }, [mats])
@@ -163,7 +159,7 @@ export function CharacterCard({
   }
 
   const handleMarkDone = () => {
-    // 1) Gate by availability; if grouped crafting needed, open recap
+    // Availability check (raw inventory)
     for (const s of others) {
       const have = getCountFor(s.type, s.name)
       if (s.type === "enemy_drop" || s.type === "talent_upgrade") {
@@ -199,13 +195,13 @@ export function CharacterCard({
       toast("Not enough Shell Credits.", toastStyles.error)
       return
     }
-    const haveExp = availableExp ? availableExp() : getTotalExp("CHARACTER")
+    const haveExp = availableExp ? availableExp() : getTotalExp("WEAPON")
     if (requiredExp > 0 && haveExp < requiredExp) {
-      toast("Not enough Character EXP.", toastStyles.error)
+      toast("Not enough Weapon EXP.", toastStyles.error)
       return
     }
 
-    // 2) Deduct materials from actual inventory (no crafting here)
+    // Deduct materials
     for (const s of others) {
       let id: number | null = null
       if (s.type === "enemy_drop" || s.type === "talent_upgrade")
@@ -214,17 +210,15 @@ export function CharacterCard({
       if (id == null) continue
       if (s.qty > 0) increment(id, -s.qty)
     }
-
-    // 3) Deduct credits
     if (needCredits > 0) {
       const creditsId = 89
       increment(creditsId, -needCredits)
     }
 
-    // 4) Deduct EXP value greedily from highest value potions
+    // Deduct EXP using weapon materials
     let remainingExp = requiredExp
     if (remainingExp > 0) {
-      const sorted = [...EXP_MATERIALS.CHARACTER].sort(
+      const sorted = [...EXP_MATERIALS.WEAPON].sort(
         (a, b) => (b.value || 0) - (a.value || 0),
       )
       for (const em of sorted) {
@@ -239,9 +233,8 @@ export function CharacterCard({
           remainingExp -= use * (em.value || 0)
         }
       }
-      // If there is still remainder, cover with smallest available units
       if (remainingExp > 0) {
-        const asc = [...EXP_MATERIALS.CHARACTER].sort(
+        const asc = [...EXP_MATERIALS.WEAPON].sort(
           (a, b) => (a.value || 0) - (b.value || 0),
         )
         for (const em of asc) {
@@ -256,7 +249,7 @@ export function CharacterCard({
       }
     }
 
-    toast("Plan applied to inventory.", toastStyles.success)
+    toast("Weapon plan applied to inventory.", toastStyles.success)
     onMarkDone?.()
   }
 
@@ -282,13 +275,7 @@ export function CharacterCard({
             <div className="flex flex-col gap-1">
               <div className="font-bold">{name}</div>
               <div className="text-xs text-muted-foreground flex items-center gap-1">
-                <Image
-                  src={elementIcon}
-                  alt={elementName}
-                  width={24}
-                  height={24}
-                />
-                {elementName} {weaponType}
+                {weaponType}
               </div>
             </div>
             <div className="ml-auto">
@@ -329,16 +316,17 @@ export function CharacterCard({
                 </div>
               )
             }
+
             const specials = mats.filter(
               (s) =>
                 (s.type === "other" && s.name === "Shell Credit") ||
-                (s.type === "exp" && s.name === "Premium Resonance Potion"),
+                (s.type === "exp" && s.name === "Premium Energy Core"),
             )
             const others = mats.filter(
               (s) =>
                 !(
                   (s.type === "other" && s.name === "Shell Credit") ||
-                  (s.type === "exp" && s.name === "Premium Resonance Potion")
+                  (s.type === "exp" && s.name === "Premium Energy Core")
                 ),
             )
 
@@ -348,8 +336,7 @@ export function CharacterCard({
             })
 
             const renderItem = (s: MaterialEntry, key: string) => {
-              const isExp =
-                s.type === "exp" && s.name === "Premium Resonance Potion"
+              const isExp = s.type === "exp" && s.name === "Premium Energy Core"
               const have = availableFor
                 ? availableFor(s.type, s.name)
                 : getCountFor(s.type, s.name)
@@ -359,7 +346,7 @@ export function CharacterCard({
                 ? computeCraftableExtra(s, availableFor)
                 : 0
               const complete = isExp
-                ? (availableExp ? availableExp() : getTotalExp("CHARACTER")) >=
+                ? (availableExp ? availableExp() : getTotalExp("WEAPON")) >=
                   required
                 : (() => {
                     if (!(required > 0)) return false
@@ -381,7 +368,7 @@ export function CharacterCard({
                     setOpenDialog({
                       type: s.type,
                       name: s.name,
-                      context: isExp ? "CHARACTER" : undefined,
+                      context: isExp ? "WEAPON" : undefined,
                     })
                   }
                 >
@@ -442,7 +429,7 @@ export function CharacterCard({
                           {isCredit
                             ? `${compactFmt.format(Math.max(0, required - have))}`
                             : isExp
-                              ? `${compactFmt.format(Math.max(0, required - (availableExp ? availableExp() : getTotalExp("CHARACTER"))))}`
+                              ? `${compactFmt.format(Math.max(0, required - (availableExp ? availableExp() : getTotalExp("WEAPON"))))}`
                               : (() => {
                                   const missing = Math.max(0, required - have)
                                   const afterCraft = Math.max(
@@ -455,7 +442,7 @@ export function CharacterCard({
                       </TooltipTrigger>
                       <TooltipContent>
                         {isExp
-                          ? `${(availableExp ? availableExp() : getTotalExp("CHARACTER")).toLocaleString()} / ${required.toLocaleString()} EXP`
+                          ? `${(availableExp ? availableExp() : getTotalExp("WEAPON")).toLocaleString()} / ${required.toLocaleString()} EXP`
                           : `${have.toLocaleString()}/${required.toLocaleString()}`}
                       </TooltipContent>
                     </Tooltip>
