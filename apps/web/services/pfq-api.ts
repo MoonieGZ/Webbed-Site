@@ -1,4 +1,11 @@
-import type { PFQApiResponse, PFQUser } from "@/types/pfq"
+import type {
+  PFQApiResponse,
+  PFQMarketboardListing,
+  PFQMarketboardSearch,
+  PFQMarketboardSummary,
+  PFQMarketboardTrend,
+  PFQUser,
+} from "@/types/pfq"
 
 export class PFQApiService {
   private static readonly BASE_URL = "https://api.pokefarm.com/v1"
@@ -37,7 +44,125 @@ export class PFQApiService {
     }
   }
 
-  static async getUserInfo(apiKey: string): Promise<PFQApiResponse<PFQUser>> {
-    return this.whoAmI(apiKey)
+  static async getMarketboardTrends(
+    apiKey: string,
+    itemId: number,
+    interval: number = 30,
+  ): Promise<PFQApiResponse<PFQMarketboardTrend>> {
+    try {
+      const response = await fetch(
+        `${this.BASE_URL}/marketboard/${itemId}/trends?interval=${interval}`,
+        {
+          method: "GET",
+          headers: {
+            "x-api-key": apiKey,
+            "Content-Type": "application/json",
+          },
+        },
+      )
+
+      const data = await response.json()
+      return {
+        success: true,
+        data: data,
+      }
+    } catch (error) {
+      console.error("PFQ API marketboard trends error:", error)
+      return {
+        success: false,
+        error: "Network error occurred while fetching marketboard trends",
+      }
+    }
+  }
+
+  static async getMarketboardListings(
+    apiKey: string,
+    itemId: number,
+    limit: number = 10,
+  ): Promise<PFQApiResponse<PFQMarketboardListing>> {
+    try {
+      const response = await fetch(
+        `${this.BASE_URL}/marketboard/${itemId}/listings?limit=${limit}`,
+        {
+          method: "GET",
+          headers: {
+            "x-api-key": apiKey,
+            "Content-Type": "application/json",
+          },
+        },
+      )
+
+      const data = await response.json()
+      return {
+        success: true,
+        data: data,
+      }
+    } catch (error) {
+      console.error("PFQ API marketboard listings error:", error)
+      return {
+        success: false,
+        error: "Network error occurred while fetching marketboard listings",
+      }
+    }
+  }
+
+  static async getMarketboardItemSummary(
+    apiKey: string,
+    itemId: number,
+  ): Promise<PFQApiResponse<PFQMarketboardSummary>> {
+    try {
+      const response = await fetch(
+        `${this.BASE_URL}/marketboard/${itemId}/summary`,
+        {
+          method: "GET",
+          headers: {
+            "x-api-key": apiKey,
+            "Content-Type": "application/json",
+          },
+        },
+      )
+
+      const data = await response.json()
+      return {
+        success: true,
+        data: data,
+      }
+    } catch (error) {
+      console.error("PFQ API marketboard item summary error:", error)
+      return {
+        success: false,
+        error: "Network error occurred while fetching marketboard item summary",
+      }
+    }
+  }
+
+  static async getMarketboardItemSearch(
+    apiKey: string,
+    itemName: string,
+  ): Promise<PFQApiResponse<PFQMarketboardSearch>> {
+    try {
+      const response = await fetch(
+        `${this.BASE_URL}/marketboard/search?query=${encodeURIComponent(itemName)}`,
+        {
+          method: "GET",
+          headers: {
+            "x-api-key": apiKey,
+            "Content-Type": "application/json",
+          },
+        },
+      )
+
+      const data = await response.json()
+      return {
+        success: true,
+        data: data,
+      }
+    } catch (error) {
+      console.error("PFQ API marketboard item search error:", error)
+      return {
+        success: false,
+        error: "Network error occurred while fetching marketboard item search",
+      }
+    }
   }
 }

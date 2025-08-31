@@ -1,4 +1,4 @@
-import { Dices, FishSymbol, NotebookPen, Users } from "lucide-react"
+import { Dices, FishSymbol, Gamepad2, NotebookPen, Users } from "lucide-react"
 import { useFriendRealtime } from "@/hooks/account/use-friend-realtime"
 import { useSidebarData } from "@/hooks/navigation/use-sidebar-data"
 
@@ -40,6 +40,17 @@ export function useNavMain() {
         {
           title: "Wuthering Waves",
           url: "/wuwa/planner",
+        },
+      ],
+    },
+    {
+      title: "PokéFarm Q",
+      url: "/pfq",
+      icon: Gamepad2,
+      items: [
+        {
+          title: "Marketboard",
+          url: "/pfq/marketboard",
         },
       ],
     },

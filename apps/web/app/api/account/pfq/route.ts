@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       hasApiKey: true,
+      apiKey: apiKeyRecord.api_key,
       created_at: apiKeyRecord.created_at,
       last_validated: apiKeyRecord.last_validated,
       pfqUser: pfqUserResult.success ? pfqUserResult.data : null,
