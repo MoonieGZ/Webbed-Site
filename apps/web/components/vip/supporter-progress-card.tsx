@@ -79,7 +79,7 @@ export function SupporterProgressCard() {
           <Button
             type="button"
             className="bg-amber-500 text-black hover:bg-amber-400"
-            onClick={() => window.open("https://discord.gg/test", "_blank")}
+            onClick={() => window.open(`https://discord.gg/${process.env.NEXT_PUBLIC_DISCORD_INVITE}`, "_blank")}
           >
             <MessagesSquare className="mr-2 h-4 w-4" />
             Join Discord
