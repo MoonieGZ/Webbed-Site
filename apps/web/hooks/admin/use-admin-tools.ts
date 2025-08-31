@@ -31,7 +31,7 @@ export function useAdminTools() {
     {
       title: "WW Groupings",
       description: "Assign material groups to WW characters",
-      href: "/admin/games/ww/groups",
+      href: "/admin/wuwa/groups",
       icon: Shield,
     },
     {
