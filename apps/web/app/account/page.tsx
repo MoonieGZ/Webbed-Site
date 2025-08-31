@@ -53,6 +53,11 @@ export default function AccountPage() {
           <PFQApiKeyCard />
           <GameUIDsCard />
         </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <DiscordIdCard />
+          <SupporterMiniCard />
+        </div>
       </div>
     </>
   )
