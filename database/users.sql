@@ -6,7 +6,7 @@ CREATE TABLE `users` (
   `avatar` varchar(255) DEFAULT NULL,
   `title` varchar(32) DEFAULT NULL,
   `name_changed_at` timestamp NULL DEFAULT NULL,
-  `discord_id` bigint(20) unsigned DEFAULT NULL,
+  `discord_id` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `discord_id` (`discord_id`),
   KEY `idx_users_name_changed_at` (`name_changed_at`)
