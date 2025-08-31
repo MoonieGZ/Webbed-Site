@@ -27,17 +27,17 @@ export function SupporterMiniCard() {
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-2 justify-end">
-        <Button variant="outline" asChild onClick={() => router.push("/vip")} className="w-[125px]">
-          <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={() => router.push("/vip")} className="w-[125px]">
+          <>
             <BadgeCheck className="h-4 w-4" />
             VIP Page
-          </div>
+          </>
         </Button>
-        <Button variant="outline" asChild onClick={() => window.open(`https://discord.gg/${process.env.NEXT_PUBLIC_DISCORD_INVITE}`, "_blank")} className="w-[125px]">
-          <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={() => window.open(`https://discord.gg/${process.env.NEXT_PUBLIC_DISCORD_INVITE}`, "_blank")} className="w-[125px]">
+          <>
             <MessagesSquare className="h-4 w-4" />
             Join Discord
-          </div>
+          </>
         </Button>
         </div>
       </CardContent>
