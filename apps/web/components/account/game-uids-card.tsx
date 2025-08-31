@@ -21,7 +21,6 @@ export function GameUIDsCard() {
     uidInputs,
     saveGameUID,
     updateUidInput,
-    getGameUID,
     isSaving,
   } = useGameUIDs()
 
@@ -62,7 +61,6 @@ export function GameUIDsCard() {
       <CardContent className="space-y-4">
         <div className="space-y-4">
           {(Object.keys(GAME_INFO) as GameType[]).map((game) => {
-            const gameUID = getGameUID(game)
             const gameInfo = GAME_INFO[game]
             const currentUid = uidInputs[game]
 
