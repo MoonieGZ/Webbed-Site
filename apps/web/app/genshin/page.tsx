@@ -91,7 +91,7 @@ function GIPageBody() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           <div className="lg:col-span-1 order-2 lg:order-1">
             <GILobbyStatusCard />

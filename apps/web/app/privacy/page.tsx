@@ -37,7 +37,7 @@ export default function PrivacyPage() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -60,7 +60,7 @@ export default function PrivacyPage() {
           </CardContent>
         </Card>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>1. Data Controller</CardTitle>

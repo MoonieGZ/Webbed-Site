@@ -15,8 +15,8 @@ function getContentType(filename: string): string {
 }
 
 export async function GET(_request: NextRequest, context: any) {
-  const { params } = context as { params: { userId: string; name: string } }
-  const { userId, name } = params
+  const { params } = context as { params: Promise<{ userId: string; name: string }> }
+  const { userId, name } = await params
 
   if (!/^[0-9]+$/.test(userId) || !/^[A-Za-z0-9._-]+$/.test(name)) {
     return NextResponse.json({ error: "Invalid path" }, { status: 400 })

@@ -59,7 +59,7 @@ function PlannerContent() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-3 p-6 pt-0">
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <PlannerTopBar
           onAddCharacter={planner.openAddCharacter}
           onAddWeapon={planner.openAddWeapon}
@@ -96,7 +96,7 @@ function PlannerContent() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <AnimatePresence mode="popLayout">
             {planner.orderedItems.map((item, pos) => {
               if (item.kind === "CHAR") {

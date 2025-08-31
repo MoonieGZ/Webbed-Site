@@ -14,6 +14,8 @@ import { AvatarCard } from "@/components/account/avatar-card"
 import { PFQApiKeyCard } from "@/components/account/pfq-api-key-card"
 import { GameUIDsCard } from "@/components/account/game-uids-card"
 import { BadgesCard } from "@/components/account/badges-card"
+import { SupporterMiniCard } from "@/components/account/supporter-mini-card"
+import { DiscordIdCard } from "@/components/account/discord-id-card"
 
 export default function AccountPage() {
   return (
@@ -39,17 +41,17 @@ export default function AccountPage() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
-        <div className="grid gap-6 md:grid-cols-2">
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="grid gap-4 md:grid-cols-2">
           <ProfileInformationCard />
           <AvatarCard />
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           <BadgesCard />
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           <PFQApiKeyCard />
           <GameUIDsCard />
         </div>

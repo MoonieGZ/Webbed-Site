@@ -36,8 +36,8 @@ export default function Page() {
           </Breadcrumb>
         </div>
       </header>
-      <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -85,7 +85,7 @@ export default function Page() {
           </Card>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

@@ -35,11 +35,11 @@ export default function VIPPage() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
-        <div className="grid gap-6">
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="grid gap-4">
           <SupporterIntroCard />
         </div>
-        <div className="grid gap-6 md:grid-cols-2 items-stretch">
+        <div className="grid gap-4 md:grid-cols-2 items-stretch">
           <div className="md:col-span-2 lg:col-span-1 h-full">
             <SupporterCard />
           </div>

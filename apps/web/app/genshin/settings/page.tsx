@@ -62,7 +62,7 @@ export default function GISettingsPage() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Tabs defaultValue="characters" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-4">
             <TabsTrigger value="characters" className="flex items-center gap-2">
