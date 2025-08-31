@@ -16,13 +16,8 @@ import { useGameUIDs, GAME_INFO } from "@/hooks/account/use-game-uids"
 import type { GameType } from "@/types/game-uid"
 
 export function GameUIDsCard() {
-  const {
-    loading,
-    uidInputs,
-    saveGameUID,
-    updateUidInput,
-    isSaving,
-  } = useGameUIDs()
+  const { loading, uidInputs, saveGameUID, updateUidInput, isSaving } =
+    useGameUIDs()
 
   const title = "Game UIDs"
   const description = "Manage your UIDs for various games"
