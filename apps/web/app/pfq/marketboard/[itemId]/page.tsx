@@ -9,9 +9,16 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { PFQMarketboardSearch } from "@/components/pfq/marketboard-search"
+import { useParams } from "next/navigation"
+import { PFQMarketboardItem } from "@/components/pfq/marketboard-item"
 
-export default function MarketboardPage() {
+export default function MarketboardItemPage() {
+  const params = useParams()
+  const itemIdParam = params?.itemId
+  const itemId = Number(
+    Array.isArray(itemIdParam) ? itemIdParam[0] : itemIdParam,
+  )
+
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2">
@@ -36,6 +43,12 @@ export default function MarketboardPage() {
                   Marketboard
                 </BreadcrumbLink>
               </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbLink href={`/pfq/marketboard/${itemId}`}>
+                  Item {itemId}
+                </BreadcrumbLink>
+              </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
@@ -43,7 +56,7 @@ export default function MarketboardPage() {
 
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div className="grid gap-4">
-          <PFQMarketboardSearch />
+          <PFQMarketboardItem itemId={itemId} />
         </div>
       </div>
     </>

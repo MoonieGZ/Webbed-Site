@@ -51,6 +51,8 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - WwGroupsTable (admin WW grouping management)
   - InventoryDialog (WW planner inventory management)
   - ReorderPlansDialog (WW planner reorder UI)
+  - PFQMarketboardSearch (PFQ item search with debounced input)
+  - PFQMarketboardItem (PFQ item details with charts)
 
 - **Custom Hooks Built**:
   - useGiData (GI data fetch + local caching + persistence)
@@ -73,6 +75,8 @@ This file tracks all ShadCN components used in the project to avoid reinstalling
   - useFriendRealtime (websocket client for pending friend request count)
   - useWwAdminGroups (admin WW grouping state and actions)
   - useWwInventory (WW inventory state & localStorage persistence)
+  - useMarketboardSearch (PFQ marketboard search state)
+  - useMarketboardItem (PFQ marketboard item state)
 
 ## Installation History
 

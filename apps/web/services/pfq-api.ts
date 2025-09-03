@@ -2,6 +2,7 @@ import type {
   PFQApiResponse,
   PFQMarketboardListing,
   PFQMarketboardSearch,
+  PFQMarketboardSearchItem,
   PFQMarketboardSummary,
   PFQMarketboardTrend,
   PFQUser,
@@ -162,6 +163,43 @@ export class PFQApiService {
       return {
         success: false,
         error: "Network error occurred while fetching marketboard item search",
+      }
+    }
+  }
+
+  static async getMarketboardItemByItemId(
+    apiKey: string,
+    itemId: number,
+  ): Promise<PFQApiResponse<PFQMarketboardSearchItem>> {
+    if (itemId < 1) {
+      return {
+        success: false,
+        error: "Invalid item id",
+      }
+    }
+    try {
+      const response = await fetch(
+        `${this.BASE_URL}/marketboard/item/${itemId}`,
+        {
+          method: "GET",
+          headers: {
+            "x-api-key": apiKey,
+            "Content-Type": "application/json",
+          },
+        },
+      )
+
+      const data = await response.json()
+      return {
+        success: true,
+        data: data,
+      }
+    } catch (error) {
+      console.error("PFQ API marketboard item by item id error:", error)
+      return {
+        success: false,
+        error:
+          "Network error occurred while fetching marketboard item by item id",
       }
     }
   }
