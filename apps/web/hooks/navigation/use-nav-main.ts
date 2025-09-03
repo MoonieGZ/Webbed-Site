@@ -43,17 +43,17 @@ export function useNavMain() {
         },
       ],
     },
-    {
-      title: "PokéFarm Q",
-      url: "/pfq",
-      icon: Gamepad2,
-      items: [
-        {
-          title: "Marketboard",
-          url: "/pfq/marketboard",
-        },
-      ],
-    },
+    // {
+    //   title: "PokéFarm Q",
+    //   url: "/pfq",
+    //   icon: Gamepad2,
+    //   items: [
+    //     {
+    //       title: "Marketboard",
+    //       url: "/pfq/marketboard",
+    //     },
+    //   ],
+    // },
     {
       title: "Friends",
       url: "/friends",

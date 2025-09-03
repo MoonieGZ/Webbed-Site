@@ -118,10 +118,20 @@ export function useGiLobbyStatus() {
       ;(bosses || []).forEach((b) => {
         merged[b.name] = prof.enabledMap[b.name] ?? true
       })
-      setSettings((prev) => ({
-        ...prev,
-        bosses: { ...prev.bosses, enabled: merged },
-      }))
+      setSettings((prev) => {
+        const prevMap = prev.bosses.enabled || {}
+        let changed = false
+        for (const b of bosses || []) {
+          const prevVal = prevMap[b.name] ?? true
+          const nextVal = merged[b.name] ?? true
+          if (prevVal !== nextVal) {
+            changed = true
+            break
+          }
+        }
+        if (!changed) return prev
+        return { ...prev, bosses: { ...prev.bosses, enabled: merged } }
+      })
       setSelectedBossProfileIndex(profileIndex)
     },
     [bossProfiles, bosses, setSettings],
