@@ -313,17 +313,17 @@ export function PFQMarketboardItem({ itemId }: Props) {
               {summary ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   <Stat
-                    label="Lowest Sale"
+                    label="Lowest Listing"
                     value={summary[0]?.lowest_price}
                     unit="Cr"
                   />
                   <Stat
-                    label="Highest Sale"
+                    label="Highest Listing"
                     value={summary[0]?.highest_price}
                     unit="Cr"
                   />
                   <Stat
-                    label="Quantity Available"
+                    label="Total Quantity Listed"
                     value={summary[0]?.total_quantity}
                   />
                   <Stat
