@@ -40,6 +40,7 @@ import Image from "next/image"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
 import Link from "next/link"
+import { formatNumber } from "@/lib/utils"
 
 interface Props {
   itemId: number
@@ -160,155 +161,181 @@ export function PFQMarketboardItem({ itemId }: Props) {
             <div className="text-sm text-destructive">{error}</div>
           ) : (
             <div className="space-y-6">
-              <ChartContainer
-                config={priceChartConfig}
-                className="aspect-auto h-[320px] w-full"
-              >
-                <LineChart data={priceData} margin={{ left: 12, right: 12 }}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="day"
-                    tickLine={true}
-                    axisLine={true}
-                    tickMargin={8}
-                    minTickGap={32}
-                    tickFormatter={(value) => {
-                      const date = new Date(value as string)
-                      return date.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })
-                    }}
-                  />
-                  <YAxis />
-                  <ChartTooltip
-                    cursor={true}
-                    content={
-                      <ChartTooltipContent
-                        labelFormatter={(value) =>
-                          new Date(value as string).toLocaleDateString(
-                            "en-US",
-                            { month: "short", day: "numeric" },
-                          )
-                        }
-                        indicator="dot"
-                      />
-                    }
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="min"
-                    stroke="var(--color-min)"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Min Price"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="avg"
-                    stroke="var(--color-avg)"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Avg Price"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="max"
-                    stroke="var(--color-max)"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Max Price"
-                  />
-                  <ChartLegend content={<ChartLegendContent />} />
-                </LineChart>
-              </ChartContainer>
-
-              <ChartContainer
-                config={volumeChartConfig}
-                className="aspect-auto h-[320px] w-full"
-              >
-                <AreaChart data={volumeData} margin={{ left: 12, right: 12 }}>
-                  <defs>
-                    <linearGradient
-                      id="fillQuantity"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
+              {trends.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-lg font-medium text-muted-foreground mb-2">
+                    No market data available
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    This item has no sales or listings in the selected time
+                    range.
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <ChartContainer
+                    config={priceChartConfig}
+                    className="aspect-auto h-[320px] w-full"
+                  >
+                    <LineChart
+                      data={priceData}
+                      margin={{ left: 12, right: 12 }}
                     >
-                      <stop
-                        offset="5%"
-                        stopColor="var(--color-quantity)"
-                        stopOpacity={0.8}
+                      <CartesianGrid vertical={false} />
+                      <XAxis
+                        dataKey="day"
+                        tickLine={true}
+                        axisLine={true}
+                        tickMargin={8}
+                        minTickGap={32}
+                        tickFormatter={(value) => {
+                          const date = new Date(value as string)
+                          return date.toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })
+                        }}
                       />
-                      <stop
-                        offset="95%"
-                        stopColor="var(--color-quantity)"
-                        stopOpacity={0.1}
-                      />
-                    </linearGradient>
-                    <linearGradient id="fillSales" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="5%"
-                        stopColor="var(--color-sales)"
-                        stopOpacity={0.8}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="var(--color-sales)"
-                        stopOpacity={0.1}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="day"
-                    tickLine={true}
-                    axisLine={true}
-                    tickMargin={8}
-                    minTickGap={32}
-                    tickFormatter={(value) => {
-                      const date = new Date(value as string)
-                      return date.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })
-                    }}
-                  />
-                  <YAxis />
-                  <ChartTooltip
-                    cursor={true}
-                    content={
-                      <ChartTooltipContent
-                        labelFormatter={(value) =>
-                          new Date(value as string).toLocaleDateString(
-                            "en-US",
-                            { month: "short", day: "numeric" },
-                          )
+                      <YAxis tickFormatter={(value) => formatNumber(value)} />
+                      <ChartTooltip
+                        cursor={true}
+                        content={
+                          <ChartTooltipContent
+                            labelFormatter={(value) =>
+                              new Date(value as string).toLocaleDateString(
+                                "en-US",
+                                { month: "short", day: "numeric" },
+                              )
+                            }
+                            indicator="dot"
+                          />
                         }
-                        indicator="dot"
                       />
-                    }
-                  />
-                  <Area
-                    type="natural"
-                    dataKey="quantity"
-                    fill="url(#fillQuantity)"
-                    stroke="var(--color-quantity)"
-                    stackId="a"
-                    name="Quantity"
-                  />
-                  <Area
-                    type="natural"
-                    dataKey="sales"
-                    fill="url(#fillSales)"
-                    stroke="var(--color-sales)"
-                    stackId="a"
-                    name="Sales"
-                  />
-                  <ChartLegend content={<ChartLegendContent />} />
-                </AreaChart>
-              </ChartContainer>
+                      <Line
+                        type="monotone"
+                        dataKey="min"
+                        stroke="var(--color-min)"
+                        strokeWidth={2}
+                        dot={false}
+                        name="Min Price"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="avg"
+                        stroke="var(--color-avg)"
+                        strokeWidth={2}
+                        dot={false}
+                        name="Avg Price"
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="max"
+                        stroke="var(--color-max)"
+                        strokeWidth={2}
+                        dot={false}
+                        name="Max Price"
+                      />
+                      <ChartLegend content={<ChartLegendContent />} />
+                    </LineChart>
+                  </ChartContainer>
+
+                  <ChartContainer
+                    config={volumeChartConfig}
+                    className="aspect-auto h-[320px] w-full"
+                  >
+                    <AreaChart
+                      data={volumeData}
+                      margin={{ left: 12, right: 12 }}
+                    >
+                      <defs>
+                        <linearGradient
+                          id="fillQuantity"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="var(--color-quantity)"
+                            stopOpacity={0.8}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="var(--color-quantity)"
+                            stopOpacity={0.1}
+                          />
+                        </linearGradient>
+                        <linearGradient
+                          id="fillSales"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="var(--color-sales)"
+                            stopOpacity={0.8}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="var(--color-sales)"
+                            stopOpacity={0.1}
+                          />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid vertical={false} />
+                      <XAxis
+                        dataKey="day"
+                        tickLine={true}
+                        axisLine={true}
+                        tickMargin={8}
+                        minTickGap={32}
+                        tickFormatter={(value) => {
+                          const date = new Date(value as string)
+                          return date.toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })
+                        }}
+                      />
+                      <YAxis tickFormatter={(value) => formatNumber(value)} />
+                      <ChartTooltip
+                        cursor={true}
+                        content={
+                          <ChartTooltipContent
+                            labelFormatter={(value) =>
+                              new Date(value as string).toLocaleDateString(
+                                "en-US",
+                                { month: "short", day: "numeric" },
+                              )
+                            }
+                            indicator="dot"
+                          />
+                        }
+                      />
+                      <Area
+                        type="natural"
+                        dataKey="quantity"
+                        fill="url(#fillQuantity)"
+                        stroke="var(--color-quantity)"
+                        stackId="a"
+                        name="Quantity"
+                      />
+                      <Area
+                        type="natural"
+                        dataKey="sales"
+                        fill="url(#fillSales)"
+                        stroke="var(--color-sales)"
+                        stackId="a"
+                        name="Sales"
+                      />
+                      <ChartLegend content={<ChartLegendContent />} />
+                    </AreaChart>
+                  </ChartContainer>
+                </>
+              )}
 
               {summary ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
