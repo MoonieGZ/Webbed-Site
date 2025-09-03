@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { useParams } from "next/navigation"
 import { PFQMarketboardItem } from "@/components/pfq/marketboard-item"
+import { PFQMarketboardSearch } from "@/components/pfq/marketboard-search"
 
 export default function MarketboardItemPage() {
   const params = useParams()
@@ -56,6 +57,7 @@ export default function MarketboardItemPage() {
 
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div className="grid gap-4">
+          <PFQMarketboardSearch />
           <PFQMarketboardItem itemId={itemId} />
         </div>
       </div>

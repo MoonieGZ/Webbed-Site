@@ -353,7 +353,8 @@ function Stat({
     <div className="rounded-md border p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className="text-lg font-semibold">
-        {value !== undefined ? value.toLocaleString() : "-"} {unit ?? ""}
+        {value !== undefined && value !== null ? value.toLocaleString() : "-"}{" "}
+        {unit ?? ""}
       </div>
     </div>
   )

@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useMarketboardSearch } from "@/hooks/pfq/use-marketboard-search"
-import { Landmark } from "lucide-react"
+import { Landmark, Search } from "lucide-react"
 import Image from "next/image"
 
 export function PFQMarketboardSearch() {
@@ -23,17 +23,22 @@ export function PFQMarketboardSearch() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <Input
-            placeholder={
-              hasApiKey
-                ? "Search items by name..."
-                : "Add your PFQ API key to search"
-            }
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            disabled={!hasApiKey}
-          />
-
+          <div className="relative">
+            <div className="text-muted-foreground pointer-events-none absolute inset-y-0 start-0 flex items-center justify-end ps-3">
+              <Search className="size-4" />
+            </div>
+            <Input
+              className="peer ps-9 placeholder:text-muted-foreground"
+              placeholder={
+                hasApiKey
+                  ? "Search items by name..."
+                  : "Add your PFQ API key to search"
+              }
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              disabled={!hasApiKey}
+            />
+          </div>
           {error ? (
             <div className="text-sm text-destructive">{error}</div>
           ) : null}
