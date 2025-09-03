@@ -35,10 +35,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Copy, Landmark, SquareArrowOutUpRight } from "lucide-react"
+import { Landmark, SquareArrowOutUpRight } from "lucide-react"
 import Image from "next/image"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
+import Link from "next/link"
 
 interface Props {
   itemId: number
@@ -144,7 +145,11 @@ export function PFQMarketboardItem({ itemId }: Props) {
         <CardContent>
           {!hasApiKey ? (
             <div className="text-sm text-muted-foreground">
-              Add your PFQ API key to load item data.
+              Add your PFQ API key{" "}
+              <Link href="/account" className="text-primary hover:underline">
+                here
+              </Link>{" "}
+              to load item data.
             </div>
           ) : loading ? (
             <div className="space-y-3">
