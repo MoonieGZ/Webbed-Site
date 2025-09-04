@@ -57,3 +57,19 @@ export interface PFQMarketboardSearchItem {
 }
 
 export type PFQMarketboardSearch = PFQMarketboardSearchItem[]
+
+export interface PFQIV {
+  shortlink: string
+  iv: number[]
+}
+
+export interface PFQIVResponse {
+  shortlink: string
+  ivs: PFQIV[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}

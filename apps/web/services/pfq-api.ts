@@ -1,5 +1,7 @@
 import type {
   PFQApiResponse,
+  PFQIV,
+  PFQIVResponse,
   PFQMarketboardListing,
   PFQMarketboardSearch,
   PFQMarketboardSearchItem,
@@ -200,6 +202,50 @@ export class PFQApiService {
         success: false,
         error:
           "Network error occurred while fetching marketboard item by item id",
+      }
+    }
+  }
+
+  static async getAllIVs(apiKey: string): Promise<PFQApiResponse<PFQIV[]>> {
+    try {
+      const allIVs: PFQIV[] = []
+      let currentPage = 1
+      let totalPages = 1
+
+      do {
+        const response = await fetch(
+          `${this.BASE_URL}/pokemon/all-iv?page=${currentPage}&limit=500`,
+          {
+            method: "GET",
+            headers: {
+              "x-api-key": apiKey,
+              "Content-Type": "application/json",
+            },
+          },
+        )
+
+        if (!response.ok) {
+          return {
+            success: false,
+            error: `Failed to fetch IVs on page ${currentPage}`,
+          }
+        }
+
+        const data: PFQIVResponse = await response.json()
+        allIVs.push(...data.ivs)
+        totalPages = data.pagination.totalPages
+        currentPage++
+      } while (currentPage <= totalPages)
+
+      return {
+        success: true,
+        data: allIVs,
+      }
+    } catch (error) {
+      console.error("PFQ API get all IVs error:", error)
+      return {
+        success: false,
+        error: "Network error occurred while fetching all IVs",
       }
     }
   }

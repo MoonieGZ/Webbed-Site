@@ -49,6 +49,10 @@ export function useNavMain() {
       icon: Gamepad2,
       items: [
         {
+          title: "IVs",
+          url: "/pfq/iv",
+        },
+        {
           title: "Marketboard",
           url: "/pfq/marketboard",
         },
