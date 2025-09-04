@@ -100,5 +100,6 @@ export function usePFQIVs() {
     totalPages,
     perPage,
     totalCount: filtered.length,
+    hasApiKey: Boolean(apiKey),
   }
 }

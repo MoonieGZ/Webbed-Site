@@ -27,6 +27,7 @@ export function PFQIVTable() {
     nextPage,
     prevPage,
     totalPages,
+    hasApiKey,
   } = usePFQIVs()
 
   return (
@@ -43,7 +44,15 @@ export function PFQIVTable() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {error ? (
+        {!hasApiKey ? (
+          <div className="text-sm text-muted-foreground">
+            You need to add your PFQ API key to use this page. Update it in{" "}
+            <Link href="/account" className="text-primary hover:underline">
+              Account Settings
+            </Link>
+            .
+          </div>
+        ) : error ? (
           <div className="text-sm text-destructive">{error}</div>
         ) : loading ? (
           <div className="space-y-2">
