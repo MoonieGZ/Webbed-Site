@@ -1,12 +1,15 @@
 import type { Metadata } from "next"
 import { PFQApiService } from "@/services/pfq-api"
 
-type Params = { params: { itemId: string } }
-
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ itemId: string }>
+}): Promise<Metadata> {
   const siteName = "Moonsy's Webbed Site"
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://mnsy.dev"
-  const itemIdNum = Number(params.itemId)
+  const { itemId } = await params
+  const itemIdNum = Number(itemId)
 
   const fallbackTitle = `${siteName}`
   const fallbackDescription =
@@ -19,7 +22,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       openGraph: {
         title: fallbackTitle,
         description: fallbackDescription,
-        url: `${baseUrl}/pfq/marketboard/${params.itemId}`,
+        url: `${baseUrl}/pfq/marketboard/${itemId}`,
         siteName,
         type: "website",
       },
