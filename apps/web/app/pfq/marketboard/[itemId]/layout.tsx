@@ -51,7 +51,7 @@ export async function generateMetadata({
         type: "article",
       },
       twitter: {
-        card: "summary_large_image",
+        card: "summary",
         title,
         description,
       },
@@ -83,10 +83,12 @@ export async function generateMetadata({
         url: `${baseUrl}/pfq/marketboard/${itemIdNum}`,
         siteName,
         type: "article",
-        images: ogImage ? [{ url: ogImage }] : undefined,
+        images: ogImage
+          ? [{ url: ogImage, width: 120, height: 120, alt: itemName }]
+          : undefined,
       },
       twitter: {
-        card: "summary_large_image",
+        card: "summary",
         title,
         description,
         images: ogImage ? [ogImage] : undefined,
