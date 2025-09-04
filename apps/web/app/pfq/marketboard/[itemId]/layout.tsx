@@ -37,7 +37,7 @@ export async function generateMetadata({
   const serverApiKey = process.env.PFQ_SERVER_API_KEY || ""
 
   if (!serverApiKey) {
-    const title = `Marketboard trends for item #${itemIdNum} | ${siteName}`
+    const title = `Marketboard trends for item #${itemIdNum}`
     const description =
       "Explore historical prices, recent listings, and summary stats for this PFQ marketboard item."
     return {
