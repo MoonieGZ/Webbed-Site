@@ -68,7 +68,7 @@ export async function generateMetadata({
     const itemName = item?.name || `Item #${itemIdNum}`
     const title = `Marketboard trends for ${itemName}`
     const description = item
-      ? `Category: ${item.category}.\nView price trends, recent listings, and stats for ${itemName}.`
+      ? `Category: ${item.category}.\n\nView price trends and stats for ${itemName}.`
       : "Explore historical prices, recent listings, and summary stats for this PFQ marketboard item."
 
     // Prefer item sprite if available; otherwise build a simple placeholder image route
@@ -84,7 +84,7 @@ export async function generateMetadata({
         siteName,
         type: "article",
         images: ogImage
-          ? [{ url: ogImage, width: 120, height: 120, alt: itemName }]
+          ? [{ url: ogImage, width: 32, height: 32, alt: itemName }]
           : undefined,
       },
       twitter: {
