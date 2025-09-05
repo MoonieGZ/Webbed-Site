@@ -396,10 +396,44 @@ export function useWwPlanner() {
           w?: StoredWeaponPlanV1[]
           o?: string[]
         }
-        if (Array.isArray(parsed?.p)) setPlans(parsed.p.map(unpackPlan))
-        if (Array.isArray(parsed?.w))
-          setWeaponPlans(parsed.w.map(unpackWeaponPlan))
-        if (Array.isArray(parsed?.o)) setDisplayOrder(parsed.o)
+        // Unpack plans first to obtain fresh planIds
+        const newPlans = Array.isArray(parsed?.p)
+          ? parsed.p.map(unpackPlan)
+          : ([] as CharacterPlan[])
+        const newWeaponPlans = Array.isArray(parsed?.w)
+          ? parsed.w.map(unpackWeaponPlan)
+          : ([] as WeaponPlan[])
+
+        setPlans(newPlans)
+        setWeaponPlans(newWeaponPlans)
+
+        // Remap saved display order (which references old planIds) to freshly
+        // generated planIds while preserving the C/W interleave pattern.
+        if (Array.isArray(parsed?.o) && parsed.o.length > 0) {
+          const kinds = parsed.o
+            .map((id) => String(id).split(":")[0])
+            .filter((k) => k === "C" || k === "W")
+          const charIds = newPlans.map((p) => `C:${p.planId}`)
+          const weapIds = newWeaponPlans.map((p) => `W:${p.planId}`)
+          let ci = 0
+          let wi = 0
+          const remapped: string[] = []
+          for (const k of kinds) {
+            if (k === "C") {
+              if (ci < charIds.length) remapped.push(charIds[ci++])
+            } else if (k === "W") {
+              if (wi < weapIds.length) remapped.push(weapIds[wi++])
+            }
+          }
+          // Append any remaining items not covered by saved pattern
+          while (ci < charIds.length) remapped.push(charIds[ci++])
+          while (wi < weapIds.length) remapped.push(weapIds[wi++])
+
+          setDisplayOrder(remapped)
+        } else {
+          // No saved order; leave displayOrder empty to use fallback ordering
+          setDisplayOrder([])
+        }
       }
     } catch {}
     hasHydratedFromStorage.current = true
