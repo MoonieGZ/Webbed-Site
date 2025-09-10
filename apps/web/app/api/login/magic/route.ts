@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     const existingUser = (await queryOne(
-      "SELECT id FROM users WHERE email = ?",
+      "SELECT id FROM users WHERE email = ? LIMIT 1",
       [email],
     )) as { id: number } | null
 
@@ -99,11 +99,11 @@ export async function POST(request: NextRequest) {
 }
 
 async function getUserById(id: number) {
-  const user = (await queryOne("SELECT * FROM users WHERE id = ?", [
+  const user = (await queryOne("SELECT * FROM users WHERE id = ? LIMIT 1", [
     id,
   ])) as User | null
   const perms = (await queryOne(
-    "SELECT * FROM user_permissions WHERE user_id = ?",
+    "SELECT * FROM user_permissions WHERE user_id = ? LIMIT 1",
     [id],
   )) as UserPermissions | null
   return { ...user, permissions: perms ?? defaultPermissions }

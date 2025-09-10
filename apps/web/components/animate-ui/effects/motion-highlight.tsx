@@ -33,8 +33,7 @@ type MotionHighlightContextType<T extends string> = {
 }
 
 const MotionHighlightContext = React.createContext<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  MotionHighlightContextType<any> | undefined
+  MotionHighlightContextType<string> | undefined
 >(undefined)
 
 function useMotionHighlight<T extends string>(): MotionHighlightContextType<T> {
@@ -275,8 +274,9 @@ function MotionHighlight<T extends string>({
     <MotionHighlightContext.Provider
       value={{
         mode,
-        activeValue,
-        setActiveValue: safeSetActiveValue,
+        activeValue: (activeValue as unknown as string | null),
+        setActiveValue: ((v: string | null) =>
+          safeSetActiveValue(v as T | null)) as (value: string | null) => void,
         id,
         hover,
         className,

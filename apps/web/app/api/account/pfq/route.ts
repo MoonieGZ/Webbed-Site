@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     const user = (await queryOne(
-      "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+      "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
       [sessionToken],
     )) as { id: number; email: string } | null
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     // Parameterized query; user id bound as positional arg
     const apiKeyRecord = (await queryOne(
-      "SELECT api_key, created_at, last_validated FROM pfq_apikeys WHERE user_id = ?",
+      "SELECT api_key, created_at, last_validated FROM pfq_apikeys WHERE user_id = ? LIMIT 1",
       [user.id],
     )) as { api_key: string; created_at: Date; last_validated: Date } | null
 
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     const user = (await queryOne(
-      "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+      "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
       [sessionToken],
     )) as { id: number; email: string } | null
 
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     // Parameterized query; checks existing user key
     const existingKey = await queryOne(
-      "SELECT id FROM pfq_apikeys WHERE user_id = ?",
+      "SELECT id FROM pfq_apikeys WHERE user_id = ? LIMIT 1",
       [user.id],
     )
 
@@ -118,7 +118,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const user = (await queryOne(
-      "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+      "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
       [sessionToken],
     )) as { id: number; email: string } | null
 

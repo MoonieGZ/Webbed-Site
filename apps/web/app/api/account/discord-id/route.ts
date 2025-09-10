@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
   const user = (await queryOne(
-    "SELECT u.id, u.email, u.discord_id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+    "SELECT u.id, u.email, u.discord_id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
     [sessionToken],
   )) as { id: number; email: string; discord_id: string | null } | null
   return NextResponse.json({ discordId: user?.discord_id || null })
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
   const user = (await queryOne(
-    "SELECT u.id, u.email, u.discord_id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+    "SELECT u.id, u.email, u.discord_id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
     [sessionToken],
   )) as { id: number; email: string; discord_id: string | null } | null
   if (!user) {

@@ -23,7 +23,7 @@ export async function validateSession(
   token: string,
 ): Promise<UserSession | null> {
   const session = (await queryOne(
-    "SELECT * FROM user_sessions WHERE token = ? AND expires_at > NOW()",
+    "SELECT * FROM user_sessions WHERE token = ? AND expires_at > NOW() LIMIT 1",
     [token],
   )) as UserSession | null
 
@@ -47,12 +47,12 @@ export async function getUserBySession(token: string): Promise<any> {
   const session = await validateSession(token)
   if (!session) return null
 
-  const user = await queryOne("SELECT * FROM users WHERE id = ?", [
+  const user = await queryOne("SELECT * FROM users WHERE id = ? LIMIT 1", [
     session.user_id,
   ])
 
   const perms = (await queryOne(
-    "SELECT can_change_user, can_change_avatar, is_banned FROM user_permissions WHERE user_id = ?",
+    "SELECT can_change_user, can_change_avatar, is_banned FROM user_permissions WHERE user_id = ? LIMIT 1",
     [session.user_id],
   )) as UserPermissions | null
 

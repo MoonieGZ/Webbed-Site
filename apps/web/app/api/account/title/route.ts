@@ -7,7 +7,7 @@ async function requireUser(request: NextRequest): Promise<SessionUser | null> {
   const sessionToken = request.cookies.get("session")?.value
   if (!sessionToken) return null
   const user = (await queryOne(
-    "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+    "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
     [sessionToken],
   )) as SessionUser | null
   return user
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       [user.id],
     )) as Array<{ title: string }>
 
-    const current = (await queryOne("SELECT title FROM users WHERE id = ?", [
+    const current = (await queryOne("SELECT title FROM users WHERE id = ? LIMIT 1", [
       user.id,
     ])) as { title: string | null } | null
 

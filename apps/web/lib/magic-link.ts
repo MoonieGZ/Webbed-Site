@@ -41,7 +41,7 @@ export async function validateMagicLink(token: string): Promise<{
 }> {
   // Parameterized lookup; ensures not used and not expired.
   const magicLink = (await queryOne(
-    "SELECT * FROM magic_links WHERE token = ? AND used = 0 AND expires_at > NOW()",
+    "SELECT * FROM magic_links WHERE token = ? AND used = 0 AND expires_at > NOW() LIMIT 1",
     [token],
   )) as MagicLink | null
 
@@ -54,7 +54,7 @@ export async function validateMagicLink(token: string): Promise<{
 
   let user: User | undefined
   if (magicLink.user_id) {
-    const userResult = (await queryOne("SELECT * FROM users WHERE id = ?", [
+    const userResult = (await queryOne("SELECT * FROM users WHERE id = ? LIMIT 1", [
       magicLink.user_id,
     ])) as User | null
     user = userResult || undefined
@@ -119,7 +119,7 @@ export async function createUser(email: string, name?: string): Promise<User> {
     name || null,
   ])) as any
 
-  return (await queryOne("SELECT * FROM users WHERE id = ?", [
+  return (await queryOne("SELECT * FROM users WHERE id = ? LIMIT 1", [
     result.insertId,
   ])) as User
 }

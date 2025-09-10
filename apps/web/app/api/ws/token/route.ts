@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     }
 
     const user = (await queryOne(
-      "SELECT u.id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+      "SELECT u.id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
       [sessionToken],
     )) as { id: number } | null
 

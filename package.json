@@ -11,7 +11,11 @@
     "web:format": "pnpm --filter web format",
     "web:format:check": "pnpm --filter web format:check",
     "server:dev": "pnpm --filter server dev",
-    "server:start": "pnpm --filter server start"
+    "server:start": "pnpm --filter server start",
+    "lint": "pnpm web:lint && eslint apps/server --ext .js",
+    "lint:fix": "pnpm web:lint:fix && eslint apps/server --ext .js --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "workspaces": [
     "apps/*"
