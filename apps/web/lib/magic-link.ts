@@ -54,9 +54,10 @@ export async function validateMagicLink(token: string): Promise<{
 
   let user: User | undefined
   if (magicLink.user_id) {
-    const userResult = (await queryOne("SELECT * FROM users WHERE id = ? LIMIT 1", [
-      magicLink.user_id,
-    ])) as User | null
+    const userResult = (await queryOne(
+      "SELECT * FROM users WHERE id = ? LIMIT 1",
+      [magicLink.user_id],
+    )) as User | null
     user = userResult || undefined
   }
 

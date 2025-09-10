@@ -274,7 +274,7 @@ function MotionHighlight<T extends string>({
     <MotionHighlightContext.Provider
       value={{
         mode,
-        activeValue: (activeValue as unknown as string | null),
+        activeValue: activeValue as unknown as string | null,
         setActiveValue: ((v: string | null) =>
           safeSetActiveValue(v as T | null)) as (value: string | null) => void,
         id,

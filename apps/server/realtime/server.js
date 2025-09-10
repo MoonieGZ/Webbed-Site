@@ -34,7 +34,9 @@ const io = new Server(server, {
 })
 
 const DISCONNECT_GRACE_MS = Number(process.env.WS_DISCONNECT_GRACE_MS || 15000)
-const ADMIN_HMAC_TTL_MS = Number(process.env.WS_ADMIN_HMAC_TTL_MS || 5 * 60 * 1000)
+const ADMIN_HMAC_TTL_MS = Number(
+  process.env.WS_ADMIN_HMAC_TTL_MS || 5 * 60 * 1000,
+)
 
 function stableStringify(value) {
   if (Array.isArray(value)) {
@@ -72,7 +74,10 @@ function verifyAdminSignature(req, secret) {
     if (Math.abs(Date.now() - ts) > ADMIN_HMAC_TTL_MS) return false
     const canonicalBody = stableStringify(req.body || {})
     const data = `${method}.${ts}.${canonicalBody}`
-    const expected = crypto.createHmac("sha256", String(secret)).update(data).digest("hex")
+    const expected = crypto
+      .createHmac("sha256", String(secret))
+      .update(data)
+      .digest("hex")
     return constantTimeEqual(expected, sigHeader)
   } catch {
     return false
@@ -150,7 +155,8 @@ io.on("connection", (socket) => {
   }
 
   function ensureGraceBucket(lobbyId) {
-    if (!io.lobbyGraceTimers[lobbyId]) io.lobbyGraceTimers[lobbyId] = Object.create(null)
+    if (!io.lobbyGraceTimers[lobbyId])
+      io.lobbyGraceTimers[lobbyId] = Object.create(null)
     return io.lobbyGraceTimers[lobbyId]
   }
 
@@ -191,7 +197,10 @@ io.on("connection", (socket) => {
           }
         } else {
           // Lobby fully closed; notify the user whose timer elapsed
-          io.to(`user:${memberUserId}`).emit("lobby:closed", { ok: true, lobbyId })
+          io.to(`user:${memberUserId}`).emit("lobby:closed", {
+            ok: true,
+            lobbyId,
+          })
         }
       } catch {}
     }, DISCONNECT_GRACE_MS)
@@ -334,7 +343,10 @@ io.on("connection", (socket) => {
 
       const result = selectRandomCharacters(candidates, settings)
       if (!Array.isArray(result))
-        return cb?.({ ok: false, error: "Not enough characters or invalid settings" })
+        return cb?.({
+          ok: false,
+          error: "Not enough characters or invalid settings",
+        })
       lobby.currentRoll = { ...(lobby.currentRoll || {}), characters: result }
       try {
         if (Array.isArray(candidates)) {
@@ -364,7 +376,10 @@ io.on("connection", (socket) => {
 
       const result = selectRandomBosses(candidates, settings)
       if (!Array.isArray(result))
-        return cb?.({ ok: false, error: "Not enough bosses or invalid settings" })
+        return cb?.({
+          ok: false,
+          error: "Not enough bosses or invalid settings",
+        })
 
       const bosses = result
       const boss = result[0] || null
@@ -388,7 +403,8 @@ io.on("connection", (socket) => {
     try {
       const lobbyId = payload?.lobbyId
       const privacy = payload?.privacy
-      if (!lobbyId || !privacy) return cb?.({ ok: false, error: "Missing fields" })
+      if (!lobbyId || !privacy)
+        return cb?.({ ok: false, error: "Missing fields" })
       const lobby = getLobbySafe(lobbyId)
       if (!lobby) return cb?.({ ok: false, error: "Lobby not found" })
       if (lobby.hostId !== userId)
@@ -405,7 +421,8 @@ io.on("connection", (socket) => {
     try {
       const lobbyId = payload?.lobbyId
       const enabledMap = payload?.enabledMap || null
-      if (!lobbyId || typeof enabledMap !== 'object') return cb?.({ ok: false, error: "Missing fields" })
+      if (!lobbyId || typeof enabledMap !== "object")
+        return cb?.({ ok: false, error: "Missing fields" })
       const lobby = getLobbySafe(lobbyId)
       if (!lobby) return cb?.({ ok: false, error: "Lobby not found" })
       if (lobby.hostId !== userId)
@@ -422,7 +439,8 @@ io.on("connection", (socket) => {
     try {
       const lobbyId = payload?.lobbyId
       const enabledMap = payload?.enabledMap || null
-      if (!lobbyId || typeof enabledMap !== 'object') return cb?.({ ok: false, error: "Missing fields" })
+      if (!lobbyId || typeof enabledMap !== "object")
+        return cb?.({ ok: false, error: "Missing fields" })
       const lobby = getLobbySafe(lobbyId)
       if (!lobby) return cb?.({ ok: false, error: "Lobby not found" })
       if (lobby.hostId !== userId)
@@ -439,12 +457,16 @@ io.on("connection", (socket) => {
     try {
       const lobbyId = payload?.lobbyId
       const memberUserId = String(payload?.memberUserId || "")
-      if (!lobbyId || !memberUserId) return cb?.({ ok: false, error: "Missing fields" })
+      if (!lobbyId || !memberUserId)
+        return cb?.({ ok: false, error: "Missing fields" })
       const lobby = getLobbySafe(lobbyId)
       if (!lobby) return cb?.({ ok: false, error: "Lobby not found" })
-      if (lobby.hostId !== userId) return cb?.({ ok: false, error: "Only host can exclude" })
-      if (memberUserId === lobby.hostId) return cb?.({ ok: false, error: "Cannot exclude host" })
-      if (!lobby.members.includes(memberUserId)) return cb?.({ ok: false, error: "User not in lobby" })
+      if (lobby.hostId !== userId)
+        return cb?.({ ok: false, error: "Only host can exclude" })
+      if (memberUserId === lobby.hostId)
+        return cb?.({ ok: false, error: "Cannot exclude host" })
+      if (!lobby.members.includes(memberUserId))
+        return cb?.({ ok: false, error: "User not in lobby" })
 
       io.to(`user:${memberUserId}`).emit("lobby:kicked", { ok: true, lobbyId })
       removeMemberFromLobby(lobby, memberUserId)

@@ -29,17 +29,13 @@ export async function POST(request: NextRequest) {
     const issuer = process.env.WS_JWT_ISSUER || "apps/web"
     const audience = process.env.WS_JWT_AUDIENCE || "ws"
 
-    const token = jwt.sign(
-      { typ: "ws-token" },
-      secret,
-      {
-        subject: String(user.id),
-        expiresIn: "10m",
-        issuer,
-        audience,
-        algorithm: "HS512",
-      },
-    )
+    const token = jwt.sign({ typ: "ws-token" }, secret, {
+      subject: String(user.id),
+      expiresIn: "10m",
+      issuer,
+      audience,
+      algorithm: "HS512",
+    })
 
     return NextResponse.json({ token })
   } catch (e) {

@@ -29,9 +29,10 @@ export async function GET(request: NextRequest) {
       [user.id],
     )) as Array<{ title: string }>
 
-    const current = (await queryOne("SELECT title FROM users WHERE id = ? LIMIT 1", [
-      user.id,
-    ])) as { title: string | null } | null
+    const current = (await queryOne(
+      "SELECT title FROM users WHERE id = ? LIMIT 1",
+      [user.id],
+    )) as { title: string | null } | null
 
     return NextResponse.json({
       titles: titles.map((t) => t.title).filter((t) => !!t),
@@ -55,7 +56,10 @@ export async function PUT(request: NextRequest) {
     const bodySchema = z.object({ title: z.string().min(1).max(64).nullable() })
     const parseResult = bodySchema.safeParse(await request.json())
     if (!parseResult.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      )
     }
     const { title } = parseResult.data
 

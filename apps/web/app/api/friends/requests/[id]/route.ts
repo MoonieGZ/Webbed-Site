@@ -31,10 +31,15 @@ export async function PUT(
     }
     const id = idParse.data
 
-    const bodySchema = z.object({ action: z.enum(["accept", "decline", "cancel", "block", "unblock"]) })
+    const bodySchema = z.object({
+      action: z.enum(["accept", "decline", "cancel", "block", "unblock"]),
+    })
     const parseResult = bodySchema.safeParse(await request.json())
     if (!parseResult.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      )
     }
     const action = parseResult.data.action
 

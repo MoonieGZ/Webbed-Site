@@ -49,7 +49,10 @@ export async function POST(request: NextRequest) {
     })
     const parseResult = bodySchema.safeParse(await request.json())
     if (!parseResult.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      )
     }
     const { filename } = parseResult.data
 

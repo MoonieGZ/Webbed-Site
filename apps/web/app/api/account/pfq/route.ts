@@ -68,7 +68,10 @@ export async function POST(request: NextRequest) {
     const bodySchema = z.object({ apiKey: z.string().min(1).max(256) })
     const parseResult = bodySchema.safeParse(await request.json())
     if (!parseResult.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      )
     }
     const { apiKey } = parseResult.data
 

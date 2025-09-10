@@ -58,7 +58,10 @@ export async function POST(request: NextRequest) {
     })
     const parseResult = bodySchema.safeParse(await request.json())
     if (!parseResult.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      )
     }
     const { game, uid } = parseResult.data
 
@@ -109,11 +112,20 @@ export async function DELETE(request: NextRequest) {
     }
 
     const searchSchema = z.object({ game: z.enum(["gi", "hsr", "zzz", "ww"]) })
-    const game = searchSchema.safeParse(Object.fromEntries(new URL(request.url).searchParams)).success
-      ? (Object.fromEntries(new URL(request.url).searchParams).game as "gi" | "hsr" | "zzz" | "ww")
+    const game = searchSchema.safeParse(
+      Object.fromEntries(new URL(request.url).searchParams),
+    ).success
+      ? (Object.fromEntries(new URL(request.url).searchParams).game as
+          | "gi"
+          | "hsr"
+          | "zzz"
+          | "ww")
       : null
     if (!game) {
-      return NextResponse.json({ error: "Invalid or missing game" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Invalid or missing game" },
+        { status: 400 },
+      )
     }
 
     // Parameterized delete

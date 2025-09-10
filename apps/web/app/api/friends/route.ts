@@ -23,13 +23,7 @@ export async function GET(request: NextRequest) {
     const qs = Object.fromEntries(new URL(request.url).searchParams)
     const qsSchema = z.object({
       page: z.coerce.number().int().positive().default(1),
-      pageSize: z
-        .coerce
-        .number()
-        .int()
-        .positive()
-        .max(100)
-        .default(24),
+      pageSize: z.coerce.number().int().positive().max(100).default(24),
     })
     const parsed = qsSchema.safeParse(qs)
     const page = parsed.success ? parsed.data.page : 1

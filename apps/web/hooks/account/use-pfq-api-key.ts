@@ -96,7 +96,11 @@ export function usePFQApiKey() {
   }
 
   const openPFQApiKeyPage = () => {
-    window.open("https://pokefarm.com/farm#tab=5.7", "_blank")
+    window.open(
+      "https://pokefarm.com/farm#tab=5.7",
+      "_blank",
+      "noopener,noreferrer",
+    )
   }
 
   return {

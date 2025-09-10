@@ -20,7 +20,9 @@ export async function POST(request: NextRequest) {
     if (!me)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const bodySchema = z.object({ ids: z.array(z.number().int().positive()).min(1) })
+    const bodySchema = z.object({
+      ids: z.array(z.number().int().positive()).min(1),
+    })
     const parseResult = bodySchema.safeParse(await request.json())
     if (!parseResult.success) return NextResponse.json({ users: [] })
     const { ids } = parseResult.data

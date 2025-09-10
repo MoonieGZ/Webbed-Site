@@ -51,7 +51,10 @@ export async function PUT(request: NextRequest) {
     })
     const parsed = bodySchema.safeParse(await request.json())
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      )
     }
     const { profileIndex, name = null, enabledMap } = parsed.data
     const json = JSON.stringify(enabledMap)

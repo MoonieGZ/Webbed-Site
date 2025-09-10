@@ -10,11 +10,14 @@ export async function emitFriendPendingCount(userId: number, count: number) {
     const canonicalBody = JSON.stringify(
       Object.keys(bodyObj)
         .sort()
-        .reduce((acc, k) => {
-          // @ts-expect-error index
-          acc[k] = bodyObj[k]
-          return acc
-        }, {} as Record<string, unknown>),
+        .reduce(
+          (acc, k) => {
+            // @ts-expect-error index
+            acc[k] = bodyObj[k]
+            return acc
+          },
+          {} as Record<string, unknown>,
+        ),
     )
     const encoder = new TextEncoder()
     const data = `POST.${timestamp}.${canonicalBody}`
@@ -25,7 +28,11 @@ export async function emitFriendPendingCount(userId: number, count: number) {
       false,
       ["sign"],
     )
-    const signatureBuf = await crypto.subtle.sign("HMAC", key, encoder.encode(data))
+    const signatureBuf = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      encoder.encode(data),
+    )
     const signature = Array.from(new Uint8Array(signatureBuf))
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("")
@@ -64,11 +71,14 @@ export async function emitFriendAccepted(
     const canonicalBody = JSON.stringify(
       Object.keys(bodyObj)
         .sort()
-        .reduce((acc, k) => {
-          // @ts-expect-error index
-          acc[k] = bodyObj[k]
-          return acc
-        }, {} as Record<string, unknown>),
+        .reduce(
+          (acc, k) => {
+            // @ts-expect-error index
+            acc[k] = bodyObj[k]
+            return acc
+          },
+          {} as Record<string, unknown>,
+        ),
     )
     const encoder = new TextEncoder()
     const data = `POST.${timestamp}.${canonicalBody}`
@@ -79,7 +89,11 @@ export async function emitFriendAccepted(
       false,
       ["sign"],
     )
-    const signatureBuf = await crypto.subtle.sign("HMAC", key, encoder.encode(data))
+    const signatureBuf = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      encoder.encode(data),
+    )
     const signature = Array.from(new Uint8Array(signatureBuf))
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("")

@@ -1,79 +1,104 @@
-# AI Prompt
-
-```
-You now have access to the `aud` command, which is an auditor tool from https://github.com/TheAuditorTool/Auditor
-I have run an initial audit then made some changes to fix issues, then ran the audit again, and you can read the results in `.pf/readthis/*`
-Can you read through these files, and determine if the detections are actionable, and make a recap in a single markdown file at the root of the project
-```
-
 ## Auditor recap (aud) — 2025-09-10
 
-- Overall assessment: Most critical detections are false positives. The codebase consistently uses parameterized SQL, authenticated WebSocket handshakes, and secure cookie/JWT settings. Actionable items remain, mainly around external link hardening, lint/config, and minor DX/perf polish.
+### Overall assessment
+
+Risk: low. Although the latest auditor outputs label overall risk as “critical,” manual review against the code shows most critical/high detections are false positives in this codebase. SQL is parameterized, WS handshake is authenticated, JWT/cookies are configured securely, and file paths are server-constructed and validated. Actionable items remain around lint/format coverage, a few UI hardenings, and DX/tech-debt cleanup.
 
 ### Critical/high findings reviewed
 
-- SQL Injection (multiple API routes)
-  - Verdict: Not actionable (false positives).
-  - Evidence: Queries use placeholders (`?`) and typed `query/queryOne`. Example files: `apps/web/app/api/account/*`, `friends/*`, `games/*`, `admin/*`. Dynamic `IN (...)` are safely parameterized.
+- **SQL Injection (multiple API routes)**
+  - **Verdict**: Not actionable (false positive)
+  - **Why**: Database access goes through parameterized `mysql2/promise` calls (`pool.execute(sql, params)` via `query/queryOne`). Representative examples use `?` placeholders and pass params arrays, including updates and selects.
 
-- Path Traversal (avatar write)
-  - Verdict: Not actionable (false positives).
-  - Evidence: `apps/web/app/api/account/avatar/gravatar/route.ts` builds paths from server-side values (`uploads/avatars/<userId>/<generatedName>`). Filename is generated; no user-controlled path segments. MIME is validated before write.
+- **Path Traversal (avatar write)**
+  - **Verdict**: Not actionable (false positive)
+  - **Why**: The Gravatar import builds paths from server-side values only and generates filenames (timestamp + `crypto.randomBytes`). The directory is `uploads/avatars/<userId>/` and the filename is not user-controlled. MIME is detected before write.
 
-- WebSocket no-auth / sensitive broadcast
-  - Verdict: Not actionable (false positives for auth); broadcasts limited and scoped.
-  - Evidence: `apps/server/realtime/server.js` enforces HS512 JWT in `io.use` with issuer/audience and per-user rooms; lobby emits contain only lobby metadata (no PII). Admin emit HTTP routes require `x-admin-key` + HMAC signature and return minimal payloads.
+- **WebSocket no‑auth / sensitive broadcast**
+  - **Verdict**: Not actionable (false positive)
+  - **Why**: Socket.IO handshake requires a valid HS512 JWT with issuer/audience checks. Rooming is per-user (`user:<id>`) and lobby emissions contain only lobby metadata (no PII). Admin HTTP emit endpoints require `x-admin-key` plus an HMAC signature with short TTL.
 
-- Cookies missing secure flags (login/session)
-  - Verdict: Not actionable (false positives).
-  - Evidence: `apps/web/app/api/login/magic/validate/route.ts` sets `httpOnly`, `secure` in production, `sameSite: strict`, and an explicit expiry.
+- **Cookies missing secure flags (session/login)**
+  - **Verdict**: Not actionable (false positive)
+  - **Why**: Cookies are set `httpOnly`, `secure` in production, `sameSite: "strict"`, with explicit `expires` and `path`.
 
-- Insecure JWT creation (WS token)
-  - Verdict: Not actionable (false positive).
-  - Evidence: `apps/web/app/api/ws/token/route.ts` issues HS512 JWT with `expiresIn: "10m"`, `issuer`, `audience`.
+- **Insecure JWT creation (WS token)**
+  - **Verdict**: Not actionable (false positive)
+  - **Why**: WS tokens are signed with HS512, include `issuer`, `audience`, `subject`, and short `expiresIn` (10m).
+
+- **Missing CSRF protection (Express emit routes)**
+  - **Verdict**: Not applicable
+  - **Why**: These admin endpoints do not rely on browser cookies and require a header secret plus HMAC signature; CSRF targets cookie-auth flows in browsers.
+
+- **Weak crypto algorithm (MD5)**
+  - **Verdict**: Not actionable (contextually safe)
+  - **Why**: MD5 is used only for Gravatar lookup (a non-security identifier per Gravatar requirement), not for any security property.
+
+- **Stream/connection no close**
+  - **Verdict**: Not actionable (false positive in avatar streaming)
+  - **Why**: The avatar file route converts a Node stream to a `ReadableStream`, closes on `end`, and destroys on `cancel`.
+
+- **Express missing error handler**
+  - **Verdict**: Not actionable (false positive)
+  - **Why**: Admin emit routes are wrapped in try/catch and return appropriate status codes.
+
+- **Predictable token generation (UI)**
+  - **Verdict**: Not security-relevant
+  - **Why**: UI-only tokens (e.g., ripple effects) may use `Math.random` for non-security purposes; not a risk.
+
+- **Promise no catch / connection no close (misc.)**
+  - **Verdict**: Partially actionable
+  - **Why**: Some UI/Hook paths can be hardened by ensuring `.catch`/`try…catch` and cleaning up listeners/timers in effects. Most critical paths already handle errors; still worthwhile to sweep flagged lines and add missing cleanup.
+
+- **TypeScript unsafe casts / any**
+  - **Verdict**: Tech debt
+  - **Why**: Not a security risk but worth tightening over time, especially in shared UI (Animate‑UI) and complex hooks.
 
 ### Medium/low findings worth addressing
 
-- External links with `target="_blank"` missing `rel="noopener noreferrer"` (actionable)
-  - Files: `apps/web/components/account/avatar-card.tsx`, `.../discord-id-card.tsx`, `.../pfq-api-key-card.tsx`.
-  - Impact: Prevents reverse tabnabbing. Simple UI edit.
+- **External navigation hardening**
+  - Most anchor tags with `target="_blank"` already include `rel="noopener noreferrer"`. However, auditor flags in the PFQ key flow point to `window.open` usage; ensure all such calls include the `noopener,noreferrer` feature string or use `rel` via anchors where possible.
 
-- ESLint/Prettier configuration gaps (actionable)
-  - Many files show “File ignored because no matching configuration was supplied” and Prettier format warnings; Node server files report `no-undef` for globals (require, process, Buffer).
-  - Action: Extend ESLint config to cover server (Node) environment and all workspaces; add appropriate env/globals. Run Prettier.
+- **ESLint/Prettier coverage**
+  - Several files show “ignored by ESLint” and Prettier format warnings. Ensure monorepo‑root ESLint covers all workspaces and properly sets Node env/globals for server files. Run Prettier over the workspace to standardize formatting.
 
-- Optional SQL polish (nice-to-have)
-  - Add `LIMIT 1` to single-row existence checks (e.g., `SELECT id FROM users WHERE email = ?` in `apps/web/app/api/login/magic/route.ts`) where applicable. Current queries are safe; this is a minor clarity/perf improvement.
+- **Optional SQL polish**
+  - Keep parameterized queries. Where single‑row existence checks are used, consider adding `LIMIT 1` for clarity and small perf wins.
 
-- Animate-UI TypeScript `any` types (tech debt)
-  - Numerous `any` annotations in `apps/web/components/animate-ui/**`. Not security issues, but tighten types over time for DX/consistency.
+- **Tighten `any` and unsafe casts**
+  - Replace `any`/`unknown` casts in Animate‑UI and busy hooks with concrete types. Prioritize hot paths and shared components.
 
-### Database index hints from audit
+- **Promise handling + effect cleanup**
+  - Sweep flagged locations to add `.catch` or `try…catch`, and ensure effects remove listeners/observers/timers on cleanup.
 
-- Avatar changes: Indexed (`user_id, created_at`) — `database/user_avatar_changes.sql` defines `idx_uac_user_created`.
-- Sessions: Unique token + user_id index — `database/user_sessions.sql`.
-- PFQ keys: `user_id` unique + indexes — `database/pfq_apikeys.sql`.
-- Badge relations: composite PK & indexes — `database/user_badges.sql`.
-- Verdict: Not actionable; indexes exist where flagged.
+### Database index hints (from report)
+
+The flagged areas (session tokens, avatar changes, PFQ keys, badge relations) already have appropriate unique keys and supporting indexes in the schema. No new index work required at this time.
 
 ### Dependencies
 
-- Minor/patch upgrades available (no known critical CVEs detected by the report):
-  - `next 15.4.5 → 15.5.2`, `react/react-dom 19.1.0 → 19.1.1`, `mysql2 3.14.3 → 3.14.5`, `eslint 9 → 9.35.0`, `@types/node 20 → 24.x`, `radix-ui 1.4.2 → 1.4.3`, `lucide-react 0.536.0 → 0.543.0`.
-  - Consider updating during a routine maintenance window.
+- Minor/patch updates available (no critical CVEs indicated by the report):
+  - `@types/node`: 20 → 24.x
+  - `recharts`: 2.15.4 → 3.x
+  - Consider routine bumps for `next`, `react`, `eslint`, and other minor/patch versions during maintenance.
 
 ### Lint report highlights
 
-- Many Prettier formatting warnings and ESLint “ignored” notices indicate config scope gaps; fixing config will surface real lint issues and standardize formatting.
+- ESLint: “File ignored because no matching configuration was supplied” on some paths indicates configuration scoping gaps. Also `no-undef` for Node globals in server files; set `env: { node: true }` (or define globals) for the server workspace.
+- Prettier: Widespread “needs formatting” warnings; running Prettier after fixing ESLint coverage will normalize code style.
+
+### Graph/architecture snapshot
+
+- The codebase is reported as cycle‑free, loosely coupled, without god objects, with a clear layering. Overall `health_grade: A` and strong centrality profiles. Hotspots include WS server and planner hooks/components, which aligns with expected feature centers rather than problematic coupling.
 
 ### Recommended next steps
 
-1) Add `rel="noopener noreferrer"` to all `target="_blank"` links noted above.
-2) Fix ESLint/Prettier coverage for all workspaces (include Node server env, set globals, ensure monorepo root config applies).
-3) Opportunistically add `LIMIT 1` to single-row checks; keep using parameterized queries as currently implemented.
-4) Plan minor/patch dependency updates.
-5) Gradually replace `any` types in Animate-UI components with concrete types.
+1. Add `noopener,noreferrer` to any `window.open` usages (and ensure all external links keep `rel="noopener noreferrer"`).
+2. Fix ESLint coverage across all workspaces (include Node server env/globals), then run Prettier.
+3. Opportunistically add `LIMIT 1` to single‑row checks; keep using parameterized queries.
+4. Plan minor/patch dependency updates (e.g., `@types/node`, `recharts`).
+5. Gradually replace `any`/unsafe casts in Animate‑UI and complex hooks; add missing `.catch`/cleanup where flagged.
 
 ### Conclusion
 
-- Risk level after review: Low. The “critical” items in the report map to secure implementations in this codebase. Remaining items are modest hardening and tooling improvements.
+Risk remains low after review. The “critical” items largely map to secure patterns already implemented. Focus efforts on lint/format coverage, small UI hardenings, and incremental DX/typing improvements.

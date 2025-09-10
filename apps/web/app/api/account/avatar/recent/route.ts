@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
     }
 
     const qs = Object.fromEntries(new URL(request.url).searchParams)
-    const schema = z.object({ limit: z.coerce.number().int().positive().max(50).default(10) })
+    const schema = z.object({
+      limit: z.coerce.number().int().positive().max(50).default(10),
+    })
     const parsed = schema.safeParse(qs)
     const limit = parsed.success ? parsed.data.limit : 10
     const recentAvatars = await getRecentAvatars(user.id, limit)

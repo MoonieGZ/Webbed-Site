@@ -1,5 +1,5 @@
-5 stars
----
+## 5 stars
+
 Augusta - Electro Broadblade
 Brant - Fusion Sword
 Calcharo - Electro Broadblade
@@ -29,8 +29,8 @@ Yinlin - Electro Rectifier
 Zani - Spectro Gauntlets
 Zhezhi - Glacio Rectifier
 
-4 stars
----
+## 4 stars
+
 Aalto - Aero Pistol
 Baizhi - Glacio Rectifier
 Chixia - Fusion Pistol
@@ -43,8 +43,8 @@ Yangyang - Aero Gauntlets
 Youhu - Glacio Gauntlets
 Yuanwu - Electro Gauntlets
 
-Unknown (mark as 0 rarity)
----
+## Unknown (mark as 0 rarity)
+
 Buling - Unknown
 Chisa - Unknown
 Galbrena - Unknown

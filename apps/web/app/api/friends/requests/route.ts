@@ -23,8 +23,12 @@ export async function GET(request: NextRequest) {
 
     const qs = Object.fromEntries(new URL(request.url).searchParams)
     const qsSchema = z
-      .object({ type: z.enum(["received", "sent", "blocked", "all"]).default("all") })
-      .transform((v) => ({ type: v.type.toLowerCase() as "received" | "sent" | "blocked" | "all" }))
+      .object({
+        type: z.enum(["received", "sent", "blocked", "all"]).default("all"),
+      })
+      .transform((v) => ({
+        type: v.type.toLowerCase() as "received" | "sent" | "blocked" | "all",
+      }))
     const parsed = qsSchema.safeParse(qs)
     const filter = parsed.success ? parsed.data.type : "all"
 
@@ -107,11 +111,17 @@ export async function POST(request: NextRequest) {
     const bodySchema = z.object({ userId: z.number().int().positive() })
     const parseResult = bodySchema.safeParse(await request.json())
     if (!parseResult.success) {
-      return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      )
     }
     const otherId = parseResult.data.userId
     if (otherId === me.id) {
-      return NextResponse.json({ error: "Cannot friend yourself" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Cannot friend yourself" },
+        { status: 400 },
+      )
     }
 
     const existing = (await queryOne(

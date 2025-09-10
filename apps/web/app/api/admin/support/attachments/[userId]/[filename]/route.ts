@@ -25,7 +25,9 @@ function getContentType(filename: string): string {
 
 export async function GET(request: NextRequest, context: any) {
   try {
-    const { params } = context as { params: { userId: string; filename: string } }
+    const { params } = context as {
+      params: { userId: string; filename: string }
+    }
     const sessionToken = request.cookies.get("session")?.value
     const user = sessionToken ? await getUserBySession(sessionToken) : null
     if (!user || user.id !== ADMIN_USER_ID) {
