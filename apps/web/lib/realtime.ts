@@ -1,5 +1,7 @@
 export async function emitFriendPendingCount(userId: number, count: number) {
   try {
+    // Security: Admin-only emit with HMAC (x-timestamp + x-signature, canonical JSON body).
+    // This endpoint carries non-sensitive metadata (count) and targets a user room.
     const wsUrl = process.env.WS_URL
     const adminKey = process.env.WS_ADMIN_KEY
     if (!wsUrl || !adminKey) return
@@ -53,6 +55,7 @@ export async function emitFriendAccepted(
   friend: { id: number; name: string | null },
 ) {
   try {
+    // Security: Admin-only emit with HMAC. Payload is minimal (friend id/name) for UX notification.
     const wsUrl = process.env.WS_URL
     const adminKey = process.env.WS_ADMIN_KEY
     if (!wsUrl || !adminKey) return

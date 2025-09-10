@@ -4,6 +4,7 @@ import sendEmail from "./email"
 import type { MagicLink, User } from "@/types/magic-link"
 
 export function generateMagicLinkToken(): string {
+  // Security: cryptographically strong token (256-bit). No PII embedded in token.
   return crypto.randomBytes(32).toString("hex")
 }
 
@@ -16,6 +17,7 @@ export async function createMagicLink(
   const token = generateMagicLinkToken()
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000)
 
+  // Parameterized insert; stores token with expiry and metadata. 'used' gate prevents replay.
   await query(
     "INSERT INTO magic_links (token, email, user_id, ip_address, user_agent, expires_at, used) VALUES (?, ?, ?, ?, ?, ?, 0)",
     [
@@ -37,6 +39,7 @@ export async function validateMagicLink(token: string): Promise<{
   email: string
   shouldCreateUser: boolean
 }> {
+  // Parameterized lookup; ensures not used and not expired.
   const magicLink = (await queryOne(
     "SELECT * FROM magic_links WHERE token = ? AND used = 0 AND expires_at > NOW()",
     [token],
@@ -46,6 +49,7 @@ export async function validateMagicLink(token: string): Promise<{
     return { valid: false, email: "", shouldCreateUser: false }
   }
 
+  // Mark token as used to prevent replay.
   await query("UPDATE magic_links SET used = 1 WHERE id = ?", [magicLink.id])
 
   let user: User | undefined
@@ -70,6 +74,7 @@ export async function sendMagicLinkEmail(
 ): Promise<void> {
   const environment = process.env.NODE_ENV
   const url = environment === "development" ? "localhost:3000" : "mnsy.dev"
+  // Magic link includes opaque token only; validated server-side with expiry & single-use.
   const magicLinkUrl = `https://${url}/login/magic?token=${token}`
 
   const subject = "Sign in to mnsy.dev"

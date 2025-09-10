@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     if (!user)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
+    // Parameterized query listing titles owned by the authenticated user
     const titles = (await query(
       `SELECT b.title
        FROM user_badges ub
@@ -76,6 +77,7 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    // Parameterized update; title ownership verified above
     await query("UPDATE users SET title = ? WHERE id = ?", [title, user.id])
 
     return NextResponse.json({ success: true, title })

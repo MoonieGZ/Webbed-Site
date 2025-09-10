@@ -51,6 +51,7 @@ export async function PUT(
       return NextResponse.json({ error: "Not found" }, { status: 404 })
 
     if (action === "accept") {
+      // Security: emits only minimal info (id/name) to notify friend acceptance; counts re-fetched server-side
       if (existing.addressee_id !== me.id || existing.status !== "pending")
         return NextResponse.json({ error: "Forbidden" }, { status: 403 })
       await query(

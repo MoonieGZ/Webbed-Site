@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
 import { validateMagicLink, createUser } from "@/lib/magic-link"
 import { createSession } from "@/lib/session"
+import { z } from "zod"
 
 export async function POST(request: NextRequest) {
   try {
-    const { token } = await request.json()
-
-    if (!token || typeof token !== "string") {
+    const bodySchema = z.object({ token: z.string().min(1).max(1024) })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
       return NextResponse.json({ error: "Token is required" }, { status: 400 })
     }
+    const { token } = parseResult.data
 
     const result = await validateMagicLink(token)
 

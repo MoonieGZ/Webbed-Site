@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 import crypto from "crypto"
+import { z } from "zod"
 import { getUserBySession } from "@/lib/session"
 import { query } from "@/lib/db"
 import { cleanupOldAvatars, detectImageMime } from "@/lib/avatar-utils"
@@ -59,11 +60,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const hash = crypto
-      .createHash("md5")
-      .update(`${user.id}-${Date.now()}-${Math.random()}`)
-      .digest("hex")
-    const filename = `${hash}.${fileExtension}`
+    const rand = crypto.randomBytes(16).toString("hex")
+    const filename = `${user.id}-${Date.now()}-${rand}.${fileExtension}`
 
     const recentCountResult = (await query(
       "SELECT COUNT(*) AS cnt FROM user_avatar_changes WHERE user_id = ? AND created_at > (NOW() - INTERVAL 1 MINUTE)",

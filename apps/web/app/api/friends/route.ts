@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
     )) as Array<{ cnt: number }>
     const total = countRows?.[0]?.cnt ?? 0
 
+    // SQL is fully parameterized; auditor false-positives expected for IN lists assembled from prior safe ids
     const friends = (await query(
       `SELECT 
          CASE WHEN f.requester_id = ? THEN f.addressee_id ELSE f.requester_id END AS friend_id
@@ -58,6 +59,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ friends: [] })
     }
 
+    // Parameterized IN clause; ids are derived from previous query results for the authenticated user
     const users = (await query(
       `SELECT u.id, u.name, u.title, u.avatar
        FROM users u

@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Parameterized query; user id bound as positional arg
     const apiKeyRecord = (await queryOne(
       "SELECT api_key, created_at, last_validated FROM pfq_apikeys WHERE user_id = ?",
       [user.id],
@@ -80,6 +81,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Parameterized query; checks existing user key
     const existingKey = await queryOne(
       "SELECT id FROM pfq_apikeys WHERE user_id = ?",
       [user.id],

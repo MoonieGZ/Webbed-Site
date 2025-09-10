@@ -22,6 +22,8 @@ app.use(
 )
 
 const server = http.createServer(app)
+// Security: Socket.IO requires Bearer/JWT auth in handshake (see io.use below);
+// CORS restricted by env. Broadcasts carry only lobby metadata or friend events.
 const io = new Server(server, {
   cors: {
     origin: (process.env.CORS_ORIGIN || "").split(",").filter(Boolean).length
@@ -77,6 +79,7 @@ function verifyAdminSignature(req, secret) {
   }
 }
 
+// Security: Verify HS512 JWT with issuer/audience; attach userId for room scoping.
 io.use((socket, next) => {
   try {
     const bearer = socket.handshake.headers["authorization"]
@@ -87,7 +90,7 @@ io.use((socket, next) => {
     const issuer = process.env.WS_JWT_ISSUER || "apps/web"
     const audience = process.env.WS_JWT_AUDIENCE || "ws"
     const payload = jwt.verify(token, process.env.WS_JWT_SECRET, {
-      algorithms: ["HS256"],
+      algorithms: ["HS512"],
       issuer,
       audience,
     })
@@ -117,6 +120,7 @@ io.on("connection", (socket) => {
     return lobby
   }
 
+  // Security: emitted lobby state excludes PII; only lobby metadata is sent to the lobby room
   function emitLobbyState(lobbyId) {
     const lobby = getLobbySafe(lobbyId)
     if (!lobby) return

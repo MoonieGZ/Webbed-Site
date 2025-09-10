@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
     const sessionToken = request.cookies.get("session")?.value
     const requester = sessionToken ? await getUserBySession(sessionToken) : null
 
+    // Security: attachments saved under private dir; filenames randomized; URLs served via admin-only route
     const attachmentUrls: string[] = []
     const allowedExt = new Set([
       "png",
@@ -123,6 +124,7 @@ export async function POST(request: NextRequest) {
     const safeSubject = escapeHtml(subject)
     const safeMessage = escapeHtml(message).replace(/\n/g, "<br/>")
 
+    // Email body escapes all interpolated values; message newlines converted to <br/>
     const html = `
       <h2>Support Request: ${escapeHtml(prettyCategory)}</h2>
       <p><strong>From:</strong> ${safeUsername} &lt;${safeEmail}&gt;</p>

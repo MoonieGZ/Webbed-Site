@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
         expiresIn: "10m",
         issuer,
         audience,
-        algorithm: "HS256",
+        algorithm: "HS512",
       },
     )
 

@@ -2,14 +2,16 @@ import { NextRequest, NextResponse } from "next/server"
 import { createMagicLink, sendMagicLinkEmail, queryOne } from "@/lib/magic-link"
 import { User } from "@/types/magic-link"
 import { defaultPermissions, UserPermissions } from "@/lib/admin"
+import { z } from "zod"
 
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json()
-
-    if (!email || typeof email !== "string") {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 })
+    const bodySchema = z.object({ email: z.string().email().max(255) })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
+      return NextResponse.json({ error: "Invalid email" }, { status: 400 })
     }
+    const { email } = parseResult.data
 
     const ipHeader =
       request.headers.get("x-forwarded-for") ||
@@ -18,6 +20,7 @@ export async function POST(request: NextRequest) {
     const ip = ipHeader.split(",")[0].trim()
     const userAgent = request.headers.get("user-agent") || ""
 
+    // Parameterized rate-limit check for this email + IP
     const lastRequest = (await queryOne(
       "SELECT created_at FROM magic_links WHERE email = ? AND ip_address = ? ORDER BY created_at DESC LIMIT 1",
       [email, ip],
@@ -39,11 +42,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Parameterized IP-scoped hourly limit
     const hourlyCount = (await queryOne(
       "SELECT COUNT(DISTINCT email) AS cnt FROM magic_links WHERE ip_address = ? AND created_at > (NOW() - INTERVAL 1 HOUR)",
       [ip],
     )) as { cnt: number } | null
 
+    // Parameterized email-scoped hourly limit
     const perEmailHourly = (await queryOne(
       "SELECT COUNT(*) AS cnt FROM magic_links WHERE email = ? AND created_at > (NOW() - INTERVAL 1 HOUR)",
       [email],

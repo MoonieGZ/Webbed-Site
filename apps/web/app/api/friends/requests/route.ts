@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
       user_avatar: string | null
     }>
 
+    // Security: response only includes friend request metadata for the authenticated user
     const requests = rows.map((r) => ({
       id: r.id,
       requester_id: r.requester_id,

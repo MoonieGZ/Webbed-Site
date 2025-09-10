@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     if (!me)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
+    // Parameterized count scoped to authenticated user
     const row = (await queryOne(
       "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
       [me.id],
