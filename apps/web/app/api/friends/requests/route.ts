@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
 import { emitFriendPendingCount } from "@/lib/realtime"
+import { z } from "zod"
 
 async function requireUser(
   request: NextRequest,
@@ -20,14 +21,12 @@ export async function GET(request: NextRequest) {
     if (!me)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const { searchParams } = new URL(request.url)
-    const typeParam = (searchParams.get("type") || "").toLowerCase()
-    const filter =
-      typeParam === "received" ||
-      typeParam === "sent" ||
-      typeParam === "blocked"
-        ? typeParam
-        : "all"
+    const qs = Object.fromEntries(new URL(request.url).searchParams)
+    const qsSchema = z
+      .object({ type: z.enum(["received", "sent", "blocked", "all"]).default("all") })
+      .transform((v) => ({ type: v.type.toLowerCase() as "received" | "sent" | "blocked" | "all" }))
+    const parsed = qsSchema.safeParse(qs)
+    const filter = parsed.success ? parsed.data.type : "all"
 
     const joinParams = [me.id, me.id]
     const whereClause =
@@ -104,10 +103,14 @@ export async function POST(request: NextRequest) {
     if (!me)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const body = (await request.json()) as { userId?: number }
-    const otherId = body.userId
-    if (!otherId || !Number.isFinite(otherId) || otherId === me.id) {
-      return NextResponse.json({ error: "Invalid userId" }, { status: 400 })
+    const bodySchema = z.object({ userId: z.number().int().positive() })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+    }
+    const otherId = parseResult.data.userId
+    if (otherId === me.id) {
+      return NextResponse.json({ error: "Cannot friend yourself" }, { status: 400 })
     }
 
     const existing = (await queryOne(

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
 import { SessionUser } from "@/types/session"
+import { z } from "zod"
 
 async function requireUser(request: NextRequest): Promise<SessionUser | null> {
   const sessionToken = request.cookies.get("session")?.value
@@ -50,8 +51,12 @@ export async function PUT(request: NextRequest) {
     if (!user)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const body = await request.json()
-    const title = (body?.title ?? null) as string | null
+    const bodySchema = z.object({ title: z.string().min(1).max(64).nullable() })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+    }
+    const { title } = parseResult.data
 
     if (title !== null) {
       const owns = (await queryOne(

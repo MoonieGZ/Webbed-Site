@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
+import { z } from "zod"
 
 async function requireUser(
   request: NextRequest,
@@ -20,10 +21,12 @@ export async function DELETE(request: NextRequest, context: any) {
     if (!me)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const otherId = parseInt(params.userId, 10)
-    if (!Number.isFinite(otherId)) {
+    const paramSchema = z.object({ userId: z.coerce.number().int().positive() })
+    const parsed = paramSchema.safeParse(params)
+    if (!parsed.success) {
       return NextResponse.json({ error: "Invalid userId" }, { status: 400 })
     }
+    const otherId = parsed.data.userId
 
     await query(
       `DELETE FROM user_friends 

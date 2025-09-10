@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
 import { emitFriendPendingCount, emitFriendAccepted } from "@/lib/realtime"
+import { z } from "zod"
 
 async function requireUser(
   request: NextRequest,
@@ -24,13 +25,18 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const { id: idParam } = await context.params
-    const id = parseInt(idParam, 10)
-    if (!Number.isFinite(id)) {
+    const idParse = z.coerce.number().int().positive().safeParse(idParam)
+    if (!idParse.success) {
       return NextResponse.json({ error: "Invalid id" }, { status: 400 })
     }
+    const id = idParse.data
 
-    const body = (await request.json()) as { action?: string }
-    const action = (body.action || "").toLowerCase()
+    const bodySchema = z.object({ action: z.enum(["accept", "decline", "cancel", "block", "unblock"]) })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+    }
+    const action = parseResult.data.action
 
     const existing = (await queryOne(
       `SELECT id, requester_id, addressee_id, status FROM user_friends WHERE id = ?`,

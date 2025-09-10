@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
 import { PFQApiService } from "@/services/pfq-api"
+import { z } from "zod"
 
 export async function GET(request: NextRequest) {
   try {
@@ -63,14 +64,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { apiKey } = await request.json()
-
-    if (!apiKey || typeof apiKey !== "string") {
-      return NextResponse.json(
-        { error: "API key is required" },
-        { status: 400 },
-      )
+    const bodySchema = z.object({ apiKey: z.string().min(1).max(256) })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
     }
+    const { apiKey } = parseResult.data
 
     const validationResult = await PFQApiService.whoAmI(apiKey)
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getUserBySession } from "@/lib/session"
 import { ADMIN_USER_ID } from "@/lib/admin"
 import { query } from "@/lib/db"
+import { z } from "zod"
 
 type GroupType =
   | "boss_drop"
@@ -135,15 +136,23 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const body = (await request.json()) as {
-      characterId?: number
-      type?: GroupType | "weekly_boss" | "boss_drop" | "collectible"
-      groupId?: number | null
-    }
-    const { characterId, type, groupId } = body
-    if (!characterId || !type || typeof characterId !== "number") {
+    const bodySchema = z.object({
+      characterId: z.number().int().positive(),
+      type: z.enum([
+        "boss_drop",
+        "talent_upgrade",
+        "collectible",
+        "weekly_boss",
+        "enemy_drop",
+        "other",
+      ]),
+      groupId: z.number().int().positive().nullable().optional(),
+    })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 })
     }
+    const { characterId, type, groupId } = parseResult.data
 
     // If type is one of the direct material-selection types
     if (

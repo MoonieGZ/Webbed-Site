@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
+import { z } from "zod"
 
 async function requireUser(
   request: NextRequest,
@@ -19,12 +20,20 @@ export async function GET(request: NextRequest) {
     if (!me)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const { searchParams } = new URL(request.url)
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10))
-    const pageSize = Math.min(
-      100,
-      Math.max(1, parseInt(searchParams.get("pageSize") || "24", 10)),
-    )
+    const qs = Object.fromEntries(new URL(request.url).searchParams)
+    const qsSchema = z.object({
+      page: z.coerce.number().int().positive().default(1),
+      pageSize: z
+        .coerce
+        .number()
+        .int()
+        .positive()
+        .max(100)
+        .default(24),
+    })
+    const parsed = qsSchema.safeParse(qs)
+    const page = parsed.success ? parsed.data.page : 1
+    const pageSize = parsed.success ? parsed.data.pageSize : 24
 
     const countRows = (await query(
       `SELECT COUNT(*) AS cnt

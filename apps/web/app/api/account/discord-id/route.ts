@@ -1,5 +1,6 @@
 import { query, queryOne } from "@/lib/db"
 import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
 
 export async function GET(request: NextRequest) {
   const sessionToken = request.cookies.get("session")?.value
@@ -25,19 +26,15 @@ export async function POST(request: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
-  const { discordId } = await request.json()
-
-  // Validate Discord ID format (optional - you can adjust the regex as needed)
-  if (discordId && !/^\d{17,19}$/.test(discordId)) {
-    return NextResponse.json(
-      { error: "Invalid Discord ID format" },
-      { status: 400 },
-    )
+  const bodySchema = z.object({
+    discordId: z.string().regex(/^\d{17,19}$/, { message: "Invalid Discord ID" }).nullable().optional(),
+  })
+  const parseResult = bodySchema.safeParse(await request.json())
+  if (!parseResult.success) {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
+  const { discordId } = parseResult.data
 
-  await query("UPDATE users SET discord_id = ? WHERE id = ?", [
-    discordId || null,
-    user.id,
-  ])
+  await query("UPDATE users SET discord_id = ? WHERE id = ?", [discordId ?? null, user.id])
   return NextResponse.json({ discordId: discordId || null })
 }

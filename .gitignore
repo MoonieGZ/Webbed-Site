@@ -46,3 +46,7 @@ next-env.d.ts
 /apps/web/public/avatars/*
 /apps/web/private/support/*
 /apps/web/database/*
+
+.auditor_venv/
+.pf/
+.claude/

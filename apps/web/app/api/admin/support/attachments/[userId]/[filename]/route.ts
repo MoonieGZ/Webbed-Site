@@ -4,6 +4,7 @@ import { ADMIN_USER_ID } from "@/lib/admin"
 import { readFile } from "fs/promises"
 
 import { join, normalize } from "path"
+import { z } from "zod"
 
 function getContentType(filename: string): string {
   const ext = filename.split(".").pop()?.toLowerCase()
@@ -24,28 +25,22 @@ function getContentType(filename: string): string {
 
 export async function GET(request: NextRequest, context: any) {
   try {
-    const { params } = context as {
-      params: { userId: string; filename: string }
-    }
+    const { params } = context as { params: { userId: string; filename: string } }
     const sessionToken = request.cookies.get("session")?.value
     const user = sessionToken ? await getUserBySession(sessionToken) : null
     if (!user || user.id !== ADMIN_USER_ID) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const { userId, filename } = params
-
-    const validUserId = /^[0-9]+$/.test(userId) || userId === "guest"
-    const validFilename = /^[A-Za-z0-9._-]+$/.test(filename)
-    if (
-      !validUserId ||
-      !validFilename ||
-      filename.includes("..") ||
-      filename.includes("/") ||
-      filename.includes("\\")
-    ) {
+    const paramSchema = z.object({
+      userId: z.string().regex(/^([0-9]+|guest)$/),
+      filename: z.string().regex(/^[A-Za-z0-9._-]+$/),
+    })
+    const parsed = paramSchema.safeParse(params)
+    if (!parsed.success) {
       return NextResponse.json({ error: "Invalid path" }, { status: 400 })
     }
+    const { userId, filename } = parsed.data
 
     const filePath = normalize(
       join(process.cwd(), "private", "support", String(userId), filename),

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getUserBySession } from "@/lib/session"
 import { query } from "@/lib/db"
+import { z } from "zod"
 
 async function requireUser(
   request: NextRequest,
@@ -17,11 +18,10 @@ export async function POST(request: NextRequest) {
     if (!me)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const body = (await request.json()) as { ids?: number[] }
-    const ids = Array.isArray(body?.ids)
-      ? body!.ids!.map((n) => Number(n)).filter((n) => Number.isFinite(n))
-      : []
-    if (ids.length === 0) return NextResponse.json({ profiles: [] })
+    const bodySchema = z.object({ ids: z.array(z.number().int().positive()).min(1) })
+    const parsed = bodySchema.safeParse(await request.json())
+    if (!parsed.success) return NextResponse.json({ profiles: [] })
+    const { ids } = parsed.data
 
     const placeholders = ids.map(() => "?").join(",")
     const rows = (await query(

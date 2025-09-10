@@ -3,6 +3,7 @@ const express = require("express")
 const http = require("http")
 const cors = require("cors")
 const jwt = require("jsonwebtoken")
+const crypto = require("crypto")
 const { Server } = require("socket.io")
 const {
   selectRandomCharacters,
@@ -31,6 +32,50 @@ const io = new Server(server, {
 })
 
 const DISCONNECT_GRACE_MS = Number(process.env.WS_DISCONNECT_GRACE_MS || 15000)
+const ADMIN_HMAC_TTL_MS = Number(process.env.WS_ADMIN_HMAC_TTL_MS || 5 * 60 * 1000)
+
+function stableStringify(value) {
+  if (Array.isArray(value)) {
+    return JSON.stringify(value.map((v) => JSON.parse(stableStringify(v))))
+  }
+  if (value && typeof value === "object") {
+    const sorted = {}
+    for (const key of Object.keys(value).sort()) {
+      sorted[key] = JSON.parse(stableStringify(value[key]))
+    }
+    return JSON.stringify(sorted)
+  }
+  return JSON.stringify(value)
+}
+
+function constantTimeEqual(a, b) {
+  try {
+    const aBuf = Buffer.from(String(a), "utf8")
+    const bBuf = Buffer.from(String(b), "utf8")
+    if (aBuf.length !== bBuf.length) return false
+    return crypto.timingSafeEqual(aBuf, bBuf)
+  } catch {
+    return false
+  }
+}
+
+function verifyAdminSignature(req, secret) {
+  try {
+    const tsHeader = req.headers["x-timestamp"]
+    const sigHeader = req.headers["x-signature"]
+    const method = req.method || ""
+    if (!tsHeader || !sigHeader) return false
+    const ts = Number(tsHeader)
+    if (!Number.isFinite(ts)) return false
+    if (Math.abs(Date.now() - ts) > ADMIN_HMAC_TTL_MS) return false
+    const canonicalBody = stableStringify(req.body || {})
+    const data = `${method}.${ts}.${canonicalBody}`
+    const expected = crypto.createHmac("sha256", String(secret)).update(data).digest("hex")
+    return constantTimeEqual(expected, sigHeader)
+  } catch {
+    return false
+  }
+}
 
 io.use((socket, next) => {
   try {
@@ -39,7 +84,13 @@ io.use((socket, next) => {
       socket.handshake.auth?.token ||
       (bearer && bearer.startsWith("Bearer ") ? bearer.slice(7) : null)
     if (!token) return next(new Error("Unauthorized"))
-    const payload = jwt.verify(token, process.env.WS_JWT_SECRET)
+    const issuer = process.env.WS_JWT_ISSUER || "apps/web"
+    const audience = process.env.WS_JWT_AUDIENCE || "ws"
+    const payload = jwt.verify(token, process.env.WS_JWT_SECRET, {
+      algorithms: ["HS256"],
+      issuer,
+      audience,
+    })
     socket.data.userId = String(payload.sub)
     next()
   } catch {
@@ -426,31 +477,45 @@ io.on("connection", (socket) => {
 })
 
 app.post("/emit/friends/pending-count", (req, res) => {
-  const adminKey = req.headers["x-admin-key"]
-  if (!adminKey || adminKey !== process.env.WS_ADMIN_KEY) {
-    return res.status(403).json({ error: "Forbidden" })
+  try {
+    const adminKey = req.headers["x-admin-key"]
+    if (!adminKey || adminKey !== process.env.WS_ADMIN_KEY) {
+      return res.status(403).json({ error: "Forbidden" })
+    }
+    if (!verifyAdminSignature(req, process.env.WS_ADMIN_KEY)) {
+      return res.status(403).json({ error: "Invalid signature" })
+    }
+    const { userId, count } = req.body || {}
+    if (!userId || typeof count !== "number") {
+      return res.status(400).json({ error: "Invalid body" })
+    }
+    io.to(`user:${userId}`).emit("friend:pending_count", { count })
+    return res.json({ ok: true })
+  } catch (e) {
+    return res.status(500).json({ error: "Internal error" })
   }
-  const { userId, count } = req.body || {}
-  if (!userId || typeof count !== "number") {
-    return res.status(400).json({ error: "Invalid body" })
-  }
-  io.to(`user:${userId}`).emit("friend:pending_count", { count })
-  return res.json({ ok: true })
 })
 
 app.post("/emit/friends/accepted", (req, res) => {
-  const adminKey = req.headers["x-admin-key"]
-  if (!adminKey || adminKey !== process.env.WS_ADMIN_KEY) {
-    return res.status(403).json({ error: "Forbidden" })
+  try {
+    const adminKey = req.headers["x-admin-key"]
+    if (!adminKey || adminKey !== process.env.WS_ADMIN_KEY) {
+      return res.status(403).json({ error: "Forbidden" })
+    }
+    if (!verifyAdminSignature(req, process.env.WS_ADMIN_KEY)) {
+      return res.status(403).json({ error: "Invalid signature" })
+    }
+    const { userId, friend } = req.body || {}
+    if (!userId || !friend || typeof friend?.id !== "number") {
+      return res.status(400).json({ error: "Invalid body" })
+    }
+    io.to(`user:${userId}`).emit("friend:accepted", {
+      friend: { id: friend.id, name: friend.name ?? null },
+    })
+    return res.json({ ok: true })
+  } catch (e) {
+    return res.status(500).json({ error: "Internal error" })
   }
-  const { userId, friend } = req.body || {}
-  if (!userId || !friend || typeof friend?.id !== "number") {
-    return res.status(400).json({ error: "Invalid body" })
-  }
-  io.to(`user:${userId}`).emit("friend:accepted", {
-    friend: { id: friend.id, name: friend.name ?? null },
-  })
-  return res.json({ ok: true })
 })
 
 const port = Number(process.env.WS_PORT || 4001)

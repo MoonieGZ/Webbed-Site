@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
+import { z } from "zod"
 
 async function requireUser(
   request: NextRequest,
@@ -19,9 +20,11 @@ export async function GET(request: NextRequest) {
     if (!me)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const { searchParams } = new URL(request.url)
-    const q = (searchParams.get("q") || "").trim()
-    if (!q) return NextResponse.json({ users: [] })
+    const qs = Object.fromEntries(new URL(request.url).searchParams)
+    const qsSchema = z.object({ q: z.string().trim().min(1).max(64) })
+    const parsed = qsSchema.safeParse(qs)
+    if (!parsed.success) return NextResponse.json({ users: [] })
+    const q = parsed.data.q
 
     const friendIds = (await query(
       `SELECT CASE WHEN requester_id = ? THEN addressee_id ELSE requester_id END AS friend_id

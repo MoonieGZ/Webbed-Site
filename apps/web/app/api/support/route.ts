@@ -6,6 +6,7 @@ import { getUserBySession } from "@/lib/session"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 import crypto from "crypto"
+import { z } from "zod"
 
 function normalizeIp(req: NextRequest): string {
   const ipHeader =
@@ -16,32 +17,23 @@ function normalizeIp(req: NextRequest): string {
 export async function POST(request: NextRequest) {
   try {
     const form = await request.formData()
-    const username = String(form.get("username") || "").trim()
-    const email = String(form.get("email") || "").trim()
-    const category = String(form.get("category") || "").trim()
-    const subject = String(form.get("subject") || "").trim()
-    const message = String(form.get("message") || "").trim()
+    const schema = z.object({
+      username: z.string().trim().min(1).max(64),
+      email: z.string().trim().email().max(255),
+      category: z.enum(["feature", "bug", "streamer"]),
+      subject: z.string().trim().min(1).max(255),
+      message: z.string().trim().min(1).max(5000),
+    })
+    const toPlain: Record<string, unknown> = {}
+    for (const [k, v] of form.entries()) {
+      if (typeof v === "string") toPlain[k] = v
+    }
+    const parsed = schema.safeParse(toPlain)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid form" }, { status: 400 })
+    }
+    const { username, email, category, subject, message } = parsed.data
     const attachments = form.getAll("attachments") as File[]
-
-    if (!username || !email || !category || !subject || !message) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
-      )
-    }
-
-    const allowedCategories = new Set(["feature", "bug", "streamer"])
-    if (!allowedCategories.has(category)) {
-      return NextResponse.json({ error: "Invalid category" }, { status: 400 })
-    }
-    if (
-      username.length > 64 ||
-      email.length > 255 ||
-      subject.length > 255 ||
-      message.length > 5000
-    ) {
-      return NextResponse.json({ error: "Input too long" }, { status: 400 })
-    }
 
     if (attachments.some((f) => f.size > 5 * 1024 * 1024)) {
       return NextResponse.json(
