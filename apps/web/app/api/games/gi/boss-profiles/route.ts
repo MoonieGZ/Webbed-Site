@@ -47,7 +47,7 @@ export async function PUT(request: NextRequest) {
     const bodySchema = z.object({
       profileIndex: z.number().int().nonnegative(),
       name: z.string().trim().max(64).nullable().optional(),
-      enabledMap: z.record(z.boolean()),
+      enabledMap: z.record(z.string(), z.boolean()),
     })
     const parsed = bodySchema.safeParse(await request.json())
     if (!parsed.success) {
