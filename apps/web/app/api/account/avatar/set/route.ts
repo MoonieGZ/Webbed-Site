@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getUserBySession } from "@/lib/session"
 import { query } from "@/lib/db"
 import { getRecentAvatars } from "@/lib/avatar-utils"
+import { z } from "zod"
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,14 +40,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { filename } = await request.json()
-
-    if (!filename || typeof filename !== "string") {
+    const bodySchema = z.object({
+      filename: z
+        .string()
+        .min(1)
+        .max(128)
+        .regex(/^[A-Za-z0-9._-]+$/),
+    })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
       return NextResponse.json(
-        { error: "Filename is required" },
+        { error: "Invalid request body" },
         { status: 400 },
       )
     }
+    const { filename } = parseResult.data
 
     const recentAvatars = await getRecentAvatars(user.id, 10)
     const avatarExists = recentAvatars.some(

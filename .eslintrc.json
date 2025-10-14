@@ -2,6 +2,14 @@
   "root": true,
   "extends": ["next/core-web-vitals", "next/typescript", "prettier"],
   "plugins": ["prettier"],
+  "ignorePatterns": [
+    "**/.next/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/out/**",
+    "**/node_modules/**"
+  ],
+  "parserOptions": { "ecmaVersion": 2023, "sourceType": "module" },
   "rules": {
     "prettier/prettier": "error",
     "@typescript-eslint/consistent-type-imports": "off",
@@ -15,10 +23,32 @@
   },
   "overrides": [
     {
+      "files": ["apps/web/**/*.{ts,tsx,js,jsx}"],
+      "env": { "browser": true, "es2022": true }
+    },
+    {
       "files": ["**/*.{ts,tsx}"],
       "excludedFiles": ["types/**", ".next/**"],
       "rules": {
         "no-restricted-syntax": "off"
+      }
+    },
+    {
+      "files": ["apps/server/**/*.js"],
+      "env": { "node": true, "es2022": true },
+      "parserOptions": { "ecmaVersion": 2023, "sourceType": "script" },
+      "globals": {
+        "require": "readonly",
+        "module": "readonly",
+        "process": "readonly",
+        "Buffer": "readonly",
+        "setTimeout": "readonly",
+        "clearTimeout": "readonly",
+        "console": "readonly"
+      },
+      "rules": {
+        "no-undef": "off",
+        "no-empty": "warn"
       }
     }
   ]

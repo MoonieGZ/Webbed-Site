@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
 import { SessionUser } from "@/types/session"
+import { z } from "zod"
 
 async function requireUser(request: NextRequest): Promise<SessionUser | null> {
   const sessionToken = request.cookies.get("session")?.value
   if (!sessionToken) return null
   const user = (await queryOne(
-    "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+    "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
     [sessionToken],
   )) as SessionUser | null
   return user
@@ -64,14 +65,19 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const body = await request.json()
-    const slots = body?.slots as Array<number | null> | undefined
-    if (!Array.isArray(slots) || slots.length !== 3) {
+    const bodySchema = z.object({
+      slots: z
+        .array(z.number().int().positive().nullable())
+        .length(3, { message: "slots must have length 3" }),
+    })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
       return NextResponse.json(
-        { error: "Invalid payload: expected slots array of length 3" },
+        { error: "Invalid request body" },
         { status: 400 },
       )
     }
+    const { slots } = parseResult.data
 
     const nonNullIds = slots.filter((v) => v != null) as number[]
     const uniqueIds = new Set(nonNullIds)

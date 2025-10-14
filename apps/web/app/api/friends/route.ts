@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
+import { z } from "zod"
 
 async function requireUser(
   request: NextRequest,
@@ -7,7 +8,7 @@ async function requireUser(
   const sessionToken = request.cookies.get("session")?.value
   if (!sessionToken) return null
   const user = (await queryOne(
-    "SELECT u.id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+    "SELECT u.id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
     [sessionToken],
   )) as { id: number } | null
   return user
@@ -19,12 +20,14 @@ export async function GET(request: NextRequest) {
     if (!me)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const { searchParams } = new URL(request.url)
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10))
-    const pageSize = Math.min(
-      100,
-      Math.max(1, parseInt(searchParams.get("pageSize") || "24", 10)),
-    )
+    const qs = Object.fromEntries(new URL(request.url).searchParams)
+    const qsSchema = z.object({
+      page: z.coerce.number().int().positive().default(1),
+      pageSize: z.coerce.number().int().positive().max(100).default(24),
+    })
+    const parsed = qsSchema.safeParse(qs)
+    const page = parsed.success ? parsed.data.page : 1
+    const pageSize = parsed.success ? parsed.data.pageSize : 24
 
     const countRows = (await query(
       `SELECT COUNT(*) AS cnt
@@ -34,6 +37,7 @@ export async function GET(request: NextRequest) {
     )) as Array<{ cnt: number }>
     const total = countRows?.[0]?.cnt ?? 0
 
+    // SQL is fully parameterized; auditor false-positives expected for IN lists assembled from prior safe ids
     const friends = (await query(
       `SELECT 
          CASE WHEN f.requester_id = ? THEN f.addressee_id ELSE f.requester_id END AS friend_id
@@ -49,6 +53,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ friends: [] })
     }
 
+    // Parameterized IN clause; ids are derived from previous query results for the authenticated user
     const users = (await query(
       `SELECT u.id, u.name, u.title, u.avatar
        FROM users u

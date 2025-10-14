@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
 import { PFQApiService } from "@/services/pfq-api"
+import { z } from "zod"
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     const user = (await queryOne(
-      "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+      "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
       [sessionToken],
     )) as { id: number; email: string } | null
 
@@ -19,8 +20,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Parameterized query; user id bound as positional arg
     const apiKeyRecord = (await queryOne(
-      "SELECT api_key, created_at, last_validated FROM pfq_apikeys WHERE user_id = ?",
+      "SELECT api_key, created_at, last_validated FROM pfq_apikeys WHERE user_id = ? LIMIT 1",
       [user.id],
     )) as { api_key: string; created_at: Date; last_validated: Date } | null
 
@@ -55,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     const user = (await queryOne(
-      "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+      "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
       [sessionToken],
     )) as { id: number; email: string } | null
 
@@ -63,14 +65,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { apiKey } = await request.json()
-
-    if (!apiKey || typeof apiKey !== "string") {
+    const bodySchema = z.object({ apiKey: z.string().min(1).max(256) })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
       return NextResponse.json(
-        { error: "API key is required" },
+        { error: "Invalid request body" },
         { status: 400 },
       )
     }
+    const { apiKey } = parseResult.data
 
     const validationResult = await PFQApiService.whoAmI(apiKey)
 
@@ -81,8 +84,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Parameterized query; checks existing user key
     const existingKey = await queryOne(
-      "SELECT id FROM pfq_apikeys WHERE user_id = ?",
+      "SELECT id FROM pfq_apikeys WHERE user_id = ? LIMIT 1",
       [user.id],
     )
 
@@ -117,7 +121,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const user = (await queryOne(
-      "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+      "SELECT u.id, u.email FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
       [sessionToken],
     )) as { id: number; email: string } | null
 

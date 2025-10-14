@@ -11,12 +11,21 @@
     "web:format": "pnpm --filter web format",
     "web:format:check": "pnpm --filter web format:check",
     "server:dev": "pnpm --filter server dev",
-    "server:start": "pnpm --filter server start"
+    "server:start": "pnpm --filter server start",
+    "lint": "pnpm web:lint && eslint apps/server --ext .js",
+    "lint:fix": "pnpm web:lint:fix && eslint apps/server --ext .js --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "workspaces": [
     "apps/*"
   ],
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "eslint": "^9.35.0",
+    "eslint-config-next": "15.5.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.6.2"
   }
 }

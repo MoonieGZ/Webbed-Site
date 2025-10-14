@@ -7,7 +7,7 @@ async function requireUser(
   const sessionToken = request.cookies.get("session")?.value
   if (!sessionToken) return null
   const user = (await queryOne(
-    "SELECT u.id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+    "SELECT u.id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
     [sessionToken],
   )) as { id: number } | null
   return user
@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     if (!me)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
+    // Parameterized count scoped to authenticated user
     const row = (await queryOne(
       "SELECT COUNT(*) AS cnt FROM user_friends WHERE addressee_id = ? AND status = 'pending'",
       [me.id],

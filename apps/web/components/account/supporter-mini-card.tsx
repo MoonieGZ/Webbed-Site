@@ -43,6 +43,7 @@ export function SupporterMiniCard() {
               window.open(
                 `https://discord.gg/${process.env.NEXT_PUBLIC_DISCORD_INVITE}`,
                 "_blank",
+                "noopener,noreferrer",
               )
             }
             className="w-[125px]"

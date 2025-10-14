@@ -4,6 +4,7 @@ import { ADMIN_USER_ID } from "@/lib/admin"
 import { query } from "@/lib/db"
 import { rm } from "fs/promises"
 import { join } from "path"
+import { z } from "zod"
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,13 +14,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10))
-    const pageSize = Math.min(
-      100,
-      Math.max(1, parseInt(searchParams.get("pageSize") || "20", 10)),
-    )
-    const q = (searchParams.get("q") || "").trim()
+    const qs = Object.fromEntries(new URL(request.url).searchParams)
+    const qsSchema = z.object({
+      page: z.coerce.number().int().positive().default(1),
+      pageSize: z.coerce.number().int().positive().max(100).default(20),
+      q: z.string().trim().max(128).optional(),
+    })
+    const parsed = qsSchema.safeParse(qs)
+    const page = parsed.success ? parsed.data.page : 1
+    const pageSize = parsed.success ? parsed.data.pageSize : 20
+    const q = parsed.success && parsed.data.q ? parsed.data.q : ""
 
     const whereClause = q ? "WHERE (u.name LIKE ? OR u.email LIKE ?)" : ""
     const whereParams = q ? [`%${q}%`, `%${q}%`] : []
@@ -80,25 +84,22 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const body = (await request.json()) as {
-      userIds?: number[]
-      action?:
-        | "restrict_user"
-        | "restrict_avatar"
-        | "ban"
-        | "allow_user"
-        | "allow_avatar"
-        | "unban"
-    }
-    const { userIds, action } = body
-    if (
-      !userIds ||
-      !Array.isArray(userIds) ||
-      userIds.length === 0 ||
-      !action
-    ) {
+    const bodySchema = z.object({
+      userIds: z.array(z.number().int().positive()).min(1),
+      action: z.enum([
+        "restrict_user",
+        "restrict_avatar",
+        "ban",
+        "allow_user",
+        "allow_avatar",
+        "unban",
+      ]),
+    })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 })
     }
+    const { userIds, action } = parseResult.data
 
     const setClause =
       action === "restrict_user"

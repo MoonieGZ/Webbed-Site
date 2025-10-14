@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
+import { z } from "zod"
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,6 +19,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Parameterized query; user id bound positionally
     const gameUIDs = await query(
       "SELECT game, uid, created_at, updated_at FROM user_game_uids WHERE user_id = ? ORDER BY created_at DESC",
       [user.id],
@@ -50,22 +52,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { game, uid } = await request.json()
-
-    if (!game || !uid) {
+    const bodySchema = z.object({
+      game: z.enum(["gi", "hsr", "zzz", "ww"]),
+      uid: z.string().min(1).max(64),
+    })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
       return NextResponse.json(
-        { error: "Game and UID are required" },
+        { error: "Invalid request body" },
         { status: 400 },
       )
     }
-
-    const validGames = ["gi", "hsr", "zzz", "ww"]
-    if (!validGames.includes(game)) {
-      return NextResponse.json(
-        { error: "Invalid game specified" },
-        { status: 400 },
-      )
-    }
+    const { game, uid } = parseResult.data
 
     const existingUID = await queryOne(
       "SELECT id FROM user_game_uids WHERE user_id = ? AND game = ?",
@@ -73,11 +71,13 @@ export async function POST(request: NextRequest) {
     )
 
     if (existingUID) {
+      // Parameterized upsert-like update path
       await query(
         "UPDATE user_game_uids SET uid = ?, updated_at = NOW() WHERE user_id = ? AND game = ?",
         [uid.trim(), user.id, game],
       )
     } else {
+      // Parameterized insert path
       await query(
         "INSERT INTO user_game_uids (user_id, game, uid, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())",
         [user.id, game, uid.trim()],
@@ -111,24 +111,24 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const game = searchParams.get("game")
-
+    const searchSchema = z.object({ game: z.enum(["gi", "hsr", "zzz", "ww"]) })
+    const game = searchSchema.safeParse(
+      Object.fromEntries(new URL(request.url).searchParams),
+    ).success
+      ? (Object.fromEntries(new URL(request.url).searchParams).game as
+          | "gi"
+          | "hsr"
+          | "zzz"
+          | "ww")
+      : null
     if (!game) {
       return NextResponse.json(
-        { error: "Game parameter is required" },
+        { error: "Invalid or missing game" },
         { status: 400 },
       )
     }
 
-    const validGames = ["gi", "hsr", "zzz", "ww"]
-    if (!validGames.includes(game)) {
-      return NextResponse.json(
-        { error: "Invalid game specified" },
-        { status: 400 },
-      )
-    }
-
+    // Parameterized delete
     await query("DELETE FROM user_game_uids WHERE user_id = ? AND game = ?", [
       user.id,
       game,

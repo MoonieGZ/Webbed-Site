@@ -3,6 +3,7 @@ import { query, queryOne } from "@/lib/db"
 import { getUserBySession } from "@/lib/session"
 import type { GiRandomizerSettings } from "@/types"
 import { DEFAULT_GI_SETTINGS } from "@/types"
+import { z } from "zod"
 
 async function getRequesterId(request: NextRequest): Promise<number | null> {
   const sessionToken = request.cookies.get("session")?.value
@@ -40,7 +41,28 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const userId = await getRequesterId(request)
-    const body = (await request.json()) as GiRandomizerSettings
+    const schema = z.object({
+      characters: z.object({
+        count: z.number().int().min(0).max(10),
+        enabled: z.record(z.boolean()),
+        excluded: z.array(z.string()).max(100),
+      }),
+      bosses: z.object({
+        count: z.number().int().min(0).max(20),
+        enabled: z.record(z.boolean()),
+      }),
+      enableExclusion: z.boolean(),
+      rules: z.object({
+        coopMode: z.boolean(),
+        limitFiveStars: z.boolean(),
+        maxFiveStars: z.number().int().min(0).max(7),
+      }),
+    })
+    const parsed = schema.safeParse(await request.json())
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid settings" }, { status: 400 })
+    }
+    const body = parsed.data as GiRandomizerSettings
 
     if (!userId) return NextResponse.json(body)
 

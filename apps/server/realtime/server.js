@@ -3,6 +3,7 @@ const express = require("express")
 const http = require("http")
 const cors = require("cors")
 const jwt = require("jsonwebtoken")
+const crypto = require("crypto")
 const { Server } = require("socket.io")
 const {
   selectRandomCharacters,
@@ -21,6 +22,8 @@ app.use(
 )
 
 const server = http.createServer(app)
+// Security: Socket.IO requires Bearer/JWT auth in handshake (see io.use below);
+// CORS restricted by env. Broadcasts carry only lobby metadata or friend events.
 const io = new Server(server, {
   cors: {
     origin: (process.env.CORS_ORIGIN || "").split(",").filter(Boolean).length
@@ -31,7 +34,57 @@ const io = new Server(server, {
 })
 
 const DISCONNECT_GRACE_MS = Number(process.env.WS_DISCONNECT_GRACE_MS || 15000)
+const ADMIN_HMAC_TTL_MS = Number(
+  process.env.WS_ADMIN_HMAC_TTL_MS || 5 * 60 * 1000,
+)
 
+function stableStringify(value) {
+  if (Array.isArray(value)) {
+    return JSON.stringify(value.map((v) => JSON.parse(stableStringify(v))))
+  }
+  if (value && typeof value === "object") {
+    const sorted = {}
+    for (const key of Object.keys(value).sort()) {
+      sorted[key] = JSON.parse(stableStringify(value[key]))
+    }
+    return JSON.stringify(sorted)
+  }
+  return JSON.stringify(value)
+}
+
+function constantTimeEqual(a, b) {
+  try {
+    const aBuf = Buffer.from(String(a), "utf8")
+    const bBuf = Buffer.from(String(b), "utf8")
+    if (aBuf.length !== bBuf.length) return false
+    return crypto.timingSafeEqual(aBuf, bBuf)
+  } catch {
+    return false
+  }
+}
+
+function verifyAdminSignature(req, secret) {
+  try {
+    const tsHeader = req.headers["x-timestamp"]
+    const sigHeader = req.headers["x-signature"]
+    const method = req.method || ""
+    if (!tsHeader || !sigHeader) return false
+    const ts = Number(tsHeader)
+    if (!Number.isFinite(ts)) return false
+    if (Math.abs(Date.now() - ts) > ADMIN_HMAC_TTL_MS) return false
+    const canonicalBody = stableStringify(req.body || {})
+    const data = `${method}.${ts}.${canonicalBody}`
+    const expected = crypto
+      .createHmac("sha256", String(secret))
+      .update(data)
+      .digest("hex")
+    return constantTimeEqual(expected, sigHeader)
+  } catch {
+    return false
+  }
+}
+
+// Security: Verify HS512 JWT with issuer/audience; attach userId for room scoping.
 io.use((socket, next) => {
   try {
     const bearer = socket.handshake.headers["authorization"]
@@ -39,7 +92,13 @@ io.use((socket, next) => {
       socket.handshake.auth?.token ||
       (bearer && bearer.startsWith("Bearer ") ? bearer.slice(7) : null)
     if (!token) return next(new Error("Unauthorized"))
-    const payload = jwt.verify(token, process.env.WS_JWT_SECRET)
+    const issuer = process.env.WS_JWT_ISSUER || "apps/web"
+    const audience = process.env.WS_JWT_AUDIENCE || "ws"
+    const payload = jwt.verify(token, process.env.WS_JWT_SECRET, {
+      algorithms: ["HS512"],
+      issuer,
+      audience,
+    })
     socket.data.userId = String(payload.sub)
     next()
   } catch {
@@ -66,6 +125,7 @@ io.on("connection", (socket) => {
     return lobby
   }
 
+  // Security: emitted lobby state excludes PII; only lobby metadata is sent to the lobby room
   function emitLobbyState(lobbyId) {
     const lobby = getLobbySafe(lobbyId)
     if (!lobby) return
@@ -95,7 +155,8 @@ io.on("connection", (socket) => {
   }
 
   function ensureGraceBucket(lobbyId) {
-    if (!io.lobbyGraceTimers[lobbyId]) io.lobbyGraceTimers[lobbyId] = Object.create(null)
+    if (!io.lobbyGraceTimers[lobbyId])
+      io.lobbyGraceTimers[lobbyId] = Object.create(null)
     return io.lobbyGraceTimers[lobbyId]
   }
 
@@ -136,7 +197,10 @@ io.on("connection", (socket) => {
           }
         } else {
           // Lobby fully closed; notify the user whose timer elapsed
-          io.to(`user:${memberUserId}`).emit("lobby:closed", { ok: true, lobbyId })
+          io.to(`user:${memberUserId}`).emit("lobby:closed", {
+            ok: true,
+            lobbyId,
+          })
         }
       } catch {}
     }, DISCONNECT_GRACE_MS)
@@ -279,7 +343,10 @@ io.on("connection", (socket) => {
 
       const result = selectRandomCharacters(candidates, settings)
       if (!Array.isArray(result))
-        return cb?.({ ok: false, error: "Not enough characters or invalid settings" })
+        return cb?.({
+          ok: false,
+          error: "Not enough characters or invalid settings",
+        })
       lobby.currentRoll = { ...(lobby.currentRoll || {}), characters: result }
       try {
         if (Array.isArray(candidates)) {
@@ -309,7 +376,10 @@ io.on("connection", (socket) => {
 
       const result = selectRandomBosses(candidates, settings)
       if (!Array.isArray(result))
-        return cb?.({ ok: false, error: "Not enough bosses or invalid settings" })
+        return cb?.({
+          ok: false,
+          error: "Not enough bosses or invalid settings",
+        })
 
       const bosses = result
       const boss = result[0] || null
@@ -333,7 +403,8 @@ io.on("connection", (socket) => {
     try {
       const lobbyId = payload?.lobbyId
       const privacy = payload?.privacy
-      if (!lobbyId || !privacy) return cb?.({ ok: false, error: "Missing fields" })
+      if (!lobbyId || !privacy)
+        return cb?.({ ok: false, error: "Missing fields" })
       const lobby = getLobbySafe(lobbyId)
       if (!lobby) return cb?.({ ok: false, error: "Lobby not found" })
       if (lobby.hostId !== userId)
@@ -350,7 +421,8 @@ io.on("connection", (socket) => {
     try {
       const lobbyId = payload?.lobbyId
       const enabledMap = payload?.enabledMap || null
-      if (!lobbyId || typeof enabledMap !== 'object') return cb?.({ ok: false, error: "Missing fields" })
+      if (!lobbyId || typeof enabledMap !== "object")
+        return cb?.({ ok: false, error: "Missing fields" })
       const lobby = getLobbySafe(lobbyId)
       if (!lobby) return cb?.({ ok: false, error: "Lobby not found" })
       if (lobby.hostId !== userId)
@@ -367,7 +439,8 @@ io.on("connection", (socket) => {
     try {
       const lobbyId = payload?.lobbyId
       const enabledMap = payload?.enabledMap || null
-      if (!lobbyId || typeof enabledMap !== 'object') return cb?.({ ok: false, error: "Missing fields" })
+      if (!lobbyId || typeof enabledMap !== "object")
+        return cb?.({ ok: false, error: "Missing fields" })
       const lobby = getLobbySafe(lobbyId)
       if (!lobby) return cb?.({ ok: false, error: "Lobby not found" })
       if (lobby.hostId !== userId)
@@ -384,12 +457,16 @@ io.on("connection", (socket) => {
     try {
       const lobbyId = payload?.lobbyId
       const memberUserId = String(payload?.memberUserId || "")
-      if (!lobbyId || !memberUserId) return cb?.({ ok: false, error: "Missing fields" })
+      if (!lobbyId || !memberUserId)
+        return cb?.({ ok: false, error: "Missing fields" })
       const lobby = getLobbySafe(lobbyId)
       if (!lobby) return cb?.({ ok: false, error: "Lobby not found" })
-      if (lobby.hostId !== userId) return cb?.({ ok: false, error: "Only host can exclude" })
-      if (memberUserId === lobby.hostId) return cb?.({ ok: false, error: "Cannot exclude host" })
-      if (!lobby.members.includes(memberUserId)) return cb?.({ ok: false, error: "User not in lobby" })
+      if (lobby.hostId !== userId)
+        return cb?.({ ok: false, error: "Only host can exclude" })
+      if (memberUserId === lobby.hostId)
+        return cb?.({ ok: false, error: "Cannot exclude host" })
+      if (!lobby.members.includes(memberUserId))
+        return cb?.({ ok: false, error: "User not in lobby" })
 
       io.to(`user:${memberUserId}`).emit("lobby:kicked", { ok: true, lobbyId })
       removeMemberFromLobby(lobby, memberUserId)
@@ -426,31 +503,45 @@ io.on("connection", (socket) => {
 })
 
 app.post("/emit/friends/pending-count", (req, res) => {
-  const adminKey = req.headers["x-admin-key"]
-  if (!adminKey || adminKey !== process.env.WS_ADMIN_KEY) {
-    return res.status(403).json({ error: "Forbidden" })
+  try {
+    const adminKey = req.headers["x-admin-key"]
+    if (!adminKey || adminKey !== process.env.WS_ADMIN_KEY) {
+      return res.status(403).json({ error: "Forbidden" })
+    }
+    if (!verifyAdminSignature(req, process.env.WS_ADMIN_KEY)) {
+      return res.status(403).json({ error: "Invalid signature" })
+    }
+    const { userId, count } = req.body || {}
+    if (!userId || typeof count !== "number") {
+      return res.status(400).json({ error: "Invalid body" })
+    }
+    io.to(`user:${userId}`).emit("friend:pending_count", { count })
+    return res.json({ ok: true })
+  } catch (e) {
+    return res.status(500).json({ error: "Internal error" })
   }
-  const { userId, count } = req.body || {}
-  if (!userId || typeof count !== "number") {
-    return res.status(400).json({ error: "Invalid body" })
-  }
-  io.to(`user:${userId}`).emit("friend:pending_count", { count })
-  return res.json({ ok: true })
 })
 
 app.post("/emit/friends/accepted", (req, res) => {
-  const adminKey = req.headers["x-admin-key"]
-  if (!adminKey || adminKey !== process.env.WS_ADMIN_KEY) {
-    return res.status(403).json({ error: "Forbidden" })
+  try {
+    const adminKey = req.headers["x-admin-key"]
+    if (!adminKey || adminKey !== process.env.WS_ADMIN_KEY) {
+      return res.status(403).json({ error: "Forbidden" })
+    }
+    if (!verifyAdminSignature(req, process.env.WS_ADMIN_KEY)) {
+      return res.status(403).json({ error: "Invalid signature" })
+    }
+    const { userId, friend } = req.body || {}
+    if (!userId || !friend || typeof friend?.id !== "number") {
+      return res.status(400).json({ error: "Invalid body" })
+    }
+    io.to(`user:${userId}`).emit("friend:accepted", {
+      friend: { id: friend.id, name: friend.name ?? null },
+    })
+    return res.json({ ok: true })
+  } catch (e) {
+    return res.status(500).json({ error: "Internal error" })
   }
-  const { userId, friend } = req.body || {}
-  if (!userId || !friend || typeof friend?.id !== "number") {
-    return res.status(400).json({ error: "Invalid body" })
-  }
-  io.to(`user:${userId}`).emit("friend:accepted", {
-    friend: { id: friend.id, name: friend.name ?? null },
-  })
-  return res.json({ ok: true })
 })
 
 const port = Number(process.env.WS_PORT || 4001)

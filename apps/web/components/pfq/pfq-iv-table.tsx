@@ -134,6 +134,7 @@ export function PFQIVTable() {
                             <Link
                               href={`https://pokefarm.com/summary/${entry.shortlink}`}
                               target="_blank"
+                              rel="noopener noreferrer"
                             >
                               Open
                             </Link>

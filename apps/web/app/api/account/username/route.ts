@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
 import { getUserBySession } from "@/lib/session"
 import { query } from "@/lib/db"
 import BadWordsNext from "bad-words-next"
@@ -68,7 +69,15 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const { name } = await request.json()
+    const bodySchema = z.object({ name: z.string().min(1).max(64) })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      )
+    }
+    const { name } = parseResult.data
 
     if (!name || typeof name !== "string") {
       return NextResponse.json(
@@ -130,7 +139,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const userId = parseInt(user.id as any)
+    const userId = Number(user.id)
     if (isNaN(userId) || userId <= 0) {
       return NextResponse.json({ error: "Invalid user ID" }, { status: 400 })
     }

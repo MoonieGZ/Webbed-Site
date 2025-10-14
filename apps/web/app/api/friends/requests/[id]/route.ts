@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { query, queryOne } from "@/lib/db"
 import { emitFriendPendingCount, emitFriendAccepted } from "@/lib/realtime"
+import { z } from "zod"
 
 async function requireUser(
   request: NextRequest,
@@ -8,7 +9,7 @@ async function requireUser(
   const sessionToken = request.cookies.get("session")?.value
   if (!sessionToken) return null
   const user = (await queryOne(
-    "SELECT u.id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+    "SELECT u.id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
     [sessionToken],
   )) as { id: number } | null
   return user
@@ -24,13 +25,23 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const { id: idParam } = await context.params
-    const id = parseInt(idParam, 10)
-    if (!Number.isFinite(id)) {
+    const idParse = z.coerce.number().int().positive().safeParse(idParam)
+    if (!idParse.success) {
       return NextResponse.json({ error: "Invalid id" }, { status: 400 })
     }
+    const id = idParse.data
 
-    const body = (await request.json()) as { action?: string }
-    const action = (body.action || "").toLowerCase()
+    const bodySchema = z.object({
+      action: z.enum(["accept", "decline", "cancel", "block", "unblock"]),
+    })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      )
+    }
+    const action = parseResult.data.action
 
     const existing = (await queryOne(
       `SELECT id, requester_id, addressee_id, status FROM user_friends WHERE id = ?`,
@@ -45,6 +56,7 @@ export async function PUT(
       return NextResponse.json({ error: "Not found" }, { status: 404 })
 
     if (action === "accept") {
+      // Security: emits only minimal info (id/name) to notify friend acceptance; counts re-fetched server-side
       if (existing.addressee_id !== me.id || existing.status !== "pending")
         return NextResponse.json({ error: "Forbidden" }, { status: 403 })
       await query(

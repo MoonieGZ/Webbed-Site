@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     }
 
     const user = (await queryOne(
-      "SELECT u.id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW()",
+      "SELECT u.id FROM users u JOIN user_sessions s ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > NOW() LIMIT 1",
       [sessionToken],
     )) as { id: number } | null
 
@@ -26,9 +26,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const token = jwt.sign({}, secret, {
+    const issuer = process.env.WS_JWT_ISSUER || "apps/web"
+    const audience = process.env.WS_JWT_AUDIENCE || "ws"
+
+    const token = jwt.sign({ typ: "ws-token" }, secret, {
       subject: String(user.id),
       expiresIn: "10m",
+      issuer,
+      audience,
+      algorithm: "HS512",
     })
 
     return NextResponse.json({ token })

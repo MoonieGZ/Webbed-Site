@@ -99,6 +99,7 @@ pnpm start
 ## 🧰 Production Deployment (Web + Realtime Server)
 
 This monorepo contains two apps:
+
 - `apps/web`: Next.js 15 app (SSR + API routes)
 - `apps/server`: Socket.IO realtime server for multiplayer and realtime events
 
@@ -116,6 +117,7 @@ This monorepo contains two apps:
 Create a database and apply the SQL files from `database/`.
 
 Recommended order (safe for FKs):
+
 1. `users.sql`
 2. `user_permissions.sql`
 3. `user_sessions.sql`
@@ -136,6 +138,7 @@ Recommended order (safe for FKs):
 18. `vip_donation_requests.sql`
 
 Example (run per file):
+
 ```bash
 mysql -h <DB_HOST> -u <DB_USER> -p <DB_NAME> < database/users.sql
 ```
@@ -145,6 +148,7 @@ mysql -h <DB_HOST> -u <DB_USER> -p <DB_NAME> < database/users.sql
 Create environment files for both apps. You can keep them alongside each app or load them via your process manager/systemd.
 
 Web (`apps/web`):
+
 - Required
   - `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT`
   - `MAILERSEND_API_KEY` (magic-link emails)
@@ -158,6 +162,7 @@ Web (`apps/web`):
   - `DISCORD_USERINFO`, `DISCORD_DONATION` (webhook URLs)
 
 Server (`apps/server`):
+
 - Required
   - `WS_PORT` (default `4001`)
   - `WS_JWT_SECRET` (must match web)
@@ -167,6 +172,7 @@ Server (`apps/server`):
 Example `.env` files:
 
 `apps/web/.env.production`
+
 ```bash
 NODE_ENV=production
 DB_HOST=localhost
@@ -186,6 +192,7 @@ DISCORD_DONATION=https://discord.com/api/webhooks/... (optional)
 ```
 
 `apps/server/.env`
+
 ```bash
 WS_PORT=4001
 WS_JWT_SECRET=super-secret-jwt
@@ -196,17 +203,20 @@ CORS_ORIGIN=https://app.example.com
 ### 4) Build and Start (Production)
 
 Install dependencies once at repo root:
+
 ```bash
 pnpm install
 ```
 
 Build and start Web:
+
 ```bash
 pnpm web:build
 pnpm web:start
 ```
 
 Start Realtime Server:
+
 ```bash
 pnpm server:start
 ```
@@ -214,6 +224,7 @@ pnpm server:start
 ### 5) Reverse Proxy (Nginx examples)
 
 Web (Next.js on :3000):
+
 ```nginx
 server {
   server_name app.example.com;
@@ -229,6 +240,7 @@ server {
 ```
 
 Realtime WS (Socket.IO on :4001):
+
 ```nginx
 server {
   server_name ws.example.com;
@@ -248,6 +260,7 @@ server {
 Create environment files for each service and point systemd units to them.
 
 `/etc/systemd/system/mnsydev-web.service`
+
 ```ini
 [Unit]
 Description=Moonsy Webbed Site (Next.js)
@@ -266,6 +279,7 @@ WantedBy=multi-user.target
 ```
 
 `/etc/systemd/system/mnsydev-ws.service`
+
 ```ini
 [Unit]
 Description=Moonsy Webbed Site Realtime (Socket.IO)
@@ -284,6 +298,7 @@ WantedBy=multi-user.target
 ```
 
 Enable and start:
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable --now mnsydev-web mnsydev-ws

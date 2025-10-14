@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getUserBySession } from "@/lib/session"
 import { query, queryOne } from "@/lib/db"
+import { z } from "zod"
 
 async function getUserId(request: NextRequest): Promise<number | null> {
   const token = request.cookies.get("session")?.value
@@ -43,12 +44,19 @@ export async function PUT(request: NextRequest) {
     const userId = await getUserId(request)
     if (!userId)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    const body = (await request.json()) as {
-      profileIndex: number
-      name?: string | null
-      enabledMap: Record<string, boolean>
+    const bodySchema = z.object({
+      profileIndex: z.number().int().nonnegative(),
+      name: z.string().trim().max(64).nullable().optional(),
+      enabledMap: z.record(z.boolean()),
+    })
+    const parsed = bodySchema.safeParse(await request.json())
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      )
     }
-    const { profileIndex, name = null, enabledMap } = body
+    const { profileIndex, name = null, enabledMap } = parsed.data
     const json = JSON.stringify(enabledMap)
     await query(
       "INSERT INTO gi_character_profiles (user_id, profile_index, name, enabled_map) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), enabled_map = VALUES(enabled_map)",

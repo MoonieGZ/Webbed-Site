@@ -83,6 +83,7 @@ export function SupporterProgressCard() {
               window.open(
                 `https://discord.gg/${process.env.NEXT_PUBLIC_DISCORD_INVITE}`,
                 "_blank",
+                "noopener,noreferrer",
               )
             }
           >

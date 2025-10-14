@@ -55,6 +55,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 })
     }
 
+    // Security note: Gravatar requires MD5(email) as its identifier. We do NOT
+    // use MD5 for any security purpose here; it's strictly for Gravatar lookup.
+    // The email is canonicalized (lowercased and trimmed) before hashing per Gravatar spec.
     const emailHash = crypto
       .createHash("md5")
       .update(email.toLowerCase().trim())

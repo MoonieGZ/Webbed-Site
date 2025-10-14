@@ -15,8 +15,7 @@ type TabsContextType<T extends string> = {
   registerTrigger: (value: T, node: HTMLElement | null) => void
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const TabsContext = React.createContext<TabsContextType<any> | undefined>(
+const TabsContext = React.createContext<TabsContextType<string> | undefined>(
   undefined,
 )
 
@@ -25,7 +24,7 @@ function useTabs<T extends string = string>(): TabsContextType<T> {
   if (!context) {
     throw new Error("useTabs must be used within a TabsProvider")
   }
-  return context
+  return context as unknown as TabsContextType<T>
 }
 
 type BaseTabsProps = React.ComponentProps<"div"> & {
@@ -88,9 +87,10 @@ function Tabs<T extends string = string>({
     }
   }
 
-  const handleValueChange = (val: T) => {
-    if (!isControlled) setActiveValue(val)
-    else onValueChange?.(val)
+  const handleValueChange = (val: string) => {
+    const cast = val as T
+    if (!isControlled) setActiveValue(cast)
+    else onValueChange?.(cast)
   }
 
   return (

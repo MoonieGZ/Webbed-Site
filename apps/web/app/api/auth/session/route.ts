@@ -59,9 +59,8 @@ export async function DELETE(request: NextRequest) {
     const sessionToken = request.cookies.get("session")?.value
 
     if (sessionToken) {
-      await import("@/lib/session").then(({ deleteSession }) =>
-        deleteSession(sessionToken),
-      )
+      const { deleteSession } = await import("@/lib/session")
+      await deleteSession(sessionToken)
     }
 
     const response = NextResponse.json({ success: true })

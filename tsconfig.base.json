@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "resolveJsonModule": true,
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "moduleResolution": "bundler",
     "target": "ES2017",
     "strict": true,

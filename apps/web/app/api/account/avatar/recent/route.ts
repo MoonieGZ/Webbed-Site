@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getUserBySession } from "@/lib/session"
 import { getRecentAvatars } from "@/lib/avatar-utils"
+import { z } from "zod"
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +17,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
 
-    const recentAvatars = await getRecentAvatars(user.id, 10)
+    const qs = Object.fromEntries(new URL(request.url).searchParams)
+    const schema = z.object({
+      limit: z.coerce.number().int().positive().max(50).default(10),
+    })
+    const parsed = schema.safeParse(qs)
+    const limit = parsed.success ? parsed.data.limit : 10
+    const recentAvatars = await getRecentAvatars(user.id, limit)
 
     return NextResponse.json({
       success: true,

@@ -32,6 +32,7 @@ export function DiscordIdCard() {
             className="text-primary hover:underline"
             href="https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-"
             target="_blank"
+            rel="noopener noreferrer"
           >
             Check this guide!
           </Link>

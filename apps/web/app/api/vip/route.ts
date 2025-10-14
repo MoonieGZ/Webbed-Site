@@ -4,19 +4,26 @@ import { query } from "@/lib/db"
 import sendEmail from "@/lib/email"
 import { escapeHtml } from "@/lib/utils"
 import { DiscordWebhookService } from "@/services/discord-webhook"
+import { z } from "zod"
 
 export async function POST(request: NextRequest) {
   try {
-    const { donationId, paypalEmail, discordUsername } =
-      (await request.json()) as {
-        donationId?: string
-        paypalEmail?: string
-        discordUsername?: string
-      }
-
-    const id = String(donationId || "").trim()
-    const email = String(paypalEmail || "").trim()
-    const discord = String(discordUsername || "").trim()
+    const bodySchema = z.object({
+      donationId: z.string().trim().min(1).max(64),
+      paypalEmail: z.string().trim().email().max(255),
+      discordUsername: z.string().trim().max(255).optional(),
+    })
+    const parseResult = bodySchema.safeParse(await request.json())
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      )
+    }
+    const { donationId, paypalEmail, discordUsername } = parseResult.data
+    const id = donationId
+    const email = paypalEmail
+    const discord = discordUsername || ""
 
     if (!id || !email) {
       return NextResponse.json(
