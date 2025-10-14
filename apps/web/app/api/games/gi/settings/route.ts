@@ -44,12 +44,12 @@ export async function PUT(request: NextRequest) {
     const schema = z.object({
       characters: z.object({
         count: z.number().int().min(0).max(10),
-        enabled: z.record(z.boolean()),
+        enabled: z.record(z.string(), z.boolean()),
         excluded: z.array(z.string()).max(100),
       }),
       bosses: z.object({
         count: z.number().int().min(0).max(20),
-        enabled: z.record(z.boolean()),
+        enabled: z.record(z.string(), z.boolean()),
       }),
       enableExclusion: z.boolean(),
       rules: z.object({
