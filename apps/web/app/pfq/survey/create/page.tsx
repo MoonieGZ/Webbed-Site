@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { SurveyCreateForm } from "@/components/pfq/survey/create-form"
 import { useStaffCheck } from "@/hooks/pfq/use-staff-check"
 
-export default function SurveyCreatePage() {
+function SurveyCreatePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { isStaff, loading } = useStaffCheck()
@@ -38,5 +38,22 @@ export default function SurveyCreatePage() {
         <SurveyCreateForm publicId={surveyId || undefined} />
       </div>
     </div>
+  )
+}
+
+export default function SurveyCreatePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="absolute inset-0 bg-background flex items-center justify-center z-50 transition-opacity duration-300">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <SurveyCreatePageContent />
+    </Suspense>
   )
 }
