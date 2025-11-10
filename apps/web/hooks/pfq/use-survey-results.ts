@@ -57,4 +57,3 @@ export function useSurveyResults(publicId: string) {
     refreshResults: fetchResults,
   }
 }
-

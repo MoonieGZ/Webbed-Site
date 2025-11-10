@@ -4,12 +4,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { SurveyKeyPrompt } from "./key-prompt"
 import { useSurvey } from "@/hooks/pfq/use-survey"
@@ -137,11 +132,19 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
     }))
   }
 
-  const handleMultipleAnswerChange = (questionId: number, choiceValue: string, checked: boolean) => {
+  const handleMultipleAnswerChange = (
+    questionId: number,
+    choiceValue: string,
+    checked: boolean,
+  ) => {
     setAnswers((prev) => {
       const current = prev[questionId]
-      const currentArray = Array.isArray(current) ? current : current ? [current] : []
-      
+      const currentArray = Array.isArray(current)
+        ? current
+        : current
+          ? [current]
+          : []
+
       if (checked) {
         // Add choice if not already present
         if (!currentArray.includes(choiceValue)) {
@@ -149,23 +152,28 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         }
       } else {
         // Remove choice
-        return { ...prev, [questionId]: currentArray.filter((v) => v !== choiceValue) }
+        return {
+          ...prev,
+          [questionId]: currentArray.filter((v) => v !== choiceValue),
+        }
       }
       return prev
     })
   }
 
   const handleSubmit = async () => {
-    const answerArray = Object.entries(answers).map(([questionId, answerValue]) => {
-      // Serialize arrays as JSON for multiple selections
-      const serializedValue = Array.isArray(answerValue)
-        ? JSON.stringify(answerValue)
-        : answerValue
-      return {
-        question_id: parseInt(questionId),
-        answer_value: serializedValue,
-      }
-    })
+    const answerArray = Object.entries(answers).map(
+      ([questionId, answerValue]) => {
+        // Serialize arrays as JSON for multiple selections
+        const serializedValue = Array.isArray(answerValue)
+          ? JSON.stringify(answerValue)
+          : answerValue
+        return {
+          question_id: parseInt(questionId),
+          answer_value: serializedValue,
+        }
+      },
+    )
 
     // Validate all questions are answered
     const allQuestions: Question[] = []
@@ -199,24 +207,38 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
   const renderQuestion = (question: Question) => {
     const rawValue = answers[question.id]
     const isMultiple = question.allow_multiple === true
-    
+
     // Normalize value based on question type
     let value: string | string[]
     if (isMultiple) {
       // For multiple selections, always use array
-      value = Array.isArray(rawValue) ? rawValue : rawValue ? [String(rawValue)] : []
+      value = Array.isArray(rawValue)
+        ? rawValue
+        : rawValue
+          ? [String(rawValue)]
+          : []
     } else {
       // For single selection, always use string
-      value = Array.isArray(rawValue) ? rawValue[0] || "" : String(rawValue || "")
+      value = Array.isArray(rawValue)
+        ? rawValue[0] || ""
+        : String(rawValue || "")
     }
 
     switch (question.question_type) {
       case "range_5": {
-        const rangeValue = typeof value === "string" ? value : Array.isArray(value) ? value[0] || "0" : "0"
+        const rangeValue =
+          typeof value === "string"
+            ? value
+            : Array.isArray(value)
+              ? value[0] || "0"
+              : "0"
         return (
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label htmlFor={`q-${question.id}`} className="text-base font-semibold">
+              <Label
+                htmlFor={`q-${question.id}`}
+                className="text-base font-semibold"
+              >
                 {question.question_text}
               </Label>
             </div>
@@ -243,11 +265,19 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
       }
 
       case "range_10": {
-        const rangeValue = typeof value === "string" ? value : Array.isArray(value) ? value[0] || "0" : "0"
+        const rangeValue =
+          typeof value === "string"
+            ? value
+            : Array.isArray(value)
+              ? value[0] || "0"
+              : "0"
         return (
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label htmlFor={`q-${question.id}`} className="text-base font-semibold">
+              <Label
+                htmlFor={`q-${question.id}`}
+                className="text-base font-semibold"
+              >
                 {question.question_text}
               </Label>
             </div>
@@ -299,7 +329,9 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
                     name={`q-${question.id}`}
                     value={option}
                     checked={value === option}
-                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                    onChange={(e) =>
+                      handleAnswerChange(question.id, e.target.value)
+                    }
                     className="h-4 w-4"
                   />
                   <span className="text-sm">{option}</span>
@@ -310,11 +342,19 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         )
 
       case "text": {
-        const textValue = typeof value === "string" ? value : Array.isArray(value) ? value.join(", ") : ""
+        const textValue =
+          typeof value === "string"
+            ? value
+            : Array.isArray(value)
+              ? value.join(", ")
+              : ""
         return (
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label htmlFor={`q-${question.id}`} className="text-base font-semibold">
+              <Label
+                htmlFor={`q-${question.id}`}
+                className="text-base font-semibold"
+              >
                 {question.question_text}
               </Label>
             </div>
@@ -371,7 +411,7 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
               {question.choices.map((choice) => {
                 const isChecked = isMultiple
                   ? Array.isArray(value) && value.includes(choice.choice_text)
-                  : (typeof value === "string" && value === choice.choice_text)
+                  : typeof value === "string" && value === choice.choice_text
 
                 return (
                   <label
@@ -417,7 +457,10 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Please fill in the survey below. {survey.allow_edits ? "You will be able to edit your response until the survey ends." : "You will not be able to edit your response after it is submitted."}
+            Please fill in the survey below.{" "}
+            {survey.allow_edits
+              ? "You will be able to edit your response until the survey ends."
+              : "You will not be able to edit your response after it is submitted."}
           </p>
           <SurveyKeyPrompt
             apiKey={apiKey}
@@ -476,4 +519,3 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
     </div>
   )
 }
-

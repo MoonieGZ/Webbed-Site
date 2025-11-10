@@ -39,16 +39,15 @@ export async function PUT(
     )) as any
 
     if (!question) {
-      return NextResponse.json(
-        { error: "Question not found" },
-        { status: 404 },
-      )
+      return NextResponse.json({ error: "Question not found" }, { status: 404 })
     }
 
     const bodySchema = z.object({
       group_id: z.number().int().positive().optional(),
       question_text: z.string().min(1).optional(),
-      question_type: z.enum(["range_5", "range_10", "likert", "text", "choice"]).optional(),
+      question_type: z
+        .enum(["range_5", "range_10", "likert", "text", "choice"])
+        .optional(),
       allow_multiple: z.boolean().optional(), // For choice questions: true = checkboxes, false = radio
       order_index: z.number().int().min(0).optional(),
     })
@@ -91,7 +90,10 @@ export async function PUT(
       updateValues.push(updates.question_type)
 
       // If changing from choice to non-choice, delete choices
-      if (question.question_type === "choice" && updates.question_type !== "choice") {
+      if (
+        question.question_type === "choice" &&
+        updates.question_type !== "choice"
+      ) {
         await query(
           "DELETE FROM pfq_survey_answer_choices WHERE question_id = ?",
           [questionId],
@@ -100,7 +102,10 @@ export async function PUT(
     }
     if (updates.allow_multiple !== undefined) {
       // Only allow_multiple for choice questions
-      if (question.question_type === "choice" || updates.question_type === "choice") {
+      if (
+        question.question_type === "choice" ||
+        updates.question_type === "choice"
+      ) {
         updateFields.push("allow_multiple = ?")
         updateValues.push(updates.allow_multiple ? 1 : 0)
       }
@@ -111,7 +116,10 @@ export async function PUT(
     }
 
     if (updateFields.length === 0) {
-      return NextResponse.json({ error: "No fields to update" }, { status: 400 })
+      return NextResponse.json(
+        { error: "No fields to update" },
+        { status: 400 },
+      )
     }
 
     updateValues.push(questionId)
@@ -121,10 +129,10 @@ export async function PUT(
       updateValues,
     )
 
-    const updatedQuestion = await queryOne(
+    const updatedQuestion = (await queryOne(
       "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, order_index, created_at FROM pfq_survey_questions WHERE id = ? LIMIT 1",
       [questionId],
-    ) as any
+    )) as any
     updatedQuestion.allow_multiple = updatedQuestion.allow_multiple === 1
 
     if (updatedQuestion.question_type === "choice") {
@@ -188,4 +196,3 @@ export async function DELETE(
     )
   }
 }
-

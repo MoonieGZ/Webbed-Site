@@ -109,7 +109,10 @@ export function useSurveyCreate(publicId?: string) {
         toast.success("Survey created successfully!", toastStyles.success)
         return result.survey
       } else {
-        toast.error(result.error || "Failed to create survey.", toastStyles.error)
+        toast.error(
+          result.error || "Failed to create survey.",
+          toastStyles.error,
+        )
         return null
       }
     } catch (error) {
@@ -140,7 +143,10 @@ export function useSurveyCreate(publicId?: string) {
         toast.success("Survey updated successfully!", toastStyles.success)
         return true
       } else {
-        toast.error(result.error || "Failed to update survey.", toastStyles.error)
+        toast.error(
+          result.error || "Failed to update survey.",
+          toastStyles.error,
+        )
         return false
       }
     } catch (error) {
@@ -155,13 +161,16 @@ export function useSurveyCreate(publicId?: string) {
 
     setSavingGroup(true)
     try {
-      const response = await fetch(`/api/pfq/surveys/${survey.public_id}/groups`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `/api/pfq/surveys/${survey.public_id}/groups`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
         },
-        body: JSON.stringify(data),
-      })
+      )
 
       const result = await response.json()
 
@@ -183,7 +192,10 @@ export function useSurveyCreate(publicId?: string) {
     }
   }
 
-  const updateGroup = async (groupId: number, data: Partial<CreateQuestionGroupRequest>) => {
+  const updateGroup = async (
+    groupId: number,
+    data: Partial<CreateQuestionGroupRequest>,
+  ) => {
     if (!survey) return false
 
     try {
@@ -205,7 +217,10 @@ export function useSurveyCreate(publicId?: string) {
         toast.success("Group updated!", toastStyles.success)
         return true
       } else {
-        toast.error(result.error || "Failed to update group.", toastStyles.error)
+        toast.error(
+          result.error || "Failed to update group.",
+          toastStyles.error,
+        )
         return false
       }
     } catch (error) {
@@ -228,15 +243,20 @@ export function useSurveyCreate(publicId?: string) {
 
       if (response.ok) {
         setGroups(groups.filter((g) => g.id !== groupId))
-        setQuestions(questions.filter((q) => {
-          const group = groups.find((g) => g.id === groupId)
-          return group ? q.group_id !== groupId : true
-        }))
+        setQuestions(
+          questions.filter((q) => {
+            const group = groups.find((g) => g.id === groupId)
+            return group ? q.group_id !== groupId : true
+          }),
+        )
         toast.success("Group deleted!", toastStyles.success)
         return true
       } else {
         const result = await response.json()
-        toast.error(result.error || "Failed to delete group.", toastStyles.error)
+        toast.error(
+          result.error || "Failed to delete group.",
+          toastStyles.error,
+        )
         return false
       }
     } catch (error) {
@@ -270,7 +290,10 @@ export function useSurveyCreate(publicId?: string) {
         toast.success("Question added!", toastStyles.success)
         return newQuestion
       } else {
-        toast.error(result.error || "Failed to add question.", toastStyles.error)
+        toast.error(
+          result.error || "Failed to add question.",
+          toastStyles.error,
+        )
         return null
       }
     } catch (error) {
@@ -303,11 +326,16 @@ export function useSurveyCreate(publicId?: string) {
       const result = await response.json()
 
       if (response.ok) {
-        setQuestions(questions.map((q) => (q.id === questionId ? result.question : q)))
+        setQuestions(
+          questions.map((q) => (q.id === questionId ? result.question : q)),
+        )
         toast.success("Question updated!", toastStyles.success)
         return true
       } else {
-        toast.error(result.error || "Failed to update question.", toastStyles.error)
+        toast.error(
+          result.error || "Failed to update question.",
+          toastStyles.error,
+        )
         return false
       }
     } catch (error) {
@@ -334,7 +362,10 @@ export function useSurveyCreate(publicId?: string) {
         return true
       } else {
         const result = await response.json()
-        toast.error(result.error || "Failed to delete question.", toastStyles.error)
+        toast.error(
+          result.error || "Failed to delete question.",
+          toastStyles.error,
+        )
         return false
       }
     } catch (error) {
@@ -372,4 +403,3 @@ export function useSurveyCreate(publicId?: string) {
     reset,
   }
 }
-

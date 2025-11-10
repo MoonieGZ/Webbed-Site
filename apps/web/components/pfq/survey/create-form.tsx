@@ -91,8 +91,16 @@ export function SurveyCreateForm({ publicId }: SurveyCreateFormProps) {
   useEffect(() => {
     if (survey) {
       setName(survey.name)
-      setStartDate(survey.start_date ? new Date(survey.start_date).toISOString().slice(0, 16) : "")
-      setEndDate(survey.end_date ? new Date(survey.end_date).toISOString().slice(0, 16) : "")
+      setStartDate(
+        survey.start_date
+          ? new Date(survey.start_date).toISOString().slice(0, 16)
+          : "",
+      )
+      setEndDate(
+        survey.end_date
+          ? new Date(survey.end_date).toISOString().slice(0, 16)
+          : "",
+      )
       setAnonymousResponses(survey.anonymous_responses)
       setAllowEdits(survey.allow_edits)
     }
@@ -101,13 +109,15 @@ export function SurveyCreateForm({ publicId }: SurveyCreateFormProps) {
   // Helper to get date string value
   const getStartDateValue = (): string => {
     if (startDate) return startDate
-    if (survey?.start_date) return new Date(survey.start_date).toISOString().slice(0, 16)
+    if (survey?.start_date)
+      return new Date(survey.start_date).toISOString().slice(0, 16)
     return ""
   }
 
   const getEndDateValue = (): string => {
     if (endDate) return endDate
-    if (survey?.end_date) return new Date(survey.end_date).toISOString().slice(0, 16)
+    if (survey?.end_date)
+      return new Date(survey.end_date).toISOString().slice(0, 16)
     return ""
   }
 
@@ -213,9 +223,11 @@ export function SurveyCreateForm({ publicId }: SurveyCreateFormProps) {
                     Survey is Currently Live
                   </h3>
                   <p className="text-sm text-amber-800 dark:text-amber-200">
-                    <strong>Warning:</strong> This survey is currently active and accepting responses. 
-                    Adding new questions or changing the order of existing questions will falsify results 
-                    and may cause data inconsistencies. Only make changes if absolutely necessary.
+                    <strong>Warning:</strong> This survey is currently active
+                    and accepting responses. Adding new questions or changing
+                    the order of existing questions will falsify results and may
+                    cause data inconsistencies. Only make changes if absolutely
+                    necessary.
                   </p>
                 </div>
               </div>
@@ -226,7 +238,8 @@ export function SurveyCreateForm({ publicId }: SurveyCreateFormProps) {
           <CardHeader>
             <CardTitle>Survey Created</CardTitle>
             <CardDescription>
-              Survey ID: <code className="bg-muted px-1 rounded">{survey.public_id}</code>
+              Survey ID:{" "}
+              <code className="bg-muted px-1 rounded">{survey.public_id}</code>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -240,18 +253,16 @@ export function SurveyCreateForm({ publicId }: SurveyCreateFormProps) {
                 </div>
                 <div className="flex gap-2 ml-4">
                   <Button
-                    onClick={() => router.push(`/pfq/survey/${survey.public_id}/results`)}
+                    onClick={() =>
+                      router.push(`/pfq/survey/${survey.public_id}/results`)
+                    }
                     variant="outline"
                     size="sm"
                   >
                     <BarChart3 className="h-4 w-4 mr-2" />
                     View Responses
                   </Button>
-                  <Button
-                    onClick={copyPublicId}
-                    variant="outline"
-                    size="sm"
-                  >
+                  <Button onClick={copyPublicId} variant="outline" size="sm">
                     {publicIdCopied ? (
                       <>
                         <Check className="h-4 w-4 mr-2" />
@@ -400,87 +411,86 @@ export function SurveyCreateForm({ publicId }: SurveyCreateFormProps) {
         <CardHeader>
           <CardTitle>Create New Survey</CardTitle>
           <CardDescription>
-            Fill in the survey details below. You can add questions after creating
-            the survey.
+            Fill in the survey details below. You can add questions after
+            creating the survey.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Survey Name</Label>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter survey name"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="start">Start Date & Time</Label>
+            <Label htmlFor="name">Survey Name</Label>
             <Input
-              id="start"
-              type="datetime-local"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter survey name"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="end">End Date & Time</Label>
-            <Input
-              id="end"
-              type="datetime-local"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="start">Start Date & Time</Label>
+              <Input
+                id="start"
+                type="datetime-local"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="end">End Date & Time</Label>
+              <Input
+                id="end"
+                type="datetime-local"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="anonymous-new">Anonymous Responses</Label>
+              <p className="text-xs text-muted-foreground">
+                Hide user information in results
+              </p>
+            </div>
+            <Switch
+              id="anonymous-new"
+              checked={anonymousResponses}
+              onCheckedChange={setAnonymousResponses}
             />
           </div>
-        </div>
 
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="anonymous-new">Anonymous Responses</Label>
-            <p className="text-xs text-muted-foreground">
-              Hide user information in results
-            </p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="allow-edits-new">Allow Edits</Label>
+              <p className="text-xs text-muted-foreground">
+                Allow users to edit their responses
+              </p>
+            </div>
+            <Switch
+              id="allow-edits-new"
+              checked={allowEdits}
+              onCheckedChange={setAllowEdits}
+            />
           </div>
-          <Switch
-            id="anonymous-new"
-            checked={anonymousResponses}
-            onCheckedChange={setAnonymousResponses}
-          />
-        </div>
 
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="allow-edits-new">Allow Edits</Label>
-            <p className="text-xs text-muted-foreground">
-              Allow users to edit their responses
-            </p>
-          </div>
-          <Switch
-            id="allow-edits-new"
-            checked={allowEdits}
-            onCheckedChange={setAllowEdits}
-          />
-        </div>
-
-        <Button
-          onClick={handleCreateSurvey}
-          disabled={creating || !name.trim() || !startDate || !endDate}
-          className="w-full"
-        >
-          {creating ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
-              Creating...
-            </>
-          ) : (
-            "Create Survey"
-          )}
-        </Button>
-      </CardContent>
-    </Card>
+          <Button
+            onClick={handleCreateSurvey}
+            disabled={creating || !name.trim() || !startDate || !endDate}
+            className="w-full"
+          >
+            {creating ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2" />
+                Creating...
+              </>
+            ) : (
+              "Create Survey"
+            )}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }
-

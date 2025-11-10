@@ -46,7 +46,10 @@ export async function GET(
 
     // If no response found by user_id, check by API key hash (for unauthenticated users)
     if (!response && apiKey) {
-      const apiKeyHash = crypto.createHash("sha256").update(apiKey).digest("hex")
+      const apiKeyHash = crypto
+        .createHash("sha256")
+        .update(apiKey)
+        .digest("hex")
       response = (await queryOne(
         "SELECT id, survey_id, user_id, api_key_validated, created_at, updated_at FROM pfq_survey_responses WHERE survey_id = ? AND api_key_hash = ? LIMIT 1",
         [survey.id, apiKeyHash],
@@ -106,10 +109,7 @@ export async function POST(
     }
 
     if (now > endDate) {
-      return NextResponse.json(
-        { error: "Survey has ended" },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: "Survey has ended" }, { status: 400 })
     }
 
     const bodySchema = z.object({
@@ -163,16 +163,16 @@ export async function POST(
     let existingResponse: any = null
     if (userId) {
       // Check by user_id first (for logged-in users)
-      existingResponse = await queryOne(
+      existingResponse = (await queryOne(
         "SELECT id FROM pfq_survey_responses WHERE survey_id = ? AND user_id = ? LIMIT 1",
         [survey.id, userId],
-      ) as any
+      )) as any
     } else {
       // Check by API key hash (for unauthenticated users)
-      existingResponse = await queryOne(
+      existingResponse = (await queryOne(
         "SELECT id FROM pfq_survey_responses WHERE survey_id = ? AND api_key_hash = ? LIMIT 1",
         [survey.id, apiKeyHash],
-      ) as any
+      )) as any
     }
 
     if (existingResponse) {
@@ -190,10 +190,9 @@ export async function POST(
       )
 
       // Delete old answers
-      await query(
-        "DELETE FROM pfq_survey_answers WHERE response_id = ?",
-        [existingResponse.id],
-      )
+      await query("DELETE FROM pfq_survey_answers WHERE response_id = ?", [
+        existingResponse.id,
+      ])
 
       // Insert new answers
       for (const answer of answers) {
@@ -221,10 +220,10 @@ export async function POST(
       })
     } else {
       // Create new response
-      const result = await query(
+      const result = (await query(
         "INSERT INTO pfq_survey_responses (survey_id, user_id, api_key_validated, api_key_hash, pfq_username) VALUES (?, ?, 1, ?, ?)",
         [survey.id, userId, apiKeyHash, pfqUsername],
-      ) as any
+      )) as any
 
       const responseId = result.insertId
 
@@ -261,4 +260,3 @@ export async function POST(
     )
   }
 }
-

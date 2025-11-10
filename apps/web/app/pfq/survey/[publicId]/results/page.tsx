@@ -3,12 +3,7 @@
 import { useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { SurveyResults } from "@/components/pfq/survey/results"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useStaffCheck } from "@/hooks/pfq/use-staff-check"
 
 export default function SurveyResultsPage() {
@@ -46,4 +41,3 @@ export default function SurveyResultsPage() {
     </div>
   )
 }
-

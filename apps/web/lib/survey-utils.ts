@@ -29,4 +29,3 @@ export async function generateSurveyPublicId(): Promise<string> {
 
   throw new Error("Failed to generate unique public ID after multiple attempts")
 }
-

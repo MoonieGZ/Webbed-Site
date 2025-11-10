@@ -72,7 +72,10 @@ export async function PUT(
     }
 
     if (updateFields.length === 0) {
-      return NextResponse.json({ error: "No fields to update" }, { status: 400 })
+      return NextResponse.json(
+        { error: "No fields to update" },
+        { status: 400 },
+      )
     }
 
     updateValues.push(groupId)
@@ -140,4 +143,3 @@ export async function DELETE(
     )
   }
 }
-

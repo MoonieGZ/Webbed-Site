@@ -48,10 +48,10 @@ export async function POST(
 
     const { name, order_index } = parseResult.data
 
-    const result = await query(
+    const result = (await query(
       "INSERT INTO pfq_survey_question_groups (survey_id, name, order_index) VALUES (?, ?, ?)",
       [survey.id, name, order_index],
-    ) as any
+    )) as any
 
     const group = await queryOne(
       "SELECT id, survey_id, name, order_index, created_at FROM pfq_survey_question_groups WHERE id = ? LIMIT 1",
@@ -67,4 +67,3 @@ export async function POST(
     )
   }
 }
-

@@ -1,4 +1,9 @@
-export type SurveyQuestionType = "range_5" | "range_10" | "likert" | "text" | "choice"
+export type SurveyQuestionType =
+  | "range_5"
+  | "range_10"
+  | "likert"
+  | "text"
+  | "choice"
 
 export interface Survey {
   id: number
@@ -156,4 +161,3 @@ export interface SubmitResponseRequest {
     answer_value: string
   }[]
 }
-

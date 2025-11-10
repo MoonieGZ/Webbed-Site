@@ -4,22 +4,33 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Plus, Trash2, Edit2, X, Check, ChevronUp, ChevronDown } from "lucide-react"
+  Plus,
+  Trash2,
+  Edit2,
+  X,
+  Check,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
-import type { QuestionGroup, CreateQuestionGroupRequest } from "@/types/pfq-survey"
+import type {
+  QuestionGroup,
+  CreateQuestionGroupRequest,
+} from "@/types/pfq-survey"
 
 interface QuestionGroupEditorProps {
   surveyPublicId: string
   groups: QuestionGroup[]
-  onAddGroup: (data: CreateQuestionGroupRequest) => Promise<QuestionGroup | null>
-  onUpdateGroup: (groupId: number, data: Partial<CreateQuestionGroupRequest>) => Promise<boolean>
+  onAddGroup: (
+    data: CreateQuestionGroupRequest,
+  ) => Promise<QuestionGroup | null>
+  onUpdateGroup: (
+    groupId: number,
+    data: Partial<CreateQuestionGroupRequest>,
+  ) => Promise<boolean>
   onDeleteGroup: (groupId: number) => Promise<boolean>
   onGroupsChange: (groups: QuestionGroup[]) => void
 }
@@ -89,13 +100,19 @@ export function QuestionGroupEditor({
   }
 
   const handleDelete = async (groupId: number) => {
-    if (confirm("Are you sure you want to delete this group? All questions in this group will also be deleted.")) {
+    if (
+      confirm(
+        "Are you sure you want to delete this group? All questions in this group will also be deleted.",
+      )
+    ) {
       await onDeleteGroup(groupId)
     }
   }
 
   const moveGroup = async (groupId: number, direction: "up" | "down") => {
-    const sortedGroups = [...groups].sort((a, b) => a.order_index - b.order_index)
+    const sortedGroups = [...groups].sort(
+      (a, b) => a.order_index - b.order_index,
+    )
     const currentIndex = sortedGroups.findIndex((g) => g.id === groupId)
     if (currentIndex === -1) return
 
@@ -203,7 +220,11 @@ export function QuestionGroupEditor({
                     <Button size="sm" onClick={handleSaveEdit}>
                       <Check className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={handleCancelEdit}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCancelEdit}
+                    >
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
@@ -275,4 +296,3 @@ export function QuestionGroupEditor({
     </Card>
   )
 }
-

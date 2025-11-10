@@ -4,12 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Select,
   SelectContent,
@@ -17,7 +12,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, Trash2, Edit2, X, Check, ChevronUp, ChevronDown } from "lucide-react"
+import {
+  Plus,
+  Trash2,
+  Edit2,
+  X,
+  Check,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
 import type {
@@ -77,26 +80,38 @@ export function QuestionEditor({
       return
     }
 
-    if (newQuestion.question_type === "choice" && newQuestion.choices.length === 0) {
-      toast.error("Choice questions must have at least one choice", toastStyles.error)
+    if (
+      newQuestion.question_type === "choice" &&
+      newQuestion.choices.length === 0
+    ) {
+      toast.error(
+        "Choice questions must have at least one choice",
+        toastStyles.error,
+      )
       return
     }
 
     setAdding(true)
     // Auto-set order_index to end if not set
-    const maxOrder = questions.length > 0
-      ? Math.max(...questions.map((q) => q.order_index))
-      : -1
+    const maxOrder =
+      questions.length > 0
+        ? Math.max(...questions.map((q) => q.order_index))
+        : -1
     const orderIndex = newQuestion.order_index || maxOrder + 1
 
     const question = await onAddQuestion({
       group_id: group.id,
       question_text: newQuestion.question_text.trim(),
       question_type: newQuestion.question_type,
-      allow_multiple: newQuestion.question_type === "choice" ? newQuestion.allow_multiple : undefined,
+      allow_multiple:
+        newQuestion.question_type === "choice"
+          ? newQuestion.allow_multiple
+          : undefined,
       order_index: orderIndex,
       choices:
-        newQuestion.question_type === "choice" ? newQuestion.choices : undefined,
+        newQuestion.question_type === "choice"
+          ? newQuestion.choices
+          : undefined,
     })
 
     if (question) {
@@ -139,14 +154,20 @@ export function QuestionEditor({
       editingQuestion.question_type === "choice" &&
       editingQuestion.choices.length === 0
     ) {
-      toast.error("Choice questions must have at least one choice", toastStyles.error)
+      toast.error(
+        "Choice questions must have at least one choice",
+        toastStyles.error,
+      )
       return
     }
 
     const success = await onUpdateQuestion(editingId, {
       question_text: editingQuestion.question_text.trim(),
       question_type: editingQuestion.question_type,
-      allow_multiple: editingQuestion.question_type === "choice" ? editingQuestion.allow_multiple : undefined,
+      allow_multiple:
+        editingQuestion.question_type === "choice"
+          ? editingQuestion.allow_multiple
+          : undefined,
       order_index: editingQuestion.order_index,
       choices:
         editingQuestion.question_type === "choice"
@@ -262,7 +283,10 @@ export function QuestionEditor({
     // Update both choices - need to get the actual choice IDs
     // For now, we'll update the question with reordered choices
     const updatedChoices = [...sortedChoices]
-    updatedChoices[choiceIndex] = { ...currentChoice, order_index: currentNewOrder }
+    updatedChoices[choiceIndex] = {
+      ...currentChoice,
+      order_index: currentNewOrder,
+    }
     updatedChoices[newIndex] = { ...targetChoice, order_index: targetNewOrder }
 
     await onUpdateQuestion(questionId, {
@@ -311,7 +335,10 @@ export function QuestionEditor({
               placeholder="Question text"
               value={newQuestion.question_text}
               onChange={(e) =>
-                setNewQuestion({ ...newQuestion, question_text: e.target.value })
+                setNewQuestion({
+                  ...newQuestion,
+                  question_text: e.target.value,
+                })
               }
             />
             <div className="flex gap-2">
@@ -323,7 +350,10 @@ export function QuestionEditor({
                   setNewQuestion({
                     ...newQuestion,
                     question_type: value,
-                    allow_multiple: value === "choice" ? (newQuestion.allow_multiple ?? false) : undefined,
+                    allow_multiple:
+                      value === "choice"
+                        ? (newQuestion.allow_multiple ?? false)
+                        : undefined,
                     choices: value === "choice" ? newQuestion.choices : [],
                   })
                 }
@@ -332,7 +362,9 @@ export function QuestionEditor({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="choice">Choice (Radio/Checkbox)</SelectItem>
+                  <SelectItem value="choice">
+                    Choice (Radio/Checkbox)
+                  </SelectItem>
                   <SelectItem value="range_5">Range 0-5</SelectItem>
                   <SelectItem value="range_10">Range 0-10</SelectItem>
                   <SelectItem value="likert">Likert Scale</SelectItem>
@@ -349,14 +381,19 @@ export function QuestionEditor({
                       Allow Multiple Selections
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      {newQuestion.allow_multiple ? "Checkboxes" : "Radio buttons"}
+                      {newQuestion.allow_multiple
+                        ? "Checkboxes"
+                        : "Radio buttons"}
                     </p>
                   </div>
                   <Switch
                     id="allow-multiple-new"
                     checked={newQuestion.allow_multiple ?? false}
                     onCheckedChange={(checked) =>
-                      setNewQuestion({ ...newQuestion, allow_multiple: checked })
+                      setNewQuestion({
+                        ...newQuestion,
+                        allow_multiple: checked,
+                      })
                     }
                   />
                 </div>
@@ -403,7 +440,8 @@ export function QuestionEditor({
                               if (index > 0) {
                                 const updated = [...sortedChoices]
                                 const temp = updated[index].order_index
-                                updated[index].order_index = updated[index - 1].order_index
+                                updated[index].order_index =
+                                  updated[index - 1].order_index
                                 updated[index - 1].order_index = temp
                                 setNewQuestion({
                                   ...newQuestion,
@@ -425,7 +463,8 @@ export function QuestionEditor({
                               if (index < sortedChoices.length - 1) {
                                 const updated = [...sortedChoices]
                                 const temp = updated[index].order_index
-                                updated[index].order_index = updated[index + 1].order_index
+                                updated[index].order_index =
+                                  updated[index + 1].order_index
                                 updated[index + 1].order_index = temp
                                 setNewQuestion({
                                   ...newQuestion,
@@ -512,7 +551,10 @@ export function QuestionEditor({
                             setEditingQuestion({
                               ...editingQuestion,
                               question_type: value,
-                              allow_multiple: value === "choice" ? (editingQuestion.allow_multiple ?? false) : undefined,
+                              allow_multiple:
+                                value === "choice"
+                                  ? (editingQuestion.allow_multiple ?? false)
+                                  : undefined,
                               choices:
                                 value === "choice"
                                   ? editingQuestion.choices
@@ -527,8 +569,12 @@ export function QuestionEditor({
                             <SelectItem value="range_5">Range 0-5</SelectItem>
                             <SelectItem value="range_10">Range 0-10</SelectItem>
                             <SelectItem value="likert">Likert Scale</SelectItem>
-                            <SelectItem value="text">Text (2000 chars)</SelectItem>
-                            <SelectItem value="choice">Choice (Radio/Checkbox)</SelectItem>
+                            <SelectItem value="text">
+                              Text (2000 chars)
+                            </SelectItem>
+                            <SelectItem value="choice">
+                              Choice (Radio/Checkbox)
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <div className="flex flex-col gap-1">
@@ -574,11 +620,16 @@ export function QuestionEditor({
                         <div className="space-y-3">
                           <div className="flex items-center justify-between p-2 border rounded-md">
                             <div className="space-y-0.5">
-                              <Label htmlFor="allow-multiple-edit" className="text-sm">
+                              <Label
+                                htmlFor="allow-multiple-edit"
+                                className="text-sm"
+                              >
                                 Allow Multiple Selections
                               </Label>
                               <p className="text-xs text-muted-foreground">
-                                {editingQuestion.allow_multiple ? "Checkboxes" : "Radio buttons"}
+                                {editingQuestion.allow_multiple
+                                  ? "Checkboxes"
+                                  : "Radio buttons"}
                               </p>
                             </div>
                             <Switch
@@ -608,23 +659,29 @@ export function QuestionEditor({
                           {editingQuestion.choices
                             .sort((a, b) => a.order_index - b.order_index)
                             .map((choice, index) => {
-                              const sortedChoices = [...editingQuestion.choices].sort(
-                                (a, b) => a.order_index - b.order_index,
-                              )
+                              const sortedChoices = [
+                                ...editingQuestion.choices,
+                              ].sort((a, b) => a.order_index - b.order_index)
                               return (
                                 <div key={index} className="flex gap-2">
                                   <Input
                                     placeholder={`Choice ${index + 1}`}
                                     value={choice.choice_text}
                                     onChange={(e) => {
-                                      const sorted = [...editingQuestion.choices].sort(
+                                      const sorted = [
+                                        ...editingQuestion.choices,
+                                      ].sort(
                                         (a, b) => a.order_index - b.order_index,
                                       )
                                       const actualIndex = sorted.findIndex(
-                                        (c) => c.order_index === choice.order_index,
+                                        (c) =>
+                                          c.order_index === choice.order_index,
                                       )
                                       if (actualIndex !== -1) {
-                                        updateEditChoice(actualIndex, e.target.value)
+                                        updateEditChoice(
+                                          actualIndex,
+                                          e.target.value,
+                                        )
                                       }
                                     }}
                                     className="flex-1"
@@ -637,7 +694,8 @@ export function QuestionEditor({
                                       onClick={() => {
                                         if (index > 0) {
                                           const updated = [...sortedChoices]
-                                          const temp = updated[index].order_index
+                                          const temp =
+                                            updated[index].order_index
                                           updated[index].order_index =
                                             updated[index - 1].order_index
                                           updated[index - 1].order_index = temp
@@ -660,7 +718,8 @@ export function QuestionEditor({
                                       onClick={() => {
                                         if (index < sortedChoices.length - 1) {
                                           const updated = [...sortedChoices]
-                                          const temp = updated[index].order_index
+                                          const temp =
+                                            updated[index].order_index
                                           updated[index].order_index =
                                             updated[index + 1].order_index
                                           updated[index + 1].order_index = temp
@@ -670,7 +729,9 @@ export function QuestionEditor({
                                           })
                                         }
                                       }}
-                                      disabled={index === sortedChoices.length - 1}
+                                      disabled={
+                                        index === sortedChoices.length - 1
+                                      }
                                       className="h-6 px-2"
                                       title="Move down"
                                     >
@@ -682,11 +743,14 @@ export function QuestionEditor({
                                     size="sm"
                                     variant="outline"
                                     onClick={() => {
-                                      const sorted = [...editingQuestion.choices].sort(
+                                      const sorted = [
+                                        ...editingQuestion.choices,
+                                      ].sort(
                                         (a, b) => a.order_index - b.order_index,
                                       )
                                       const actualIndex = sorted.findIndex(
-                                        (c) => c.order_index === choice.order_index,
+                                        (c) =>
+                                          c.order_index === choice.order_index,
                                       )
                                       if (actualIndex !== -1) {
                                         removeEditChoice(actualIndex)
@@ -702,10 +766,7 @@ export function QuestionEditor({
                       )}
 
                       <div className="flex gap-2">
-                        <Button
-                          onClick={handleSaveEdit}
-                          className="flex-1"
-                        >
+                        <Button onClick={handleSaveEdit} className="flex-1">
                           <Check className="h-4 w-4 mr-2" />
                           Save
                         </Button>
@@ -731,7 +792,9 @@ export function QuestionEditor({
                         question.choices && (
                           <div className="mt-2 text-xs text-muted-foreground">
                             Choices:{" "}
-                            {question.choices.map((c) => c.choice_text).join(", ")}
+                            {question.choices
+                              .map((c) => c.choice_text)
+                              .join(", ")}
                           </div>
                         )}
                     </div>
@@ -798,4 +861,3 @@ export function QuestionEditor({
     </Card>
   )
 }
-

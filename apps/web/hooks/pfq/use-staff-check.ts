@@ -23,7 +23,11 @@ export function useStaffCheck() {
         const apiKeyResponse = await fetch("/api/account/pfq")
         const apiKeyData = await apiKeyResponse.json()
 
-        if (!apiKeyResponse.ok || !apiKeyData.hasApiKey || !apiKeyData.pfqUser) {
+        if (
+          !apiKeyResponse.ok ||
+          !apiKeyData.hasApiKey ||
+          !apiKeyData.pfqUser
+        ) {
           setIsStaff(false)
           setLoading(false)
           return
@@ -44,4 +48,3 @@ export function useStaffCheck() {
 
   return { isStaff, loading }
 }
-

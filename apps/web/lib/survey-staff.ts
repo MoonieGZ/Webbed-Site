@@ -6,7 +6,9 @@ import { PFQApiService } from "@/services/pfq-api"
  * Checks if a user is staff by validating their PFQ API key
  * and checking the isStaff property from the whoAmI response
  */
-export async function isStaffUser(sessionToken: string | undefined): Promise<boolean> {
+export async function isStaffUser(
+  sessionToken: string | undefined,
+): Promise<boolean> {
   if (!sessionToken) {
     return false
   }
@@ -40,4 +42,3 @@ export async function isStaffUser(sessionToken: string | undefined): Promise<boo
     return false
   }
 }
-

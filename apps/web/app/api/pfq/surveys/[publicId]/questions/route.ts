@@ -36,7 +36,13 @@ export async function POST(
     const bodySchema = z.object({
       group_id: z.number().int().positive(),
       question_text: z.string().min(1),
-      question_type: z.enum(["range_5", "range_10", "likert", "text", "choice"]),
+      question_type: z.enum([
+        "range_5",
+        "range_10",
+        "likert",
+        "text",
+        "choice",
+      ]),
       allow_multiple: z.boolean().optional(), // For choice questions: true = checkboxes, false = radio
       order_index: z.number().int().min(0),
       choices: z
@@ -101,10 +107,17 @@ export async function POST(
       )
     }
 
-    const result = await query(
+    const result = (await query(
       "INSERT INTO pfq_survey_questions (group_id, survey_id, question_text, question_type, allow_multiple, order_index) VALUES (?, ?, ?, ?, ?, ?)",
-      [group_id, survey.id, question_text, question_type, question_type === "choice" ? (allow_multiple ? 1 : 0) : 0, order_index],
-    ) as any
+      [
+        group_id,
+        survey.id,
+        question_text,
+        question_type,
+        question_type === "choice" ? (allow_multiple ? 1 : 0) : 0,
+        order_index,
+      ],
+    )) as any
 
     const questionId = result.insertId
 
@@ -118,10 +131,10 @@ export async function POST(
       }
     }
 
-    const question = await queryOne(
+    const question = (await queryOne(
       "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, order_index, created_at FROM pfq_survey_questions WHERE id = ? LIMIT 1",
       [questionId],
-    ) as any
+    )) as any
     question.allow_multiple = question.allow_multiple === 1
 
     if (question_type === "choice" && choices) {
@@ -141,4 +154,3 @@ export async function POST(
     )
   }
 }
-

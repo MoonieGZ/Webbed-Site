@@ -6,7 +6,11 @@ import { z } from "zod"
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ publicId: string; questionId: string; choiceId: string }> },
+  {
+    params,
+  }: {
+    params: Promise<{ publicId: string; questionId: string; choiceId: string }>
+  },
 ) {
   try {
     const sessionToken = request.cookies.get("session")?.value
@@ -72,7 +76,10 @@ export async function PUT(
     }
 
     if (updateFields.length === 0) {
-      return NextResponse.json({ error: "No fields to update" }, { status: 400 })
+      return NextResponse.json(
+        { error: "No fields to update" },
+        { status: 400 },
+      )
     }
 
     updateValues.push(choiceId)
@@ -99,7 +106,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ publicId: string; questionId: string; choiceId: string }> },
+  {
+    params,
+  }: {
+    params: Promise<{ publicId: string; questionId: string; choiceId: string }>
+  },
 ) {
   try {
     const sessionToken = request.cookies.get("session")?.value
@@ -140,4 +151,3 @@ export async function DELETE(
     )
   }
 }
-

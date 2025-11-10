@@ -39,10 +39,7 @@ export async function POST(
     )) as any
 
     if (!question) {
-      return NextResponse.json(
-        { error: "Question not found" },
-        { status: 404 },
-      )
+      return NextResponse.json({ error: "Question not found" }, { status: 404 })
     }
 
     if (question.question_type !== "choice") {
@@ -80,10 +77,10 @@ export async function POST(
 
     const { choice_text, order_index } = parseResult.data
 
-    const result = await query(
+    const result = (await query(
       "INSERT INTO pfq_survey_answer_choices (question_id, choice_text, order_index) VALUES (?, ?, ?)",
       [questionId, choice_text, order_index],
-    ) as any
+    )) as any
 
     const choice = await queryOne(
       "SELECT id, question_id, choice_text, order_index, created_at FROM pfq_survey_answer_choices WHERE id = ? LIMIT 1",
@@ -99,4 +96,3 @@ export async function POST(
     )
   }
 }
-

@@ -1,12 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useSurveyResults } from "@/hooks/pfq/use-survey-results"
 import type {
@@ -19,7 +14,8 @@ interface SurveyResultsProps {
 }
 
 export function SurveyResults({ publicId }: SurveyResultsProps) {
-  const { results, view, loading, error, toggleView } = useSurveyResults(publicId)
+  const { results, view, loading, error, toggleView } =
+    useSurveyResults(publicId)
 
   if (loading) {
     return (
@@ -139,13 +135,9 @@ export function SurveyResults({ publicId }: SurveyResultsProps) {
       </Card>
 
       {view === "individual" ? (
-        <IndividualResultsView
-          results={results as SurveyResultsIndividual[]}
-        />
+        <IndividualResultsView results={results as SurveyResultsIndividual[]} />
       ) : (
-        <AggregatedResultsView
-          results={results as SurveyResultsAggregated[]}
-        />
+        <AggregatedResultsView results={results as SurveyResultsAggregated[]} />
       )}
     </div>
   )
@@ -185,7 +177,10 @@ function IndividualResultsView({
                     by {result.response.pfq_username}
                     {result.response.user && (
                       <span className="text-xs ml-1">
-                        ({result.response.user.name || result.response.user.email})
+                        (
+                        {result.response.user.name ||
+                          result.response.user.email}
+                        )
                       </span>
                     )}
                   </span>
@@ -197,10 +192,12 @@ function IndividualResultsView({
                 )}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Submitted: {new Date(result.response.created_at).toLocaleString()}
+                Submitted:{" "}
+                {new Date(result.response.created_at).toLocaleString()}
                 {result.response.updated_at !== result.response.created_at && (
                   <span className="ml-2">
-                    (Updated: {new Date(result.response.updated_at).toLocaleString()})
+                    (Updated:{" "}
+                    {new Date(result.response.updated_at).toLocaleString()})
                   </span>
                 )}
               </p>
@@ -210,7 +207,9 @@ function IndividualResultsView({
                 result.answers.map((answer, answerIndex) => (
                   <div key={answer.id}>
                     <div className="space-y-2">
-                      <p className="font-medium">{answer.question.question_text}</p>
+                      <p className="font-medium">
+                        {answer.question.question_text}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         Type: {answer.question.question_type}
                       </p>
@@ -224,7 +223,9 @@ function IndividualResultsView({
                   </div>
                 ))
               ) : (
-                <p className="text-muted-foreground">No answers for this response.</p>
+                <p className="text-muted-foreground">
+                  No answers for this response.
+                </p>
               )}
             </CardContent>
           </Card>
@@ -275,7 +276,10 @@ function AggregatedResultsView({
             </p>
           </CardHeader>
           <CardContent>
-            {result.total_responses === 0 || !result.data || !Array.isArray(result.data) || result.data.length === 0 ? (
+            {result.total_responses === 0 ||
+            !result.data ||
+            !Array.isArray(result.data) ||
+            result.data.length === 0 ? (
               <p className="text-muted-foreground">No responses yet</p>
             ) : (
               <div className="space-y-3">
@@ -303,4 +307,3 @@ function AggregatedResultsView({
     </div>
   )
 }
-

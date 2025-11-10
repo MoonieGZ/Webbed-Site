@@ -20,11 +20,11 @@ export default function SurveyPage() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-          Surveys are accessed via direct link. If you have a survey link, please use it to access the survey.
+            Surveys are accessed via direct link. If you have a survey link,
+            please use it to access the survey.
           </p>
         </CardContent>
       </Card>
     </div>
   )
 }
-

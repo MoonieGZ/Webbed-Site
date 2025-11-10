@@ -65,7 +65,9 @@ export async function GET(
             survey_id: response.survey_id,
             user_id: survey.anonymous_responses ? null : response.user_id,
             api_key_validated: response.api_key_validated,
-            pfq_username: survey.anonymous_responses ? null : response.pfq_username,
+            pfq_username: survey.anonymous_responses
+              ? null
+              : response.pfq_username,
             created_at: response.created_at,
             updated_at: response.updated_at,
             user: survey.anonymous_responses
@@ -167,4 +169,3 @@ export async function GET(
     )
   }
 }
-

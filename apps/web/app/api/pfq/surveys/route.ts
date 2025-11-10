@@ -69,10 +69,18 @@ export async function POST(request: NextRequest) {
 
     const public_id = await generateSurveyPublicId()
 
-    const result = await query(
+    const result = (await query(
       "INSERT INTO pfq_surveys (public_id, name, start_date, end_date, anonymous_responses, allow_edits, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [public_id, name, start_date, end_date, anonymous_responses ? 1 : 0, allow_edits ? 1 : 0, user.id],
-    ) as any
+      [
+        public_id,
+        name,
+        start_date,
+        end_date,
+        anonymous_responses ? 1 : 0,
+        allow_edits ? 1 : 0,
+        user.id,
+      ],
+    )) as any
 
     const survey = await queryOne(
       "SELECT id, public_id, name, start_date, end_date, anonymous_responses, allow_edits, created_by, created_at, updated_at FROM pfq_surveys WHERE id = ? LIMIT 1",
@@ -88,4 +96,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

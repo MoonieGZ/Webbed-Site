@@ -3,7 +3,11 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
-import type { SurveyWithDetails, UserResponse, SubmitResponseRequest } from "@/types/pfq-survey"
+import type {
+  SurveyWithDetails,
+  UserResponse,
+  SubmitResponseRequest,
+} from "@/types/pfq-survey"
 
 export function useSurvey(publicId: string) {
   const [survey, setSurvey] = useState<SurveyWithDetails | null>(null)
@@ -57,7 +61,7 @@ export function useSurvey(publicId: string) {
       const url = keyToUse
         ? `/api/pfq/surveys/${publicId}/responses?api_key=${encodeURIComponent(keyToUse)}`
         : `/api/pfq/surveys/${publicId}/responses`
-      
+
       const response = await fetch(url)
       const data = await response.json()
 
@@ -124,7 +128,10 @@ export function useSurvey(publicId: string) {
         }
         return true
       } else {
-        toast.error(data.error || "Failed to submit response.", toastStyles.error)
+        toast.error(
+          data.error || "Failed to submit response.",
+          toastStyles.error,
+        )
         return false
       }
     } catch (error) {
@@ -175,4 +182,3 @@ export function useSurvey(publicId: string) {
     refreshResponse: fetchUserResponse,
   }
 }
-
