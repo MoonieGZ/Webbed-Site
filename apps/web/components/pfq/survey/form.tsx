@@ -43,6 +43,10 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
 
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({})
 
+  // Count total questions across all groups (memoized for performance)
+  // Must be called before any early returns to satisfy React Hooks rules
+  const totalQuestions = useMemo(() => countTotalQuestions(survey), [survey])
+
   useEffect(() => {
     if (userResponse?.answers) {
       const initialAnswers: Record<number, string | string[]> = {}
@@ -132,9 +136,6 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
       </Card>
     )
   }
-
-  // Count total questions across all groups (memoized for performance)
-  const totalQuestions = useMemo(() => countTotalQuestions(survey), [survey])
 
   const handleAnswerChange = (questionId: number, value: string) => {
     setAnswers((prev) => ({
