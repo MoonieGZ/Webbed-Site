@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
+import { getCookie, deleteCookie } from "@/lib/cookie-utils"
+import { PFQApiService } from "@/services/pfq-api"
+import { PFQ_SURVEY_API_KEY_COOKIE } from "@/lib/survey-constants"
 import type {
   SurveyWithDetails,
   UserResponse,
@@ -17,21 +20,12 @@ export function useSurvey(publicId: string) {
   const [error, setError] = useState<string | null>(null)
   const [apiKey, setApiKey] = useState<string>("")
   const [hasApiKeyFromProfile, setHasApiKeyFromProfile] = useState(false)
+  const [isApiKeyValidated, setIsApiKeyValidated] = useState(false)
 
   useEffect(() => {
     fetchSurvey()
     fetchApiKeyFromProfile()
   }, [publicId])
-
-  // Fetch user response when API key is available
-  useEffect(() => {
-    if (apiKey) {
-      fetchUserResponse(apiKey)
-    } else {
-      // Also try without API key (for logged-in users)
-      fetchUserResponse()
-    }
-  }, [apiKey, publicId])
 
   const fetchSurvey = async () => {
     try {
@@ -77,6 +71,32 @@ export function useSurvey(publicId: string) {
     }
   }
 
+  // Helper function to validate and set cookie API key
+  const validateAndSetCookieApiKey = async (
+    cookieApiKey: string,
+  ): Promise<boolean> => {
+    setApiKey(cookieApiKey)
+    setHasApiKeyFromProfile(false)
+    try {
+      const validationResult = await PFQApiService.whoAmI(cookieApiKey)
+      if (validationResult.success) {
+        setIsApiKeyValidated(true)
+        await fetchUserResponse(cookieApiKey)
+        return true
+      } else {
+        // Cookie API key is invalid, clear it
+        deleteCookie(PFQ_SURVEY_API_KEY_COOKIE)
+        setApiKey("")
+        setIsApiKeyValidated(false)
+        return false
+      }
+    } catch {
+      // Silent fail on validation
+      setIsApiKeyValidated(false)
+      return false
+    }
+  }
+
   const fetchApiKeyFromProfile = async () => {
     try {
       const response = await fetch("/api/account/pfq")
@@ -85,17 +105,31 @@ export function useSurvey(publicId: string) {
       if (response.ok && data.hasApiKey && data.apiKey) {
         setApiKey(data.apiKey)
         setHasApiKeyFromProfile(true)
+        setIsApiKeyValidated(true) // API key from profile is already validated
         // Fetch user response immediately when API key is loaded from profile
-        // The useEffect will also trigger, but this ensures it happens right away
         await fetchUserResponse(data.apiKey)
-      } else {
-        // Even if no API key from profile, try to fetch response (for logged-in users)
-        await fetchUserResponse()
+        return
       }
+
+      // Check for API key in cookies (for non-logged-in users)
+      const cookieApiKey = getCookie(PFQ_SURVEY_API_KEY_COOKIE)
+      if (cookieApiKey) {
+        await validateAndSetCookieApiKey(cookieApiKey)
+        return
+      }
+
+      // Even if no API key from profile or cookies, try to fetch response (for logged-in users)
+      await fetchUserResponse()
     } catch (error) {
       // Silent fail - user might not be logged in
-      // Still try to fetch response without API key
-      await fetchUserResponse()
+      // Check for API key in cookies as fallback
+      const cookieApiKey = getCookie(PFQ_SURVEY_API_KEY_COOKIE)
+      if (cookieApiKey) {
+        await validateAndSetCookieApiKey(cookieApiKey)
+      } else {
+        // Still try to fetch response without API key
+        await fetchUserResponse()
+      }
     }
   }
 
@@ -165,6 +199,10 @@ export function useSurvey(publicId: string) {
     return now > endDate
   }
 
+  const markApiKeyAsValidated = () => {
+    setIsApiKeyValidated(true)
+  }
+
   return {
     survey,
     userResponse,
@@ -174,6 +212,8 @@ export function useSurvey(publicId: string) {
     apiKey,
     setApiKey,
     hasApiKeyFromProfile,
+    isApiKeyValidated,
+    markApiKeyAsValidated,
     submitResponse,
     isSurveyActive,
     isSurveyUpcoming,

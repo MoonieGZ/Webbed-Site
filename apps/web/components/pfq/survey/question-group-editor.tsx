@@ -16,6 +16,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
+import { sortByOrderIndex } from "@/lib/survey-utils"
 import type {
   QuestionGroup,
   CreateQuestionGroupRequest,
@@ -110,9 +111,7 @@ export function QuestionGroupEditor({
   }
 
   const moveGroup = async (groupId: number, direction: "up" | "down") => {
-    const sortedGroups = [...groups].sort(
-      (a, b) => a.order_index - b.order_index,
-    )
+    const sortedGroups = sortByOrderIndex(groups)
     const currentIndex = sortedGroups.findIndex((g) => g.id === groupId)
     if (currentIndex === -1) return
 
@@ -164,20 +163,74 @@ export function QuestionGroupEditor({
         </div>
 
         <div className="space-y-2">
-          {groups
-            .sort((a, b) => a.order_index - b.order_index)
-            .map((group) => (
-              <div
-                key={group.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
-              >
-                {editingId === group.id ? (
-                  <div className="flex items-center gap-2 flex-1">
-                    <Input
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="flex-1"
-                    />
+          {sortByOrderIndex(groups).map((group) => (
+            <div
+              key={group.id}
+              className="flex items-center justify-between p-3 border rounded-lg"
+            >
+              {editingId === group.id ? (
+                <div className="flex items-center gap-2 flex-1">
+                  <Input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="flex-1"
+                  />
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        await moveGroup(group.id, "up")
+                        setEditOrder(group.order_index - 1)
+                      }}
+                      disabled={
+                        sortByOrderIndex(groups).findIndex(
+                          (g) => g.id === group.id,
+                        ) === 0
+                      }
+                      className="h-6 px-2"
+                      title="Move up"
+                    >
+                      <ChevronUp className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        await moveGroup(group.id, "down")
+                        setEditOrder(group.order_index + 1)
+                      }}
+                      disabled={
+                        sortByOrderIndex(groups).findIndex(
+                          (g) => g.id === group.id,
+                        ) ===
+                        groups.length - 1
+                      }
+                      className="h-6 px-2"
+                      title="Move down"
+                    >
+                      <ChevronDown className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <Button size="sm" onClick={handleSaveEdit}>
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCancelEdit}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <span className="font-medium">{group.name}</span>
+                  </div>
+                  <div className="flex gap-2">
                     <div className="flex flex-col gap-1">
                       <Button
                         type="button"
@@ -185,12 +238,11 @@ export function QuestionGroupEditor({
                         variant="outline"
                         onClick={async () => {
                           await moveGroup(group.id, "up")
-                          setEditOrder(group.order_index - 1)
                         }}
                         disabled={
-                          groups
-                            .sort((a, b) => a.order_index - b.order_index)
-                            .findIndex((g) => g.id === group.id) === 0
+                          sortByOrderIndex(groups).findIndex(
+                            (g) => g.id === group.id,
+                          ) === 0
                         }
                         className="h-6 px-2"
                         title="Move up"
@@ -203,12 +255,11 @@ export function QuestionGroupEditor({
                         variant="outline"
                         onClick={async () => {
                           await moveGroup(group.id, "down")
-                          setEditOrder(group.order_index + 1)
                         }}
                         disabled={
-                          groups
-                            .sort((a, b) => a.order_index - b.order_index)
-                            .findIndex((g) => g.id === group.id) ===
+                          sortByOrderIndex(groups).findIndex(
+                            (g) => g.id === group.id,
+                          ) ===
                           groups.length - 1
                         }
                         className="h-6 px-2"
@@ -217,80 +268,26 @@ export function QuestionGroupEditor({
                         <ChevronDown className="h-3 w-3" />
                       </Button>
                     </div>
-                    <Button size="sm" onClick={handleSaveEdit}>
-                      <Check className="h-4 w-4" />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleStartEdit(group)}
+                    >
+                      <Edit2 className="h-4 w-4" />
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={handleCancelEdit}
+                      onClick={() => handleDelete(group.id)}
+                      className="text-destructive hover:text-destructive"
                     >
-                      <X className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                ) : (
-                  <>
-                    <div>
-                      <span className="font-medium">{group.name}</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <div className="flex flex-col gap-1">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={async () => {
-                            await moveGroup(group.id, "up")
-                          }}
-                          disabled={
-                            groups
-                              .sort((a, b) => a.order_index - b.order_index)
-                              .findIndex((g) => g.id === group.id) === 0
-                          }
-                          className="h-6 px-2"
-                          title="Move up"
-                        >
-                          <ChevronUp className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={async () => {
-                            await moveGroup(group.id, "down")
-                          }}
-                          disabled={
-                            groups
-                              .sort((a, b) => a.order_index - b.order_index)
-                              .findIndex((g) => g.id === group.id) ===
-                            groups.length - 1
-                          }
-                          className="h-6 px-2"
-                          title="Move down"
-                        >
-                          <ChevronDown className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleStartEdit(group)}
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDelete(group.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
+                </>
+              )}
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
@@ -10,7 +10,13 @@ import { SurveyKeyPrompt } from "./key-prompt"
 import { useSurvey } from "@/hooks/pfq/use-survey"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
-import type { SurveyWithDetails, Question } from "@/types/pfq-survey"
+import {
+  countTotalQuestions,
+  getAllQuestions,
+  formatSurveyDate,
+} from "@/lib/survey-utils"
+import { MAX_TEXT_LENGTH, LIKERT_OPTIONS } from "@/lib/survey-constants"
+import type { Question } from "@/types/pfq-survey"
 
 interface SurveyFormProps {
   publicId: string
@@ -26,6 +32,8 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
     apiKey,
     setApiKey,
     hasApiKeyFromProfile,
+    isApiKeyValidated,
+    markApiKeyAsValidated,
     submitResponse,
     isSurveyActive,
     isSurveyUpcoming,
@@ -87,7 +95,7 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         <CardContent>
           <p className="text-muted-foreground">
             This survey has not started yet. It will be available on{" "}
-            {new Date(survey.start_date).toLocaleString()}.
+            {formatSurveyDate(survey.start_date)}.
           </p>
         </CardContent>
       </Card>
@@ -103,7 +111,7 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         <CardContent>
           <p className="text-muted-foreground">
             This survey has ended. It was available until{" "}
-            {new Date(survey.end_date).toLocaleString()}.
+            {formatSurveyDate(survey.end_date)}.
           </p>
         </CardContent>
       </Card>
@@ -124,6 +132,9 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
       </Card>
     )
   }
+
+  // Count total questions across all groups (memoized for performance)
+  const totalQuestions = useMemo(() => countTotalQuestions(survey), [survey])
 
   const handleAnswerChange = (questionId: number, value: string) => {
     setAnswers((prev) => ({
@@ -162,6 +173,15 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
   }
 
   const handleSubmit = async () => {
+    // Get all questions using utility function
+    const allQuestions = getAllQuestions(survey)
+
+    // Prevent submission if there are no questions
+    if (allQuestions.length === 0) {
+      toast.error("This survey has no answerable questions.", toastStyles.error)
+      return
+    }
+
     const answerArray = Object.entries(answers).map(
       ([questionId, answerValue]) => {
         // Serialize arrays as JSON for multiple selections
@@ -174,12 +194,6 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         }
       },
     )
-
-    // Validate all questions are answered
-    const allQuestions: Question[] = []
-    for (const group of survey.groups) {
-      allQuestions.push(...group.questions)
-    }
 
     const unansweredQuestions = allQuestions.filter((q) => {
       const answer = answers[q.id]
@@ -304,13 +318,6 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
       }
 
       case "likert":
-        const likertOptions = [
-          "Strongly Disagree",
-          "Disagree",
-          "Neutral",
-          "Agree",
-          "Strongly Agree",
-        ]
         return (
           <div className="space-y-3">
             <div className="space-y-1">
@@ -319,7 +326,7 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
               </Label>
             </div>
             <div className="space-y-2 pl-1 border-l-2 border-muted pl-4">
-              {likertOptions.map((option, index) => (
+              {LIKERT_OPTIONS.map((option, index) => (
                 <label
                   key={index}
                   className="flex items-center space-x-2 cursor-pointer p-2 rounded-md hover:bg-muted/50 transition-colors"
@@ -363,17 +370,17 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
                 id={`q-${question.id}`}
                 value={textValue}
                 onChange={(e) => {
-                  if (e.target.value.length <= 2000) {
+                  if (e.target.value.length <= MAX_TEXT_LENGTH) {
                     handleAnswerChange(question.id, e.target.value)
                   }
                 }}
-                maxLength={2000}
+                maxLength={MAX_TEXT_LENGTH}
                 rows={4}
                 placeholder="Type your answer here..."
                 className="flex min-h-[80px] w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50"
               />
               <div className="text-xs text-muted-foreground text-right mt-1">
-                {textValue.length}/2000 characters
+                {textValue.length}/{MAX_TEXT_LENGTH} characters
               </div>
             </div>
           </div>
@@ -455,7 +462,7 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         <CardHeader>
           <CardTitle>{survey.name}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Please fill in the survey below.{" "}
             {survey.allow_edits
@@ -466,28 +473,43 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
             apiKey={apiKey}
             setApiKey={setApiKey}
             hasApiKeyFromProfile={hasApiKeyFromProfile}
-            onApiKeyValidated={refreshResponse}
+            isApiKeyValidated={isApiKeyValidated}
+            onApiKeyValidated={(validatedKey) => {
+              markApiKeyAsValidated()
+              refreshResponse(validatedKey)
+            }}
           />
         </CardContent>
       </Card>
 
-      {survey.groups.map((group, groupIndex) => (
-        <Card key={group.id}>
-          <CardHeader>
-            <CardTitle>{group.name}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {group.questions.map((question, questionIndex) => (
-              <div key={question.id}>
-                {renderQuestion(question)}
-                {questionIndex < group.questions.length - 1 && (
-                  <Separator className="my-6" />
-                )}
-              </div>
-            ))}
+      {totalQuestions === 0 ? (
+        <Card>
+          <CardContent>
+            <p className="text-muted-foreground text-center">
+              This survey currently has no answerable questions. Please check
+              back later.
+            </p>
           </CardContent>
         </Card>
-      ))}
+      ) : (
+        survey.groups.map((group, groupIndex) => (
+          <Card key={group.id}>
+            <CardHeader>
+              <CardTitle>{group.name}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {group.questions.map((question, questionIndex) => (
+                <div key={question.id}>
+                  {renderQuestion(question)}
+                  {questionIndex < group.questions.length - 1 && (
+                    <Separator className="my-6" />
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        ))
+      )}
 
       <Card>
         <CardContent>
@@ -499,7 +521,9 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
             )}
             <Button
               onClick={handleSubmit}
-              disabled={submitting || !apiKey.trim()}
+              disabled={
+                submitting || !isApiKeyValidated || totalQuestions === 0
+              }
               size="lg"
             >
               {submitting ? (

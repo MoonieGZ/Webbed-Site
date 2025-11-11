@@ -3,7 +3,9 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { SurveyLoadingSpinner } from "./loading-spinner"
 import { useSurveyResults } from "@/hooks/pfq/use-survey-results"
+import { formatSurveyDate } from "@/lib/survey-utils"
 import type {
   SurveyResultsIndividual,
   SurveyResultsAggregated,
@@ -18,14 +20,7 @@ export function SurveyResults({ publicId }: SurveyResultsProps) {
     useSurveyResults(publicId)
 
   if (loading) {
-    return (
-      <div className="absolute inset-0 bg-background flex items-center justify-center z-50 transition-opacity duration-300">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    )
+    return <SurveyLoadingSpinner />
   }
 
   if (error) {
@@ -192,12 +187,10 @@ function IndividualResultsView({
                 )}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Submitted:{" "}
-                {new Date(result.response.created_at).toLocaleString()}
+                Submitted: {formatSurveyDate(result.response.created_at)}
                 {result.response.updated_at !== result.response.created_at && (
                   <span className="ml-2">
-                    (Updated:{" "}
-                    {new Date(result.response.updated_at).toLocaleString()})
+                    (Updated: {formatSurveyDate(result.response.updated_at)})
                   </span>
                 )}
               </p>

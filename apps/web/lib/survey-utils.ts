@@ -1,31 +1,54 @@
-import { queryOne } from "./db"
-import { randomBytes } from "crypto"
+import type { SurveyWithDetails, Question } from "@/types/pfq-survey"
 
 /**
- * Generates a unique 8-character public ID for surveys
- * Retries if collision occurs
+ * Generate a unique 8-character public ID for surveys
  */
 export async function generateSurveyPublicId(): Promise<string> {
-  let attempts = 0
-  const maxAttempts = 10
-
-  while (attempts < maxAttempts) {
-    // Generate 4 random bytes (8 hex characters)
-    const randomBytesBuffer = randomBytes(4)
-    const publicId = randomBytesBuffer.toString("hex")
-
-    // Check if it already exists
-    const existing = await queryOne(
-      "SELECT id FROM pfq_surveys WHERE public_id = ? LIMIT 1",
-      [publicId],
-    )
-
-    if (!existing) {
-      return publicId
-    }
-
-    attempts++
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // Exclude ambiguous chars
+  let publicId = ""
+  for (let i = 0; i < 8; i++) {
+    publicId += chars.charAt(Math.floor(Math.random() * chars.length))
   }
+  return publicId
+}
 
-  throw new Error("Failed to generate unique public ID after multiple attempts")
+/**
+ * Count total questions across all groups in a survey
+ */
+export function countTotalQuestions(survey: SurveyWithDetails | null): number {
+  if (!survey || !survey.groups) return 0
+  return survey.groups.reduce(
+    (count, group) => count + (group.questions?.length || 0),
+    0,
+  )
+}
+
+/**
+ * Get all questions from a survey, flattened from groups
+ */
+export function getAllQuestions(survey: SurveyWithDetails | null): Question[] {
+  if (!survey || !survey.groups) return []
+  const allQuestions: Question[] = []
+  for (const group of survey.groups) {
+    if (group.questions) {
+      allQuestions.push(...group.questions)
+    }
+  }
+  return allQuestions
+}
+
+/**
+ * Sort items by order_index
+ */
+export function sortByOrderIndex<T extends { order_index: number }>(
+  items: T[],
+): T[] {
+  return [...items].sort((a, b) => a.order_index - b.order_index)
+}
+
+/**
+ * Format date for display
+ */
+export function formatSurveyDate(dateString: string | Date): string {
+  return new Date(dateString).toLocaleString()
 }

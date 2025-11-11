@@ -23,6 +23,8 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
+import { sortByOrderIndex } from "@/lib/survey-utils"
+import { MAX_CHOICES_PER_QUESTION } from "@/lib/survey-constants"
 import type {
   Question,
   QuestionGroup,
@@ -194,8 +196,11 @@ export function QuestionEditor({
 
   const addEditChoice = () => {
     if (!editingQuestion) return
-    if (editingQuestion.choices.length >= 10) {
-      toast.error("Maximum 10 choices allowed", toastStyles.error)
+    if (editingQuestion.choices.length >= MAX_CHOICES_PER_QUESTION) {
+      toast.error(
+        `Maximum ${MAX_CHOICES_PER_QUESTION} choices allowed`,
+        toastStyles.error,
+      )
       return
     }
     setEditingQuestion({
@@ -224,9 +229,7 @@ export function QuestionEditor({
   }
 
   const moveQuestion = async (questionId: number, direction: "up" | "down") => {
-    const sortedQuestions = [...questions].sort(
-      (a, b) => a.order_index - b.order_index,
-    )
+    const sortedQuestions = sortByOrderIndex(questions)
     const currentIndex = sortedQuestions.findIndex((q) => q.id === questionId)
     if (currentIndex === -1) return
 
@@ -266,9 +269,7 @@ export function QuestionEditor({
     const question = questions.find((q) => q.id === questionId)
     if (!question || !question.choices) return
 
-    const sortedChoices = [...question.choices].sort(
-      (a, b) => a.order_index - b.order_index,
-    )
+    const sortedChoices = sortByOrderIndex(question.choices)
     const newIndex = direction === "up" ? choiceIndex - 1 : choiceIndex + 1
     if (newIndex < 0 || newIndex >= sortedChoices.length) return
 
@@ -298,8 +299,11 @@ export function QuestionEditor({
   }
 
   const addChoice = () => {
-    if (newQuestion.choices.length >= 10) {
-      toast.error("Maximum 10 choices allowed", toastStyles.error)
+    if (newQuestion.choices.length >= MAX_CHOICES_PER_QUESTION) {
+      toast.error(
+        `Maximum ${MAX_CHOICES_PER_QUESTION} choices allowed`,
+        toastStyles.error,
+      )
       return
     }
     setNewQuestion({
@@ -410,93 +414,89 @@ export function QuestionEditor({
                     Add Choice
                   </Button>
                 </div>
-                {newQuestion.choices
-                  .sort((a, b) => a.order_index - b.order_index)
-                  .map((choice, index) => {
-                    const sortedChoices = [...newQuestion.choices].sort(
-                      (a, b) => a.order_index - b.order_index,
-                    )
-                    return (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          placeholder={`Choice ${index + 1}`}
-                          value={choice.choice_text}
-                          onChange={(e) => {
-                            const actualIndex = sortedChoices.findIndex(
-                              (c) => c.order_index === choice.order_index,
-                            )
-                            if (actualIndex !== -1) {
-                              updateChoice(actualIndex, e.target.value)
-                            }
-                          }}
-                          className="flex-1"
-                        />
-                        <div className="flex flex-col gap-1">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              if (index > 0) {
-                                const updated = [...sortedChoices]
-                                const temp = updated[index].order_index
-                                updated[index].order_index =
-                                  updated[index - 1].order_index
-                                updated[index - 1].order_index = temp
-                                setNewQuestion({
-                                  ...newQuestion,
-                                  choices: updated,
-                                })
-                              }
-                            }}
-                            disabled={index === 0}
-                            className="h-6 px-2"
-                            title="Move up"
-                          >
-                            <ChevronUp className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              if (index < sortedChoices.length - 1) {
-                                const updated = [...sortedChoices]
-                                const temp = updated[index].order_index
-                                updated[index].order_index =
-                                  updated[index + 1].order_index
-                                updated[index + 1].order_index = temp
-                                setNewQuestion({
-                                  ...newQuestion,
-                                  choices: updated,
-                                })
-                              }
-                            }}
-                            disabled={index === sortedChoices.length - 1}
-                            className="h-6 px-2"
-                            title="Move down"
-                          >
-                            <ChevronDown className="h-3 w-3" />
-                          </Button>
-                        </div>
+                {sortByOrderIndex(newQuestion.choices).map((choice, index) => {
+                  const sortedChoices = sortByOrderIndex(newQuestion.choices)
+                  return (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        placeholder={`Choice ${index + 1}`}
+                        value={choice.choice_text}
+                        onChange={(e) => {
+                          const actualIndex = sortedChoices.findIndex(
+                            (c) => c.order_index === choice.order_index,
+                          )
+                          if (actualIndex !== -1) {
+                            updateChoice(actualIndex, e.target.value)
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <div className="flex flex-col gap-1">
                         <Button
                           type="button"
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            const actualIndex = sortedChoices.findIndex(
-                              (c) => c.order_index === choice.order_index,
-                            )
-                            if (actualIndex !== -1) {
-                              removeChoice(actualIndex)
+                            if (index > 0) {
+                              const updated = [...sortedChoices]
+                              const temp = updated[index].order_index
+                              updated[index].order_index =
+                                updated[index - 1].order_index
+                              updated[index - 1].order_index = temp
+                              setNewQuestion({
+                                ...newQuestion,
+                                choices: updated,
+                              })
                             }
                           }}
+                          disabled={index === 0}
+                          className="h-6 px-2"
+                          title="Move up"
                         >
-                          <X className="h-4 w-4" />
+                          <ChevronUp className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (index < sortedChoices.length - 1) {
+                              const updated = [...sortedChoices]
+                              const temp = updated[index].order_index
+                              updated[index].order_index =
+                                updated[index + 1].order_index
+                              updated[index + 1].order_index = temp
+                              setNewQuestion({
+                                ...newQuestion,
+                                choices: updated,
+                              })
+                            }
+                          }}
+                          disabled={index === sortedChoices.length - 1}
+                          className="h-6 px-2"
+                          title="Move down"
+                        >
+                          <ChevronDown className="h-3 w-3" />
                         </Button>
                       </div>
-                    )
-                  })}
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const actualIndex = sortedChoices.findIndex(
+                            (c) => c.order_index === choice.order_index,
+                          )
+                          if (actualIndex !== -1) {
+                            removeChoice(actualIndex)
+                          }
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )
+                })}
               </div>
             )}
 
@@ -517,288 +517,59 @@ export function QuestionEditor({
         </div>
 
         <div className="space-y-2">
-          {questions
-            .sort((a, b) => a.order_index - b.order_index)
-            .map((question) => (
-              <div
-                key={question.id}
-                className="p-3 border rounded-lg space-y-2"
-              >
-                {editingId === question.id && editingQuestion ? (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Input
-                        placeholder="Question text"
-                        value={editingQuestion.question_text}
-                        onChange={(e) =>
+          {sortByOrderIndex(questions).map((question) => (
+            <div key={question.id} className="p-3 border rounded-lg space-y-2">
+              {editingId === question.id && editingQuestion ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Question text"
+                      value={editingQuestion.question_text}
+                      onChange={(e) =>
+                        setEditingQuestion({
+                          ...editingQuestion,
+                          question_text: e.target.value,
+                        })
+                      }
+                    />
+                    <div className="flex gap-2">
+                      <Select
+                        value={editingQuestion.question_type}
+                        onValueChange={(
+                          value:
+                            | "range_5"
+                            | "range_10"
+                            | "likert"
+                            | "text"
+                            | "choice",
+                        ) =>
                           setEditingQuestion({
                             ...editingQuestion,
-                            question_text: e.target.value,
+                            question_type: value,
+                            allow_multiple:
+                              value === "choice"
+                                ? (editingQuestion.allow_multiple ?? false)
+                                : undefined,
+                            choices:
+                              value === "choice" ? editingQuestion.choices : [],
                           })
                         }
-                      />
-                      <div className="flex gap-2">
-                        <Select
-                          value={editingQuestion.question_type}
-                          onValueChange={(
-                            value:
-                              | "range_5"
-                              | "range_10"
-                              | "likert"
-                              | "text"
-                              | "choice",
-                          ) =>
-                            setEditingQuestion({
-                              ...editingQuestion,
-                              question_type: value,
-                              allow_multiple:
-                                value === "choice"
-                                  ? (editingQuestion.allow_multiple ?? false)
-                                  : undefined,
-                              choices:
-                                value === "choice"
-                                  ? editingQuestion.choices
-                                  : [],
-                            })
-                          }
-                        >
-                          <SelectTrigger className="flex-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="range_5">Range 0-5</SelectItem>
-                            <SelectItem value="range_10">Range 0-10</SelectItem>
-                            <SelectItem value="likert">Likert Scale</SelectItem>
-                            <SelectItem value="text">
-                              Text (2000 chars)
-                            </SelectItem>
-                            <SelectItem value="choice">
-                              Choice (Radio/Checkbox)
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <div className="flex flex-col gap-1">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={async () => {
-                              await moveQuestion(question.id, "up")
-                            }}
-                            disabled={
-                              questions
-                                .sort((a, b) => a.order_index - b.order_index)
-                                .findIndex((q) => q.id === question.id) === 0
-                            }
-                            className="h-6 px-2"
-                            title="Move up"
-                          >
-                            <ChevronUp className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={async () => {
-                              await moveQuestion(question.id, "down")
-                            }}
-                            disabled={
-                              questions
-                                .sort((a, b) => a.order_index - b.order_index)
-                                .findIndex((q) => q.id === question.id) ===
-                              questions.length - 1
-                            }
-                            className="h-6 px-2"
-                            title="Move down"
-                          >
-                            <ChevronDown className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {editingQuestion.question_type === "choice" && (
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between p-2 border rounded-md">
-                            <div className="space-y-0.5">
-                              <Label
-                                htmlFor="allow-multiple-edit"
-                                className="text-sm"
-                              >
-                                Allow Multiple Selections
-                              </Label>
-                              <p className="text-xs text-muted-foreground">
-                                {editingQuestion.allow_multiple
-                                  ? "Checkboxes"
-                                  : "Radio buttons"}
-                              </p>
-                            </div>
-                            <Switch
-                              id="allow-multiple-edit"
-                              checked={editingQuestion.allow_multiple ?? false}
-                              onCheckedChange={(checked) =>
-                                setEditingQuestion({
-                                  ...editingQuestion,
-                                  allow_multiple: checked,
-                                })
-                              }
-                            />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-xs">Choices (max 10)</Label>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={addEditChoice}
-                              disabled={editingQuestion.choices.length >= 10}
-                            >
-                              <Plus className="h-4 w-4 mr-1" />
-                              Add Choice
-                            </Button>
-                          </div>
-                          {editingQuestion.choices
-                            .sort((a, b) => a.order_index - b.order_index)
-                            .map((choice, index) => {
-                              const sortedChoices = [
-                                ...editingQuestion.choices,
-                              ].sort((a, b) => a.order_index - b.order_index)
-                              return (
-                                <div key={index} className="flex gap-2">
-                                  <Input
-                                    placeholder={`Choice ${index + 1}`}
-                                    value={choice.choice_text}
-                                    onChange={(e) => {
-                                      const sorted = [
-                                        ...editingQuestion.choices,
-                                      ].sort(
-                                        (a, b) => a.order_index - b.order_index,
-                                      )
-                                      const actualIndex = sorted.findIndex(
-                                        (c) =>
-                                          c.order_index === choice.order_index,
-                                      )
-                                      if (actualIndex !== -1) {
-                                        updateEditChoice(
-                                          actualIndex,
-                                          e.target.value,
-                                        )
-                                      }
-                                    }}
-                                    className="flex-1"
-                                  />
-                                  <div className="flex flex-col gap-1">
-                                    <Button
-                                      type="button"
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => {
-                                        if (index > 0) {
-                                          const updated = [...sortedChoices]
-                                          const temp =
-                                            updated[index].order_index
-                                          updated[index].order_index =
-                                            updated[index - 1].order_index
-                                          updated[index - 1].order_index = temp
-                                          setEditingQuestion({
-                                            ...editingQuestion,
-                                            choices: updated,
-                                          })
-                                        }
-                                      }}
-                                      disabled={index === 0}
-                                      className="h-6 px-2"
-                                      title="Move up"
-                                    >
-                                      <ChevronUp className="h-3 w-3" />
-                                    </Button>
-                                    <Button
-                                      type="button"
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => {
-                                        if (index < sortedChoices.length - 1) {
-                                          const updated = [...sortedChoices]
-                                          const temp =
-                                            updated[index].order_index
-                                          updated[index].order_index =
-                                            updated[index + 1].order_index
-                                          updated[index + 1].order_index = temp
-                                          setEditingQuestion({
-                                            ...editingQuestion,
-                                            choices: updated,
-                                          })
-                                        }
-                                      }}
-                                      disabled={
-                                        index === sortedChoices.length - 1
-                                      }
-                                      className="h-6 px-2"
-                                      title="Move down"
-                                    >
-                                      <ChevronDown className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      const sorted = [
-                                        ...editingQuestion.choices,
-                                      ].sort(
-                                        (a, b) => a.order_index - b.order_index,
-                                      )
-                                      const actualIndex = sorted.findIndex(
-                                        (c) =>
-                                          c.order_index === choice.order_index,
-                                      )
-                                      if (actualIndex !== -1) {
-                                        removeEditChoice(actualIndex)
-                                      }
-                                    }}
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              )
-                            })}
-                        </div>
-                      )}
-
-                      <div className="flex gap-2">
-                        <Button onClick={handleSaveEdit} className="flex-1">
-                          <Check className="h-4 w-4 mr-2" />
-                          Save
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={handleCancelEdit}
-                          className="flex-1"
-                        >
-                          <X className="h-4 w-4 mr-2" />
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="font-medium">{question.question_text}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Type: {question.question_type}
-                      </p>
-                      {question.question_type === "choice" &&
-                        question.choices && (
-                          <div className="mt-2 text-xs text-muted-foreground">
-                            Choices:{" "}
-                            {question.choices
-                              .map((c) => c.choice_text)
-                              .join(", ")}
-                          </div>
-                        )}
-                    </div>
-                    <div className="flex gap-2">
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="range_5">Range 0-5</SelectItem>
+                          <SelectItem value="range_10">Range 0-10</SelectItem>
+                          <SelectItem value="likert">Likert Scale</SelectItem>
+                          <SelectItem value="text">
+                            Text (2000 chars)
+                          </SelectItem>
+                          <SelectItem value="choice">
+                            Choice (Radio/Checkbox)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                       <div className="flex flex-col gap-1">
                         <Button
                           type="button"
@@ -808,9 +579,9 @@ export function QuestionEditor({
                             await moveQuestion(question.id, "up")
                           }}
                           disabled={
-                            questions
-                              .sort((a, b) => a.order_index - b.order_index)
-                              .findIndex((q) => q.id === question.id) === 0
+                            sortByOrderIndex(questions).findIndex(
+                              (q) => q.id === question.id,
+                            ) === 0
                           }
                           className="h-6 px-2"
                           title="Move up"
@@ -825,9 +596,9 @@ export function QuestionEditor({
                             await moveQuestion(question.id, "down")
                           }}
                           disabled={
-                            questions
-                              .sort((a, b) => a.order_index - b.order_index)
-                              .findIndex((q) => q.id === question.id) ===
+                            sortByOrderIndex(questions).findIndex(
+                              (q) => q.id === question.id,
+                            ) ===
                             questions.length - 1
                           }
                           className="h-6 px-2"
@@ -836,26 +607,246 @@ export function QuestionEditor({
                           <ChevronDown className="h-3 w-3" />
                         </Button>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleStartEdit(question)}
-                      >
-                        <Edit2 className="h-4 w-4" />
+                    </div>
+
+                    {editingQuestion.question_type === "choice" && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-2 border rounded-md">
+                          <div className="space-y-0.5">
+                            <Label
+                              htmlFor="allow-multiple-edit"
+                              className="text-sm"
+                            >
+                              Allow Multiple Selections
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                              {editingQuestion.allow_multiple
+                                ? "Checkboxes"
+                                : "Radio buttons"}
+                            </p>
+                          </div>
+                          <Switch
+                            id="allow-multiple-edit"
+                            checked={editingQuestion.allow_multiple ?? false}
+                            onCheckedChange={(checked) =>
+                              setEditingQuestion({
+                                ...editingQuestion,
+                                allow_multiple: checked,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs">Choices (max 10)</Label>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={addEditChoice}
+                            disabled={editingQuestion.choices.length >= 10}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Add Choice
+                          </Button>
+                        </div>
+                        {sortByOrderIndex(editingQuestion.choices).map(
+                          (choice, index) => {
+                            const sortedChoices = sortByOrderIndex(
+                              editingQuestion.choices,
+                            )
+                            return (
+                              <div key={index} className="flex gap-2">
+                                <Input
+                                  placeholder={`Choice ${index + 1}`}
+                                  value={choice.choice_text}
+                                  onChange={(e) => {
+                                    const sorted = [
+                                      ...editingQuestion.choices,
+                                    ].sort(
+                                      (a, b) => a.order_index - b.order_index,
+                                    )
+                                    const actualIndex = sorted.findIndex(
+                                      (c) =>
+                                        c.order_index === choice.order_index,
+                                    )
+                                    if (actualIndex !== -1) {
+                                      updateEditChoice(
+                                        actualIndex,
+                                        e.target.value,
+                                      )
+                                    }
+                                  }}
+                                  className="flex-1"
+                                />
+                                <div className="flex flex-col gap-1">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      if (index > 0) {
+                                        const updated = [...sortedChoices]
+                                        const temp = updated[index].order_index
+                                        updated[index].order_index =
+                                          updated[index - 1].order_index
+                                        updated[index - 1].order_index = temp
+                                        setEditingQuestion({
+                                          ...editingQuestion,
+                                          choices: updated,
+                                        })
+                                      }
+                                    }}
+                                    disabled={index === 0}
+                                    className="h-6 px-2"
+                                    title="Move up"
+                                  >
+                                    <ChevronUp className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      if (index < sortedChoices.length - 1) {
+                                        const updated = [...sortedChoices]
+                                        const temp = updated[index].order_index
+                                        updated[index].order_index =
+                                          updated[index + 1].order_index
+                                        updated[index + 1].order_index = temp
+                                        setEditingQuestion({
+                                          ...editingQuestion,
+                                          choices: updated,
+                                        })
+                                      }
+                                    }}
+                                    disabled={
+                                      index === sortedChoices.length - 1
+                                    }
+                                    className="h-6 px-2"
+                                    title="Move down"
+                                  >
+                                    <ChevronDown className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const sorted = [
+                                      ...editingQuestion.choices,
+                                    ].sort(
+                                      (a, b) => a.order_index - b.order_index,
+                                    )
+                                    const actualIndex = sorted.findIndex(
+                                      (c) =>
+                                        c.order_index === choice.order_index,
+                                    )
+                                    if (actualIndex !== -1) {
+                                      removeEditChoice(actualIndex)
+                                    }
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )
+                          },
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Button onClick={handleSaveEdit} className="flex-1">
+                        <Check className="h-4 w-4 mr-2" />
+                        Save
                       </Button>
                       <Button
-                        size="sm"
                         variant="outline"
-                        onClick={() => handleDelete(question.id)}
-                        className="text-destructive hover:text-destructive"
+                        onClick={handleCancelEdit}
+                        className="flex-1"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
                       </Button>
                     </div>
                   </div>
-                )}
-              </div>
-            ))}
+                </div>
+              ) : (
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="font-medium">{question.question_text}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Type: {question.question_type}
+                    </p>
+                    {question.question_type === "choice" &&
+                      question.choices && (
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          Choices:{" "}
+                          {question.choices
+                            .map((c) => c.choice_text)
+                            .join(", ")}
+                        </div>
+                      )}
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={async () => {
+                          await moveQuestion(question.id, "up")
+                        }}
+                        disabled={
+                          sortByOrderIndex(questions).findIndex(
+                            (q) => q.id === question.id,
+                          ) === 0
+                        }
+                        className="h-6 px-2"
+                        title="Move up"
+                      >
+                        <ChevronUp className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={async () => {
+                          await moveQuestion(question.id, "down")
+                        }}
+                        disabled={
+                          sortByOrderIndex(questions).findIndex(
+                            (q) => q.id === question.id,
+                          ) ===
+                          questions.length - 1
+                        }
+                        className="h-6 px-2"
+                        title="Move down"
+                      >
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleStartEdit(question)}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDelete(question.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

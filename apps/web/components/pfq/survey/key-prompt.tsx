@@ -14,19 +14,27 @@ import {
 import { PFQApiService } from "@/services/pfq-api"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
+import { setCookie } from "@/lib/cookie-utils"
+import {
+  PFQ_SURVEY_API_KEY_COOKIE,
+  API_KEY_COOKIE_EXPIRY_DAYS,
+} from "@/lib/survey-constants"
 import { useState } from "react"
+import Link from "next/link"
 
 interface SurveyKeyPromptProps {
   apiKey: string
   setApiKey: (key: string) => void
   hasApiKeyFromProfile: boolean
-  onApiKeyValidated?: () => void
+  isApiKeyValidated: boolean
+  onApiKeyValidated?: (validatedKey: string) => void
 }
 
 export function SurveyKeyPrompt({
   apiKey,
   setApiKey,
   hasApiKeyFromProfile,
+  isApiKeyValidated,
   onApiKeyValidated,
 }: SurveyKeyPromptProps) {
   const [validating, setValidating] = useState(false)
@@ -39,13 +47,25 @@ export function SurveyKeyPrompt({
 
     setValidating(true)
     try {
-      const result = await PFQApiService.whoAmI(apiKey.trim())
+      const trimmedKey = apiKey.trim()
+      const result = await PFQApiService.whoAmI(trimmedKey)
 
       if (result.success) {
+        // Update the parent component's API key state
+        setApiKey(trimmedKey)
+        // Save to cookies for 24 hours (only for non-logged-in users)
+        if (!hasApiKeyFromProfile) {
+          setCookie(
+            PFQ_SURVEY_API_KEY_COOKIE,
+            trimmedKey,
+            API_KEY_COOKIE_EXPIRY_DAYS,
+          )
+        }
         toast.success("API key validated successfully!", toastStyles.success)
         // Trigger response fetch after validation
+        // Pass the validated key directly to avoid race condition with state updates
         if (onApiKeyValidated) {
-          onApiKeyValidated()
+          onApiKeyValidated(trimmedKey)
         }
       } else {
         toast.error(result.error || "Invalid API key.", toastStyles.error)
@@ -78,7 +98,16 @@ export function SurveyKeyPrompt({
           PokéFarm Q API Key Required
         </CardTitle>
         <CardDescription>
-          Please enter your PokéFarm Q API key to participate in this survey
+          Please enter your{" "}
+          <Link
+            href="https://pokefarm.com/farm#tab=5.7"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline inline-flex items-center gap-1"
+          >
+            PokéFarm Q API key
+          </Link>{" "}
+          to participate in this survey
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -91,6 +120,11 @@ export function SurveyKeyPrompt({
               placeholder="Enter your PokéFarm Q API key"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !validating && apiKey.trim()) {
+                  validateAndSetApiKey()
+                }
+              }}
               className="-me-px rounded-e-none shadow-none focus-visible:z-1"
               disabled={validating}
             />
