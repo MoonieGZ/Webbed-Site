@@ -14,7 +14,7 @@ function SurveyCreatePageContent() {
 
   useEffect(() => {
     if (!loading && !isStaff) {
-      router.push("/")
+      router.push("/pfq/survey")
     }
   }, [loading, isStaff, router])
 
