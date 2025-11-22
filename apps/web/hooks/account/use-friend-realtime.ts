@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { usePathname } from "next/navigation"
 import { io, type Socket } from "socket.io-client"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
@@ -9,6 +10,7 @@ import type { FriendRequestCountResponse } from "@/types/friends"
 const RATE_LIMIT_MS = 3000
 
 export function useFriendRealtime() {
+  const pathname = usePathname()
   const [pendingCount, setPendingCount] = useState(0)
   const [connected, setConnected] = useState(false)
   const socketRef = useRef<Socket | null>(null)
@@ -16,7 +18,13 @@ export function useFriendRealtime() {
   const scheduledRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inFlightRef = useRef<boolean>(false)
 
+  // Check if we're on a survey page
+  const isSurveyPage = pathname?.startsWith("/pfq/survey/") ?? false
+
   const runFetchCount = useCallback(async () => {
+    // Don't fetch if on survey pages
+    if (isSurveyPage) return
+
     try {
       const r = await fetch("/api/friends/requests/count", {
         cache: "no-store",
@@ -60,6 +68,11 @@ export function useFriendRealtime() {
   }, [runFetchCount])
 
   useEffect(() => {
+    // Don't run on survey pages
+    if (isSurveyPage) {
+      return
+    }
+
     let stopped = false
     ;(async () => {
       await runFetchCount()
@@ -137,7 +150,7 @@ export function useFriendRealtime() {
         scheduledRef.current = null
       }
     }
-  }, [fetchCount, runFetchCount])
+  }, [fetchCount, runFetchCount, isSurveyPage])
 
   return { pendingCount, connected, refresh: fetchCount }
 }

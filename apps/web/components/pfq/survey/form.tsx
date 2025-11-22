@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { Progress } from "@/components/animate-ui/radix/progress"
 import { SurveyKeyPrompt } from "./key-prompt"
 import { useSurvey } from "@/hooks/pfq/use-survey"
 import { toast } from "sonner"
@@ -42,14 +43,66 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
   } = useSurvey(publicId)
 
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({})
+  const [touchedQuestions, setTouchedQuestions] = useState<Set<number>>(
+    new Set(),
+  )
+  const [validationErrors, setValidationErrors] = useState<Set<number>>(
+    new Set(),
+  )
 
   // Count total questions across all groups (memoized for performance)
   // Must be called before any early returns to satisfy React Hooks rules
   const totalQuestions = useMemo(() => countTotalQuestions(survey), [survey])
 
+  // Calculate progress: how many questions have been answered
+  const answeredCount = useMemo(() => {
+    if (!survey || totalQuestions === 0) return 0
+
+    const allQuestions = getAllQuestions(survey)
+    let answered = 0
+
+    for (const question of allQuestions) {
+      const answer = answers[question.id]
+
+      // For range questions, check if they've been touched/interacted with
+      if (
+        question.question_type === "range_5" ||
+        question.question_type === "range_10"
+      ) {
+        if (touchedQuestions.has(question.id) && answer) {
+          // Check if answer is valid (not empty)
+          if (Array.isArray(answer)) {
+            if (answer.length > 0) answered++
+          } else if (typeof answer === "string" && answer.trim() !== "") {
+            answered++
+          }
+        }
+      } else {
+        // For other question types, check if answer exists and is not empty
+        if (answer) {
+          if (Array.isArray(answer)) {
+            if (answer.length > 0) answered++
+          } else if (typeof answer === "string" && answer.trim() !== "") {
+            answered++
+          }
+        }
+      }
+    }
+
+    return answered
+  }, [survey, answers, touchedQuestions, totalQuestions])
+
+  const progressPercentage = useMemo(() => {
+    if (totalQuestions === 0) return 0
+    return Math.round((answeredCount / totalQuestions) * 100)
+  }, [answeredCount, totalQuestions])
+
+  const remainingCount = totalQuestions - answeredCount
+
   useEffect(() => {
     if (userResponse?.answers) {
       const initialAnswers: Record<number, string | string[]> = {}
+      const touched = new Set<number>()
       for (const answer of userResponse.answers) {
         // Try to parse as JSON array for multiple selections, fallback to string
         try {
@@ -62,8 +115,11 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         } catch {
           initialAnswers[answer.question_id] = answer.answer_value
         }
+        // Mark questions with existing answers as touched
+        touched.add(answer.question_id)
       }
       setAnswers(initialAnswers)
+      setTouchedQuestions(touched)
     }
   }, [userResponse])
 
@@ -142,6 +198,14 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
       ...prev,
       [questionId]: value,
     }))
+    // Mark question as touched
+    setTouchedQuestions((prev) => new Set(prev).add(questionId))
+    // Clear validation error for this question
+    setValidationErrors((prev) => {
+      const next = new Set(prev)
+      next.delete(questionId)
+      return next
+    })
   }
 
   const handleMultipleAnswerChange = (
@@ -160,10 +224,26 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
       if (checked) {
         // Add choice if not already present
         if (!currentArray.includes(choiceValue)) {
+          // Mark question as touched
+          setTouchedQuestions((prev) => new Set(prev).add(questionId))
+          // Clear validation error for this question
+          setValidationErrors((prev) => {
+            const next = new Set(prev)
+            next.delete(questionId)
+            return next
+          })
           return { ...prev, [questionId]: [...currentArray, choiceValue] }
         }
       } else {
         // Remove choice
+        // Mark question as touched
+        setTouchedQuestions((prev) => new Set(prev).add(questionId))
+        // Clear validation error for this question
+        setValidationErrors((prev) => {
+          const next = new Set(prev)
+          next.delete(questionId)
+          return next
+        })
         return {
           ...prev,
           [questionId]: currentArray.filter((v) => v !== choiceValue),
@@ -174,6 +254,11 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
   }
 
   const handleSubmit = async () => {
+    // Prevent multiple submissions
+    if (submitting) {
+      return
+    }
+
     // Get all questions using utility function
     const allQuestions = getAllQuestions(survey)
 
@@ -198,6 +283,24 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
 
     const unansweredQuestions = allQuestions.filter((q) => {
       const answer = answers[q.id]
+
+      // For range questions, check if they've been touched/interacted with
+      // Range questions default to "0" visually, so we need to check if user interacted
+      if (q.question_type === "range_5" || q.question_type === "range_10") {
+        // If not touched, it's unanswered
+        if (!touchedQuestions.has(q.id)) return true
+        // If touched but answer is missing or empty, it's unanswered
+        if (!answer) return true
+        // Check if answer is empty string (for string type) or empty array
+        if (Array.isArray(answer)) {
+          return answer.length === 0
+        }
+        if (typeof answer === "string" && answer.trim() === "") return true
+        // If it was touched, "0" is a valid answer
+        return false
+      }
+
+      // For other question types, use standard validation
       if (!answer) return true
       if (Array.isArray(answer)) {
         return answer.length === 0
@@ -206,12 +309,35 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
     })
 
     if (unansweredQuestions.length > 0) {
+      // Set validation errors for visual indication
+      setValidationErrors(new Set(unansweredQuestions.map((q) => q.id)))
+
+      const questionTexts = unansweredQuestions
+        .slice(0, 3)
+        .map((q) => {
+          const text =
+            q.question_text.length > 50
+              ? q.question_text.substring(0, 50) + "..."
+              : q.question_text
+          return `"${text}"`
+        })
+        .join(", ")
+
+      const remainingCount = unansweredQuestions.length - 3
+      const questionList =
+        remainingCount > 0
+          ? `${questionTexts}, and ${remainingCount} more`
+          : questionTexts
+
       toast.error(
-        `Please answer all questions. ${unansweredQuestions.length} question(s) remain unanswered.`,
+        `Please answer all questions. Unanswered: ${questionList}.`,
         toastStyles.error,
       )
       return
     }
+
+    // Clear validation errors if all questions are answered
+    setValidationErrors(new Set())
 
     const success = await submitResponse(answerArray)
     if (success) {
@@ -247,17 +373,26 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
             : Array.isArray(value)
               ? value[0] || "0"
               : "0"
+        const hasError = validationErrors.has(question.id)
+        const isTouched = touchedQuestions.has(question.id)
         return (
           <div className="space-y-3">
             <div className="space-y-1">
               <Label
                 htmlFor={`q-${question.id}`}
-                className="text-base font-semibold"
+                className={`text-base font-semibold ${hasError ? "text-destructive" : ""}`}
               >
                 {question.question_text}
+                {hasError && (
+                  <span className="text-destructive text-sm font-normal ml-2">
+                    (Please answer this question)
+                  </span>
+                )}
               </Label>
             </div>
-            <div className="space-y-2 pl-1">
+            <div
+              className={`space-y-2 pl-1 ${hasError ? "border-l-2 border-destructive pl-4" : ""}`}
+            >
               <Slider
                 id={`q-${question.id}`}
                 min={0}
@@ -271,7 +406,11 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>0</span>
-                <span className="font-medium">{rangeValue || 0}</span>
+                <span
+                  className={`font-medium ${hasError && !isTouched ? "text-destructive" : ""}`}
+                >
+                  {rangeValue || 0}
+                </span>
                 <span>5</span>
               </div>
             </div>
@@ -286,17 +425,26 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
             : Array.isArray(value)
               ? value[0] || "0"
               : "0"
+        const hasError = validationErrors.has(question.id)
+        const isTouched = touchedQuestions.has(question.id)
         return (
           <div className="space-y-3">
             <div className="space-y-1">
               <Label
                 htmlFor={`q-${question.id}`}
-                className="text-base font-semibold"
+                className={`text-base font-semibold ${hasError ? "text-destructive" : ""}`}
               >
                 {question.question_text}
+                {hasError && (
+                  <span className="text-destructive text-sm font-normal ml-2">
+                    (Please answer this question)
+                  </span>
+                )}
               </Label>
             </div>
-            <div className="space-y-2 pl-1">
+            <div
+              className={`space-y-2 pl-1 ${hasError ? "border-l-2 border-destructive pl-4" : ""}`}
+            >
               <Slider
                 id={`q-${question.id}`}
                 min={0}
@@ -310,7 +458,11 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
               />
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>0</span>
-                <span className="font-medium">{rangeValue || 0}</span>
+                <span
+                  className={`font-medium ${hasError && !isTouched ? "text-destructive" : ""}`}
+                >
+                  {rangeValue || 0}
+                </span>
                 <span>10</span>
               </div>
             </div>
@@ -318,15 +470,25 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         )
       }
 
-      case "likert":
+      case "likert": {
+        const hasError = validationErrors.has(question.id)
         return (
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label className="text-base font-semibold">
+              <Label
+                className={`text-base font-semibold ${hasError ? "text-destructive" : ""}`}
+              >
                 {question.question_text}
+                {hasError && (
+                  <span className="text-destructive text-sm font-normal ml-2">
+                    (Please answer this question)
+                  </span>
+                )}
               </Label>
             </div>
-            <div className="space-y-2 pl-1 border-l-2 border-muted pl-4">
+            <div
+              className={`space-y-2 pl-1 border-l-2 ${hasError ? "border-destructive" : "border-muted"} pl-4`}
+            >
               {LIKERT_OPTIONS.map((option, index) => (
                 <label
                   key={index}
@@ -348,6 +510,7 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
             </div>
           </div>
         )
+      }
 
       case "text": {
         const textValue =
@@ -356,14 +519,20 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
             : Array.isArray(value)
               ? value.join(", ")
               : ""
+        const hasError = validationErrors.has(question.id)
         return (
           <div className="space-y-3">
             <div className="space-y-1">
               <Label
                 htmlFor={`q-${question.id}`}
-                className="text-base font-semibold"
+                className={`text-base font-semibold ${hasError ? "text-destructive" : ""}`}
               >
                 {question.question_text}
+                {hasError && (
+                  <span className="text-destructive text-sm font-normal ml-2">
+                    (Please answer this question)
+                  </span>
+                )}
               </Label>
             </div>
             <div className="pl-1">
@@ -378,7 +547,11 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
                 maxLength={MAX_TEXT_LENGTH}
                 rows={4}
                 placeholder="Type your answer here..."
-                className="flex min-h-[80px] w-full rounded-md border-2 border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50"
+                className={`flex min-h-[80px] w-full rounded-md border-2 bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 ${
+                  hasError
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : "border-input"
+                }`}
               />
               <div className="text-xs text-muted-foreground text-right mt-1">
                 {textValue.length}/{MAX_TEXT_LENGTH} characters
@@ -388,12 +561,15 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         )
       }
 
-      case "choice":
+      case "choice": {
+        const hasError = validationErrors.has(question.id)
         if (!question.choices || question.choices.length === 0) {
           return (
             <div className="space-y-3">
               <div className="space-y-1">
-                <Label className="text-base font-semibold">
+                <Label
+                  className={`text-base font-semibold ${hasError ? "text-destructive" : ""}`}
+                >
                   {question.question_text}
                 </Label>
               </div>
@@ -406,16 +582,25 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         return (
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label className="text-base font-semibold">
+              <Label
+                className={`text-base font-semibold ${hasError ? "text-destructive" : ""}`}
+              >
                 {question.question_text}
                 {isMultiple && (
                   <span className="text-xs text-muted-foreground ml-2 font-normal">
                     (Select all that apply)
                   </span>
                 )}
+                {hasError && (
+                  <span className="text-destructive text-sm font-normal ml-2">
+                    (Please answer this question)
+                  </span>
+                )}
               </Label>
             </div>
-            <div className="space-y-2 pl-1 border-l-2 border-muted pl-4">
+            <div
+              className={`space-y-2 pl-1 border-l-2 ${hasError ? "border-destructive" : "border-muted"} pl-4`}
+            >
               {question.choices.map((choice) => {
                 const isChecked = isMultiple
                   ? Array.isArray(value) && value.includes(choice.choice_text)
@@ -451,6 +636,7 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
             </div>
           </div>
         )
+      }
 
       default:
         return null
@@ -459,6 +645,27 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
 
   return (
     <div className="space-y-6">
+      {/* Sticky Progress Indicator */}
+      {totalQuestions > 0 && (
+        <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b shadow-sm py-4 -mx-4 px-4 mb-6">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                Progress: {answeredCount} of {totalQuestions} questions answered
+              </span>
+              <span className="font-medium">
+                {remainingCount}{" "}
+                {remainingCount === 1 ? "question" : "questions"} remaining
+              </span>
+            </div>
+            <Progress value={progressPercentage} />
+            <p className="text-xs text-muted-foreground text-center">
+              {progressPercentage}% complete
+            </p>
+          </div>
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>{survey.name}</CardTitle>
@@ -470,6 +677,7 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
               ? "You will be able to edit your response until the survey ends."
               : "You will not be able to edit your response after it is submitted."}
           </p>
+
           <SurveyKeyPrompt
             apiKey={apiKey}
             setApiKey={setApiKey}
