@@ -49,6 +49,7 @@ export async function PUT(
         .enum(["range_5", "range_10", "likert", "text", "choice", "number"])
         .optional(),
       allow_multiple: z.boolean().optional(), // For choice questions: true = checkboxes, false = radio
+      max_selections: z.number().int().positive().nullable().optional(), // For multiple choice: max selections allowed (null = no limit)
       is_optional: z.boolean().optional(), // If true, question can be left unanswered
       order_index: z.number().int().min(0).optional(),
     })
@@ -111,6 +112,20 @@ export async function PUT(
         updateValues.push(updates.allow_multiple ? 1 : 0)
       }
     }
+    if (updates.max_selections !== undefined) {
+      // Only max_selections for multiple choice questions
+      if (
+        (question.question_type === "choice" && question.allow_multiple === 1) ||
+        (updates.question_type === "choice" && updates.allow_multiple === true)
+      ) {
+        updateFields.push("max_selections = ?")
+        updateValues.push(updates.max_selections ?? null)
+      } else {
+        // Clear max_selections if not a multiple choice question
+        updateFields.push("max_selections = ?")
+        updateValues.push(null)
+      }
+    }
     if (updates.is_optional !== undefined) {
       updateFields.push("is_optional = ?")
       updateValues.push(updates.is_optional ? 1 : 0)
@@ -135,10 +150,11 @@ export async function PUT(
     )
 
     const updatedQuestion = (await queryOne(
-      "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, is_optional, order_index, created_at FROM pfq_survey_questions WHERE id = ? LIMIT 1",
+      "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, max_selections, is_optional, order_index, created_at FROM pfq_survey_questions WHERE id = ? LIMIT 1",
       [questionId],
     )) as any
     updatedQuestion.allow_multiple = updatedQuestion.allow_multiple === 1
+    updatedQuestion.max_selections = updatedQuestion.max_selections ?? null
     updatedQuestion.is_optional = updatedQuestion.is_optional === 1
 
     if (updatedQuestion.question_type === "choice") {

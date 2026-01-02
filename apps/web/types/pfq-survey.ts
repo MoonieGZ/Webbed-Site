@@ -34,6 +34,7 @@ export interface Question {
   question_text: string
   question_type: SurveyQuestionType
   allow_multiple?: boolean // For choice questions: true = checkboxes, false = radio buttons
+  max_selections?: number | null // For multiple choice questions: maximum number of selections allowed (null = no limit)
   is_optional?: boolean // If true, question can be left unanswered (will be saved as "N/A")
   order_index: number
   created_at: string
@@ -134,6 +135,7 @@ export interface CreateQuestionRequest {
   question_text: string
   question_type: SurveyQuestionType
   allow_multiple?: boolean // For choice questions: true = checkboxes, false = radio buttons
+  max_selections?: number | null // For multiple choice questions: maximum number of selections allowed (null = no limit)
   is_optional?: boolean // If true, question can be left unanswered (will be saved as "N/A")
   order_index: number
   choices?: CreateAnswerChoiceRequest[]
@@ -144,6 +146,7 @@ export interface UpdateQuestionRequest {
   question_text?: string
   question_type?: SurveyQuestionType
   allow_multiple?: boolean // For choice questions: true = checkboxes, false = radio buttons
+  max_selections?: number | null // For multiple choice questions: maximum number of selections allowed (null = no limit)
   is_optional?: boolean // If true, question can be left unanswered (will be saved as "N/A")
   order_index?: number
 }

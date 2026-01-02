@@ -288,6 +288,10 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
     choiceValue: string,
     checked: boolean,
   ) => {
+    // Find the question to check max_selections
+    const allQuestions = getAllQuestions(survey)
+    const question = allQuestions.find((q) => q.id === questionId)
+
     setAnswers((prev) => {
       const current = prev[questionId]
       const currentArray = Array.isArray(current)
@@ -297,6 +301,15 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
           : []
 
       if (checked) {
+        // Check max_selections limit
+        if (question?.max_selections && currentArray.length >= question.max_selections) {
+          toast.error(
+            `You can only select up to ${question.max_selections} option(s) for this question.`,
+            toastStyles.error,
+          )
+          return prev
+        }
+
         // Add choice if not already present
         if (!currentArray.includes(choiceValue)) {
           // Mark question as touched
@@ -735,7 +748,9 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
                 {question.question_text}
                 {isMultiple && (
                   <span className="text-xs text-muted-foreground ml-2 font-normal">
-                    (Select all that apply)
+                    {question.max_selections
+                      ? `(Select up to ${question.max_selections})`
+                      : "(Select all that apply)"}
                   </span>
                 )}
                 {hasError && (
@@ -753,16 +768,25 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
                   ? Array.isArray(value) && value.includes(choice.choice_text)
                   : typeof value === "string" && value === choice.choice_text
 
+                // Check if we're at max selections and this choice is not checked
+                const currentSelections = isMultiple && Array.isArray(value) ? value.length : 0
+                const isAtMax = question.max_selections && currentSelections >= question.max_selections && !isChecked
+
                 return (
                   <label
                     key={choice.id}
-                    className="flex items-center space-x-2 cursor-pointer p-2 rounded-md hover:bg-muted/50 transition-colors"
+                    className={`flex items-center space-x-2 p-2 rounded-md transition-colors ${
+                      isAtMax
+                        ? "cursor-not-allowed opacity-50"
+                        : "cursor-pointer hover:bg-muted/50"
+                    }`}
                   >
                     <input
                       type={isMultiple ? "checkbox" : "radio"}
                       name={isMultiple ? undefined : `q-${question.id}`}
                       value={choice.choice_text}
                       checked={isChecked}
+                      disabled={isAtMax}
                       onChange={(e) => {
                         if (isMultiple) {
                           handleMultipleAnswerChange(
@@ -780,6 +804,14 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
                   </label>
                 )
               })}
+              {isMultiple && question.max_selections && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  {(() => {
+                    const currentSelections = Array.isArray(value) ? value.length : 0
+                    return `${currentSelections} of ${question.max_selections} selected`
+                  })()}
+                </p>
+              )}
             </div>
           </div>
         )

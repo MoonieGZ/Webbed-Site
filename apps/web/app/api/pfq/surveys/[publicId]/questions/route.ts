@@ -45,6 +45,7 @@ export async function POST(
         "number",
       ]),
       allow_multiple: z.boolean().optional(), // For choice questions: true = checkboxes, false = radio
+      max_selections: z.number().int().positive().nullable().optional(), // For multiple choice: max selections allowed (null = no limit)
       is_optional: z.boolean().optional(), // If true, question can be left unanswered
       order_index: z.number().int().min(0),
       choices: z
@@ -71,6 +72,7 @@ export async function POST(
       question_text,
       question_type,
       allow_multiple,
+      max_selections,
       is_optional,
       order_index,
       choices,
@@ -111,13 +113,14 @@ export async function POST(
     }
 
     const result = (await query(
-      "INSERT INTO pfq_survey_questions (group_id, survey_id, question_text, question_type, allow_multiple, is_optional, order_index) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO pfq_survey_questions (group_id, survey_id, question_text, question_type, allow_multiple, max_selections, is_optional, order_index) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
       [
         group_id,
         survey.id,
         question_text,
         question_type,
         question_type === "choice" ? (allow_multiple ? 1 : 0) : 0,
+        question_type === "choice" && allow_multiple ? max_selections ?? null : null,
         is_optional ? 1 : 0,
         order_index,
       ],
@@ -136,10 +139,11 @@ export async function POST(
     }
 
     const question = (await queryOne(
-      "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, is_optional, order_index, created_at FROM pfq_survey_questions WHERE id = ? LIMIT 1",
+      "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, max_selections, is_optional, order_index, created_at FROM pfq_survey_questions WHERE id = ? LIMIT 1",
       [questionId],
     )) as any
     question.allow_multiple = question.allow_multiple === 1
+    question.max_selections = question.max_selections ?? null
     question.is_optional = question.is_optional === 1
 
     if (question_type === "choice" && choices) {

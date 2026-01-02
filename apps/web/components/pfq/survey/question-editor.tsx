@@ -64,6 +64,7 @@ export function QuestionEditor({
       | "choice"
       | "number"
     allow_multiple?: boolean
+    max_selections?: number | null
     is_optional?: boolean
     order_index: number
     choices: { choice_text: string; order_index: number }[]
@@ -79,6 +80,7 @@ export function QuestionEditor({
       | "choice"
       | "number"
     allow_multiple?: boolean
+    max_selections?: number | null
     is_optional?: boolean
     order_index: number
     choices: { choice_text: string; order_index: number }[]
@@ -86,6 +88,7 @@ export function QuestionEditor({
     question_text: "",
     question_type: "text",
     allow_multiple: false,
+    max_selections: null,
     is_optional: false,
     order_index: 0,
     choices: [],
@@ -124,6 +127,10 @@ export function QuestionEditor({
         newQuestion.question_type === "choice"
           ? newQuestion.allow_multiple
           : undefined,
+      max_selections:
+        newQuestion.question_type === "choice" && newQuestion.allow_multiple
+          ? newQuestion.max_selections ?? null
+          : null,
       is_optional: newQuestion.is_optional,
       order_index: orderIndex,
       choices:
@@ -137,6 +144,7 @@ export function QuestionEditor({
         question_text: "",
         question_type: "text",
         allow_multiple: false,
+        max_selections: null,
         is_optional: false,
         order_index: 0,
         choices: [],
@@ -151,6 +159,7 @@ export function QuestionEditor({
       question_text: question.question_text,
       question_type: question.question_type,
       allow_multiple: question.allow_multiple ?? false,
+      max_selections: question.max_selections ?? null,
       is_optional: question.is_optional ?? false,
       order_index: question.order_index,
       choices: question.choices
@@ -189,6 +198,10 @@ export function QuestionEditor({
         editingQuestion.question_type === "choice"
           ? editingQuestion.allow_multiple
           : undefined,
+      max_selections:
+        editingQuestion.question_type === "choice" && editingQuestion.allow_multiple
+          ? editingQuestion.max_selections ?? null
+          : null,
       order_index: editingQuestion.order_index,
       choices:
         editingQuestion.question_type === "choice"
@@ -446,10 +459,45 @@ export function QuestionEditor({
                       setNewQuestion({
                         ...newQuestion,
                         allow_multiple: checked,
+                        max_selections: checked ? newQuestion.max_selections : null,
                       })
                     }
                   />
                 </div>
+                {newQuestion.allow_multiple && (
+                  <div className="space-y-2 p-2 border rounded-md">
+                    <Label htmlFor="max-selections-new" className="text-sm">
+                      Maximum Selections
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Limit how many choices can be selected (leave empty for no limit)
+                    </p>
+                            <Input
+                              id="max-selections-new"
+                              type="number"
+                              min="1"
+                              max={newQuestion.choices.length || 10}
+                              placeholder="No limit"
+                              value={newQuestion.max_selections ?? ""}
+                              onChange={(e) => {
+                                const value = e.target.value
+                                const numValue = value === "" ? null : parseInt(value) || null
+                                // Validate that max_selections doesn't exceed number of choices
+                                if (numValue !== null && newQuestion.choices.length > 0 && numValue > newQuestion.choices.length) {
+                                  toast.error(
+                                    `Maximum selections cannot exceed the number of choices (${newQuestion.choices.length})`,
+                                    toastStyles.error,
+                                  )
+                                  return
+                                }
+                                setNewQuestion({
+                                  ...newQuestion,
+                                  max_selections: numValue,
+                                })
+                              }}
+                            />
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <Label className="text-xs">Choices (max 10)</Label>
                   <Button
@@ -706,10 +754,45 @@ export function QuestionEditor({
                               setEditingQuestion({
                                 ...editingQuestion,
                                 allow_multiple: checked,
+                                max_selections: checked ? editingQuestion.max_selections : null,
                               })
                             }
                           />
                         </div>
+                        {editingQuestion.allow_multiple && (
+                          <div className="space-y-2 p-2 border rounded-md">
+                            <Label htmlFor="max-selections-edit" className="text-sm">
+                              Maximum Selections
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                              Limit how many choices can be selected (leave empty for no limit)
+                            </p>
+                            <Input
+                              id="max-selections-edit"
+                              type="number"
+                              min="1"
+                              max={editingQuestion.choices.length || 10}
+                              placeholder="No limit"
+                              value={editingQuestion.max_selections ?? ""}
+                              onChange={(e) => {
+                                const value = e.target.value
+                                const numValue = value === "" ? null : parseInt(value) || null
+                                // Validate that max_selections doesn't exceed number of choices
+                                if (numValue !== null && editingQuestion.choices.length > 0 && numValue > editingQuestion.choices.length) {
+                                  toast.error(
+                                    `Maximum selections cannot exceed the number of choices (${editingQuestion.choices.length})`,
+                                    toastStyles.error,
+                                  )
+                                  return
+                                }
+                                setEditingQuestion({
+                                  ...editingQuestion,
+                                  max_selections: numValue,
+                                })
+                              }}
+                            />
+                          </div>
+                        )}
                         <div className="flex items-center justify-between">
                           <Label className="text-xs">Choices (max 10)</Label>
                           <Button
