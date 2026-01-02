@@ -115,7 +115,8 @@ export async function PUT(
     if (updates.max_selections !== undefined) {
       // Only max_selections for multiple choice questions
       if (
-        (question.question_type === "choice" && question.allow_multiple === 1) ||
+        (question.question_type === "choice" &&
+          question.allow_multiple === 1) ||
         (updates.question_type === "choice" && updates.allow_multiple === true)
       ) {
         updateFields.push("max_selections = ?")

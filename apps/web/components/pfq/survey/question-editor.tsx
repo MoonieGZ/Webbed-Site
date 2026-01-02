@@ -129,7 +129,7 @@ export function QuestionEditor({
           : undefined,
       max_selections:
         newQuestion.question_type === "choice" && newQuestion.allow_multiple
-          ? newQuestion.max_selections ?? null
+          ? (newQuestion.max_selections ?? null)
           : null,
       is_optional: newQuestion.is_optional,
       order_index: orderIndex,
@@ -199,8 +199,9 @@ export function QuestionEditor({
           ? editingQuestion.allow_multiple
           : undefined,
       max_selections:
-        editingQuestion.question_type === "choice" && editingQuestion.allow_multiple
-          ? editingQuestion.max_selections ?? null
+        editingQuestion.question_type === "choice" &&
+        editingQuestion.allow_multiple
+          ? (editingQuestion.max_selections ?? null)
           : null,
       order_index: editingQuestion.order_index,
       choices:
@@ -459,7 +460,9 @@ export function QuestionEditor({
                       setNewQuestion({
                         ...newQuestion,
                         allow_multiple: checked,
-                        max_selections: checked ? newQuestion.max_selections : null,
+                        max_selections: checked
+                          ? newQuestion.max_selections
+                          : null,
                       })
                     }
                   />
@@ -470,32 +473,38 @@ export function QuestionEditor({
                       Maximum Selections
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Limit how many choices can be selected (leave empty for no limit)
+                      Limit how many choices can be selected (leave empty for no
+                      limit)
                     </p>
-                            <Input
-                              id="max-selections-new"
-                              type="number"
-                              min="1"
-                              max={newQuestion.choices.length || 10}
-                              placeholder="No limit"
-                              value={newQuestion.max_selections ?? ""}
-                              onChange={(e) => {
-                                const value = e.target.value
-                                const numValue = value === "" ? null : parseInt(value) || null
-                                // Validate that max_selections doesn't exceed number of choices
-                                if (numValue !== null && newQuestion.choices.length > 0 && numValue > newQuestion.choices.length) {
-                                  toast.error(
-                                    `Maximum selections cannot exceed the number of choices (${newQuestion.choices.length})`,
-                                    toastStyles.error,
-                                  )
-                                  return
-                                }
-                                setNewQuestion({
-                                  ...newQuestion,
-                                  max_selections: numValue,
-                                })
-                              }}
-                            />
+                    <Input
+                      id="max-selections-new"
+                      type="number"
+                      min="1"
+                      max={newQuestion.choices.length || 10}
+                      placeholder="No limit"
+                      value={newQuestion.max_selections ?? ""}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        const numValue =
+                          value === "" ? null : parseInt(value) || null
+                        // Validate that max_selections doesn't exceed number of choices
+                        if (
+                          numValue !== null &&
+                          newQuestion.choices.length > 0 &&
+                          numValue > newQuestion.choices.length
+                        ) {
+                          toast.error(
+                            `Maximum selections cannot exceed the number of choices (${newQuestion.choices.length})`,
+                            toastStyles.error,
+                          )
+                          return
+                        }
+                        setNewQuestion({
+                          ...newQuestion,
+                          max_selections: numValue,
+                        })
+                      }}
+                    />
                   </div>
                 )}
                 <div className="flex items-center justify-between">
@@ -754,18 +763,24 @@ export function QuestionEditor({
                               setEditingQuestion({
                                 ...editingQuestion,
                                 allow_multiple: checked,
-                                max_selections: checked ? editingQuestion.max_selections : null,
+                                max_selections: checked
+                                  ? editingQuestion.max_selections
+                                  : null,
                               })
                             }
                           />
                         </div>
                         {editingQuestion.allow_multiple && (
                           <div className="space-y-2 p-2 border rounded-md">
-                            <Label htmlFor="max-selections-edit" className="text-sm">
+                            <Label
+                              htmlFor="max-selections-edit"
+                              className="text-sm"
+                            >
                               Maximum Selections
                             </Label>
                             <p className="text-xs text-muted-foreground">
-                              Limit how many choices can be selected (leave empty for no limit)
+                              Limit how many choices can be selected (leave
+                              empty for no limit)
                             </p>
                             <Input
                               id="max-selections-edit"
@@ -776,9 +791,14 @@ export function QuestionEditor({
                               value={editingQuestion.max_selections ?? ""}
                               onChange={(e) => {
                                 const value = e.target.value
-                                const numValue = value === "" ? null : parseInt(value) || null
+                                const numValue =
+                                  value === "" ? null : parseInt(value) || null
                                 // Validate that max_selections doesn't exceed number of choices
-                                if (numValue !== null && editingQuestion.choices.length > 0 && numValue > editingQuestion.choices.length) {
+                                if (
+                                  numValue !== null &&
+                                  editingQuestion.choices.length > 0 &&
+                                  numValue > editingQuestion.choices.length
+                                ) {
                                   toast.error(
                                     `Maximum selections cannot exceed the number of choices (${editingQuestion.choices.length})`,
                                     toastStyles.error,

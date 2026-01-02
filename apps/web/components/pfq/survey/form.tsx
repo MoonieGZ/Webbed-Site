@@ -302,7 +302,10 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
 
       if (checked) {
         // Check max_selections limit
-        if (question?.max_selections && currentArray.length >= question.max_selections) {
+        if (
+          question?.max_selections &&
+          currentArray.length >= question.max_selections
+        ) {
           toast.error(
             `You can only select up to ${question.max_selections} option(s) for this question.`,
             toastStyles.error,
@@ -769,8 +772,12 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
                   : typeof value === "string" && value === choice.choice_text
 
                 // Check if we're at max selections and this choice is not checked
-                const currentSelections = isMultiple && Array.isArray(value) ? value.length : 0
-                const isAtMax = question.max_selections && currentSelections >= question.max_selections && !isChecked
+                const currentSelections =
+                  isMultiple && Array.isArray(value) ? value.length : 0
+                const isAtMax =
+                  question.max_selections &&
+                  currentSelections >= question.max_selections &&
+                  !isChecked
 
                 return (
                   <label
@@ -807,7 +814,9 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
               {isMultiple && question.max_selections && (
                 <p className="text-xs text-muted-foreground mt-2">
                   {(() => {
-                    const currentSelections = Array.isArray(value) ? value.length : 0
+                    const currentSelections = Array.isArray(value)
+                      ? value.length
+                      : 0
                     return `${currentSelections} of ${question.max_selections} selected`
                   })()}
                 </p>

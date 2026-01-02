@@ -120,7 +120,9 @@ export async function POST(
         question_text,
         question_type,
         question_type === "choice" ? (allow_multiple ? 1 : 0) : 0,
-        question_type === "choice" && allow_multiple ? max_selections ?? null : null,
+        question_type === "choice" && allow_multiple
+          ? (max_selections ?? null)
+          : null,
         is_optional ? 1 : 0,
         order_index,
       ],
