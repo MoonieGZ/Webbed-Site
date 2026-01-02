@@ -64,6 +64,7 @@ export function useSurveyCreate(publicId?: string) {
               question_text: question.question_text,
               question_type: question.question_type,
               allow_multiple: question.allow_multiple ?? false,
+              is_optional: question.is_optional ?? false,
               order_index: question.order_index,
               created_at: question.created_at,
               choices: question.choices || [],

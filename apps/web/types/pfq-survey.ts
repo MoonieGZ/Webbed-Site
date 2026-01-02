@@ -4,6 +4,7 @@ export type SurveyQuestionType =
   | "likert"
   | "text"
   | "choice"
+  | "number"
 
 export interface Survey {
   id: number
@@ -33,6 +34,7 @@ export interface Question {
   question_text: string
   question_type: SurveyQuestionType
   allow_multiple?: boolean // For choice questions: true = checkboxes, false = radio buttons
+  is_optional?: boolean // If true, question can be left unanswered (will be saved as "N/A")
   order_index: number
   created_at: string
   choices?: AnswerChoice[]
@@ -132,6 +134,7 @@ export interface CreateQuestionRequest {
   question_text: string
   question_type: SurveyQuestionType
   allow_multiple?: boolean // For choice questions: true = checkboxes, false = radio buttons
+  is_optional?: boolean // If true, question can be left unanswered (will be saved as "N/A")
   order_index: number
   choices?: CreateAnswerChoiceRequest[]
 }
@@ -141,6 +144,7 @@ export interface UpdateQuestionRequest {
   question_text?: string
   question_type?: SurveyQuestionType
   allow_multiple?: boolean // For choice questions: true = checkboxes, false = radio buttons
+  is_optional?: boolean // If true, question can be left unanswered (will be saved as "N/A")
   order_index?: number
 }
 

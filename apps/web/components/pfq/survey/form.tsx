@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,6 +16,7 @@ import {
   countTotalQuestions,
   getAllQuestions,
   formatSurveyDate,
+  getSurveyProgressKey,
 } from "@/lib/survey-utils"
 import { MAX_TEXT_LENGTH, LIKERT_OPTIONS } from "@/lib/survey-constants"
 import type { Question } from "@/types/pfq-survey"
@@ -99,6 +101,25 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
 
   const remainingCount = totalQuestions - answeredCount
 
+  // Simple hash function for API key (for localStorage key)
+  const hashApiKey = (key: string): string => {
+    let hash = 0
+    for (let i = 0; i < key.length; i++) {
+      const char = key.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // Convert to 32-bit integer
+    }
+    return Math.abs(hash).toString(36)
+  }
+
+  // Get localStorage key for this survey and API key
+  const getStorageKey = (): string | null => {
+    if (!apiKey || !isApiKeyValidated || !publicId) return null
+    const apiKeyHash = hashApiKey(apiKey)
+    return getSurveyProgressKey(publicId, apiKeyHash)
+  }
+
+  // Load from userResponse first (takes precedence over localStorage)
   useEffect(() => {
     if (userResponse?.answers) {
       const initialAnswers: Record<number, string | string[]> = {}
@@ -122,6 +143,59 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
       setTouchedQuestions(touched)
     }
   }, [userResponse])
+
+  // Load from localStorage when API key is validated (only if no userResponse)
+  useEffect(() => {
+    // Skip if userResponse exists (it takes precedence)
+    if (userResponse?.answers) return
+    if (!isApiKeyValidated || !apiKey || !publicId) return
+
+    const storageKey = getStorageKey()
+    if (!storageKey) return
+
+    try {
+      const saved = localStorage.getItem(storageKey)
+      if (saved) {
+        const savedData = JSON.parse(saved)
+        if (savedData.answers && typeof savedData.answers === "object") {
+          setAnswers(savedData.answers)
+          setTouchedQuestions(
+            new Set<number>(savedData.touchedQuestions || []),
+          )
+        }
+      }
+    } catch (error) {
+      console.error("Error loading from localStorage:", error)
+    }
+  }, [isApiKeyValidated, apiKey, publicId, userResponse])
+
+  // Save to localStorage on answers change (debounced)
+  useEffect(() => {
+    if (!isApiKeyValidated || !apiKey || !publicId) return
+
+    const storageKey = getStorageKey()
+    if (!storageKey) return
+
+    const timeoutId = setTimeout(() => {
+      try {
+        const dataToSave = {
+          answers,
+          touchedQuestions: Array.from(touchedQuestions),
+          timestamp: Date.now(),
+        }
+        localStorage.setItem(storageKey, JSON.stringify(dataToSave))
+      } catch (error) {
+        // Handle quota exceeded or other errors gracefully
+        if (error instanceof DOMException && error.name === "QuotaExceededError") {
+          console.warn("localStorage quota exceeded, cannot save progress")
+        } else {
+          console.error("Error saving to localStorage:", error)
+        }
+      }
+    }, 500) // Debounce by 500ms
+
+    return () => clearTimeout(timeoutId)
+  }, [answers, touchedQuestions, isApiKeyValidated, apiKey, publicId])
 
   if (loading) {
     return (
@@ -268,20 +342,35 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
       return
     }
 
-    const answerArray = Object.entries(answers).map(
-      ([questionId, answerValue]) => {
-        // Serialize arrays as JSON for multiple selections
+    // Build answer array - include "N/A" for unanswered optional questions
+    const answerArray: { question_id: number; answer_value: string }[] = []
+    const answeredQuestionIds = new Set(Object.keys(answers).map(Number))
+
+    for (const question of allQuestions) {
+      const questionId = question.id
+      if (answeredQuestionIds.has(questionId)) {
+        // Question has an answer
+        const answerValue = answers[questionId]
         const serializedValue = Array.isArray(answerValue)
           ? JSON.stringify(answerValue)
           : answerValue
-        return {
-          question_id: parseInt(questionId),
+        answerArray.push({
+          question_id: questionId,
           answer_value: serializedValue,
-        }
-      },
-    )
+        })
+      } else if (question.is_optional === true) {
+        // Optional question with no answer - will be handled by API as "N/A"
+        // We don't need to include it here, the API will add it
+      }
+      // Required questions without answers are caught by validation above
+    }
 
     const unansweredQuestions = allQuestions.filter((q) => {
+      // Skip validation for optional questions
+      if (q.is_optional === true) {
+        return false
+      }
+
       const answer = answers[q.id]
 
       // For range questions, check if they've been touched/interacted with
@@ -341,6 +430,15 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
 
     const success = await submitResponse(answerArray)
     if (success) {
+      // Clear localStorage after successful submission
+      const storageKey = getStorageKey()
+      if (storageKey) {
+        try {
+          localStorage.removeItem(storageKey)
+        } catch (error) {
+          console.error("Error clearing localStorage:", error)
+        }
+      }
       // Reset form or show success message
     }
   }
@@ -561,6 +659,54 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         )
       }
 
+      case "number": {
+        const numberValue =
+          typeof value === "string"
+            ? value
+            : Array.isArray(value)
+              ? value[0] || ""
+              : ""
+        const hasError = validationErrors.has(question.id)
+        return (
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label
+                htmlFor={`q-${question.id}`}
+                className={`text-base font-semibold ${hasError ? "text-destructive" : ""}`}
+              >
+                {question.question_text}
+                {hasError && (
+                  <span className="text-destructive text-sm font-normal ml-2">
+                    (Please answer this question)
+                  </span>
+                )}
+              </Label>
+            </div>
+            <div className="pl-1">
+              <Input
+                id={`q-${question.id}`}
+                type="number"
+                value={numberValue}
+                onChange={(e) => {
+                  // Only allow digits (including negative and decimal)
+                  const inputValue = e.target.value
+                  // Allow empty string, negative sign, decimal point, and digits
+                  if (inputValue === "" || /^-?\d*\.?\d*$/.test(inputValue)) {
+                    handleAnswerChange(question.id, inputValue)
+                  }
+                }}
+                placeholder="Enter a number..."
+                className={`${
+                  hasError
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : ""
+                }`}
+              />
+            </div>
+          </div>
+        )
+      }
+
       case "choice": {
         const hasError = validationErrors.has(question.id)
         if (!question.choices || question.choices.length === 0) {
@@ -645,8 +791,8 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* Sticky Progress Indicator */}
-      {totalQuestions > 0 && (
+      {/* Sticky Progress Indicator - only show when API key is validated */}
+      {totalQuestions > 0 && isApiKeyValidated && (
         <div className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b shadow-sm py-4 -mx-4 px-4 mb-6">
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
@@ -691,7 +837,16 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         </CardContent>
       </Card>
 
-      {totalQuestions === 0 ? (
+      {/* Only show questions when API key is validated */}
+      {!isApiKeyValidated ? (
+        <Card>
+          <CardContent>
+            <p className="text-muted-foreground text-center">
+              Please validate your API key to view and answer questions.
+            </p>
+          </CardContent>
+        </Card>
+      ) : totalQuestions === 0 ? (
         <Card>
           <CardContent>
             <p className="text-muted-foreground text-center">

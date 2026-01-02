@@ -46,9 +46,10 @@ export async function PUT(
       group_id: z.number().int().positive().optional(),
       question_text: z.string().min(1).optional(),
       question_type: z
-        .enum(["range_5", "range_10", "likert", "text", "choice"])
+        .enum(["range_5", "range_10", "likert", "text", "choice", "number"])
         .optional(),
       allow_multiple: z.boolean().optional(), // For choice questions: true = checkboxes, false = radio
+      is_optional: z.boolean().optional(), // If true, question can be left unanswered
       order_index: z.number().int().min(0).optional(),
     })
 
@@ -110,6 +111,10 @@ export async function PUT(
         updateValues.push(updates.allow_multiple ? 1 : 0)
       }
     }
+    if (updates.is_optional !== undefined) {
+      updateFields.push("is_optional = ?")
+      updateValues.push(updates.is_optional ? 1 : 0)
+    }
     if (updates.order_index !== undefined) {
       updateFields.push("order_index = ?")
       updateValues.push(updates.order_index)
@@ -130,10 +135,11 @@ export async function PUT(
     )
 
     const updatedQuestion = (await queryOne(
-      "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, order_index, created_at FROM pfq_survey_questions WHERE id = ? LIMIT 1",
+      "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, is_optional, order_index, created_at FROM pfq_survey_questions WHERE id = ? LIMIT 1",
       [questionId],
     )) as any
     updatedQuestion.allow_multiple = updatedQuestion.allow_multiple === 1
+    updatedQuestion.is_optional = updatedQuestion.is_optional === 1
 
     if (updatedQuestion.question_type === "choice") {
       const choices = await query(

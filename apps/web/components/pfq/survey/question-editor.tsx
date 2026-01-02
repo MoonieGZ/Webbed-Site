@@ -56,22 +56,25 @@ export function QuestionEditor({
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editingQuestion, setEditingQuestion] = useState<{
     question_text: string
-    question_type: "range_5" | "range_10" | "likert" | "text" | "choice"
+    question_type: "range_5" | "range_10" | "likert" | "text" | "choice" | "number"
     allow_multiple?: boolean
+    is_optional?: boolean
     order_index: number
     choices: { choice_text: string; order_index: number }[]
   } | null>(null)
   const [adding, setAdding] = useState(false)
   const [newQuestion, setNewQuestion] = useState<{
     question_text: string
-    question_type: "range_5" | "range_10" | "likert" | "text" | "choice"
+    question_type: "range_5" | "range_10" | "likert" | "text" | "choice" | "number"
     allow_multiple?: boolean
+    is_optional?: boolean
     order_index: number
     choices: { choice_text: string; order_index: number }[]
   }>({
     question_text: "",
     question_type: "text",
     allow_multiple: false,
+    is_optional: false,
     order_index: 0,
     choices: [],
   })
@@ -109,6 +112,7 @@ export function QuestionEditor({
         newQuestion.question_type === "choice"
           ? newQuestion.allow_multiple
           : undefined,
+      is_optional: newQuestion.is_optional,
       order_index: orderIndex,
       choices:
         newQuestion.question_type === "choice"
@@ -121,6 +125,7 @@ export function QuestionEditor({
         question_text: "",
         question_type: "text",
         allow_multiple: false,
+        is_optional: false,
         order_index: 0,
         choices: [],
       })
@@ -134,6 +139,7 @@ export function QuestionEditor({
       question_text: question.question_text,
       question_type: question.question_type,
       allow_multiple: question.allow_multiple ?? false,
+      is_optional: question.is_optional ?? false,
       order_index: question.order_index,
       choices: question.choices
         ? question.choices.map((c) => ({
@@ -166,6 +172,7 @@ export function QuestionEditor({
     const success = await onUpdateQuestion(editingId, {
       question_text: editingQuestion.question_text.trim(),
       question_type: editingQuestion.question_type,
+      is_optional: editingQuestion.is_optional,
       allow_multiple:
         editingQuestion.question_type === "choice"
           ? editingQuestion.allow_multiple
@@ -349,7 +356,7 @@ export function QuestionEditor({
               <Select
                 value={newQuestion.question_type}
                 onValueChange={(
-                  value: "range_5" | "range_10" | "likert" | "text" | "choice",
+                  value: "range_5" | "range_10" | "likert" | "text" | "choice" | "number",
                 ) =>
                   setNewQuestion({
                     ...newQuestion,
@@ -373,8 +380,32 @@ export function QuestionEditor({
                   <SelectItem value="range_10">Range 0-10</SelectItem>
                   <SelectItem value="likert">Likert Scale</SelectItem>
                   <SelectItem value="text">Text (2000 chars)</SelectItem>
+                  <SelectItem value="number">Number</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="flex items-center justify-between p-2 border rounded-md">
+              <div className="space-y-0.5">
+                <Label htmlFor="is-optional-new" className="text-sm">
+                  Optional Question
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {newQuestion.is_optional
+                    ? "Can be left unanswered (will be saved as 'N/A')"
+                    : "Required - must be answered"}
+                </p>
+              </div>
+              <Switch
+                id="is-optional-new"
+                checked={newQuestion.is_optional ?? false}
+                onCheckedChange={(checked) =>
+                  setNewQuestion({
+                    ...newQuestion,
+                    is_optional: checked,
+                  })
+                }
+              />
             </div>
 
             {newQuestion.question_type === "choice" && (
@@ -541,7 +572,8 @@ export function QuestionEditor({
                             | "range_10"
                             | "likert"
                             | "text"
-                            | "choice",
+                            | "choice"
+                            | "number",
                         ) =>
                           setEditingQuestion({
                             ...editingQuestion,
@@ -568,6 +600,7 @@ export function QuestionEditor({
                           <SelectItem value="choice">
                             Choice (Radio/Checkbox)
                           </SelectItem>
+                          <SelectItem value="number">Number</SelectItem>
                         </SelectContent>
                       </Select>
                       <div className="flex flex-col gap-1">
@@ -607,6 +640,29 @@ export function QuestionEditor({
                           <ChevronDown className="h-3 w-3" />
                         </Button>
                       </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 border rounded-md">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="is-optional-edit" className="text-sm">
+                          Optional Question
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          {editingQuestion.is_optional
+                            ? "Can be left unanswered (will be saved as 'N/A')"
+                            : "Required - must be answered"}
+                        </p>
+                      </div>
+                      <Switch
+                        id="is-optional-edit"
+                        checked={editingQuestion.is_optional ?? false}
+                        onCheckedChange={(checked) =>
+                          setEditingQuestion({
+                            ...editingQuestion,
+                            is_optional: checked,
+                          })
+                        }
+                      />
                     </div>
 
                     {editingQuestion.question_type === "choice" && (

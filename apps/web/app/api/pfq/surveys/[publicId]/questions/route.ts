@@ -42,8 +42,10 @@ export async function POST(
         "likert",
         "text",
         "choice",
+        "number",
       ]),
       allow_multiple: z.boolean().optional(), // For choice questions: true = checkboxes, false = radio
+      is_optional: z.boolean().optional(), // If true, question can be left unanswered
       order_index: z.number().int().min(0),
       choices: z
         .array(
@@ -69,6 +71,7 @@ export async function POST(
       question_text,
       question_type,
       allow_multiple,
+      is_optional,
       order_index,
       choices,
     } = parseResult.data
@@ -108,13 +111,14 @@ export async function POST(
     }
 
     const result = (await query(
-      "INSERT INTO pfq_survey_questions (group_id, survey_id, question_text, question_type, allow_multiple, order_index) VALUES (?, ?, ?, ?, ?, ?)",
+      "INSERT INTO pfq_survey_questions (group_id, survey_id, question_text, question_type, allow_multiple, is_optional, order_index) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
         group_id,
         survey.id,
         question_text,
         question_type,
         question_type === "choice" ? (allow_multiple ? 1 : 0) : 0,
+        is_optional ? 1 : 0,
         order_index,
       ],
     )) as any
@@ -132,10 +136,11 @@ export async function POST(
     }
 
     const question = (await queryOne(
-      "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, order_index, created_at FROM pfq_survey_questions WHERE id = ? LIMIT 1",
+      "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, is_optional, order_index, created_at FROM pfq_survey_questions WHERE id = ? LIMIT 1",
       [questionId],
     )) as any
     question.allow_multiple = question.allow_multiple === 1
+    question.is_optional = question.is_optional === 1
 
     if (question_type === "choice" && choices) {
       const insertedChoices = await query(

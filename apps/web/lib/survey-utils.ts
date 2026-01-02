@@ -52,3 +52,20 @@ export function sortByOrderIndex<T extends { order_index: number }>(
 export function formatSurveyDate(dateString: string | Date): string {
   return new Date(dateString).toLocaleString()
 }
+
+/**
+ * Check if a question has required data (e.g., choices for choice questions)
+ */
+export function questionHasRequiredData(question: Question): boolean {
+  if (question.question_type === "choice") {
+    return question.choices !== undefined && question.choices.length > 0
+  }
+  return true // Other question types don't require additional data
+}
+
+/**
+ * Generate localStorage key for survey progress
+ */
+export function getSurveyProgressKey(publicId: string, apiKeyHash: string): string {
+  return `survey-${publicId}-${apiKeyHash}`
+}

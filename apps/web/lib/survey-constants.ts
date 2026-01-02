@@ -13,6 +13,7 @@ export const QUESTION_TYPES = [
   "likert",
   "text",
   "choice",
+  "number",
 ] as const
 
 export type QuestionType = (typeof QUESTION_TYPES)[number]

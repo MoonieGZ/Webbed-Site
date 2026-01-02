@@ -28,12 +28,13 @@ export async function GET(
 
     for (const group of groups) {
       const questions = (await query(
-        "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, order_index, created_at FROM pfq_survey_questions WHERE group_id = ? ORDER BY order_index ASC",
+        "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, is_optional, order_index, created_at FROM pfq_survey_questions WHERE group_id = ? ORDER BY order_index ASC",
         [group.id],
       )) as any[]
 
       for (const question of questions) {
         question.allow_multiple = question.allow_multiple === 1
+        question.is_optional = question.is_optional === 1
         if (question.question_type === "choice") {
           const choices = await query(
             "SELECT id, question_id, choice_text, order_index, created_at FROM pfq_survey_answer_choices WHERE question_id = ? ORDER BY order_index ASC",

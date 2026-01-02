@@ -194,12 +194,34 @@ export async function POST(
         existingResponse.id,
       ])
 
-      // Insert new answers
-      for (const answer of answers) {
-        await query(
-          "INSERT INTO pfq_survey_answers (response_id, question_id, answer_value) VALUES (?, ?, ?)",
-          [existingResponse.id, answer.question_id, answer.answer_value],
-        )
+      // Get all questions for the survey to check optional status
+      const allQuestions = (await query(
+        "SELECT id, is_optional FROM pfq_survey_questions WHERE survey_id = ?",
+        [survey.id],
+      )) as any[]
+
+      // Create a map of provided answers by question_id
+      const providedAnswers = new Map(
+        answers.map((a) => [a.question_id, a.answer_value]),
+      )
+
+      // Insert answers - include "N/A" for unanswered optional questions
+      for (const question of allQuestions) {
+        const answerValue = providedAnswers.get(question.id)
+        if (answerValue !== undefined) {
+          // Use provided answer
+          await query(
+            "INSERT INTO pfq_survey_answers (response_id, question_id, answer_value) VALUES (?, ?, ?)",
+            [existingResponse.id, question.id, answerValue],
+          )
+        } else if (question.is_optional === 1) {
+          // Optional question with no answer - insert "N/A"
+          await query(
+            "INSERT INTO pfq_survey_answers (response_id, question_id, answer_value) VALUES (?, ?, ?)",
+            [existingResponse.id, question.id, "N/A"],
+          )
+        }
+        // Required questions without answers are handled by client-side validation
       }
 
       const updatedResponse = await queryOne(
@@ -227,12 +249,34 @@ export async function POST(
 
       const responseId = result.insertId
 
-      // Insert answers
-      for (const answer of answers) {
-        await query(
-          "INSERT INTO pfq_survey_answers (response_id, question_id, answer_value) VALUES (?, ?, ?)",
-          [responseId, answer.question_id, answer.answer_value],
-        )
+      // Get all questions for the survey to check optional status
+      const allQuestions = (await query(
+        "SELECT id, is_optional FROM pfq_survey_questions WHERE survey_id = ?",
+        [survey.id],
+      )) as any[]
+
+      // Create a map of provided answers by question_id
+      const providedAnswers = new Map(
+        answers.map((a) => [a.question_id, a.answer_value]),
+      )
+
+      // Insert answers - include "N/A" for unanswered optional questions
+      for (const question of allQuestions) {
+        const answerValue = providedAnswers.get(question.id)
+        if (answerValue !== undefined) {
+          // Use provided answer
+          await query(
+            "INSERT INTO pfq_survey_answers (response_id, question_id, answer_value) VALUES (?, ?, ?)",
+            [responseId, question.id, answerValue],
+          )
+        } else if (question.is_optional === 1) {
+          // Optional question with no answer - insert "N/A"
+          await query(
+            "INSERT INTO pfq_survey_answers (response_id, question_id, answer_value) VALUES (?, ?, ?)",
+            [responseId, question.id, "N/A"],
+          )
+        }
+        // Required questions without answers are handled by client-side validation
       }
 
       const newResponse = await queryOne(

@@ -143,6 +143,22 @@ export function SurveyCreateForm({ publicId }: SurveyCreateFormProps) {
       return
     }
 
+    // Check if there are questions with missing required data (choices for choice questions)
+    const questionsWithMissingData = questions.filter((q) => {
+      if (q.question_type === "choice") {
+        return !q.choices || q.choices.length === 0
+      }
+      return false
+    })
+
+    if (questionsWithMissingData.length > 0) {
+      toast.error(
+        "Some questions are missing required choices. Please add choices to all choice-type questions before creating the survey.",
+        toastStyles.error,
+      )
+      return
+    }
+
     const surveyData = {
       name: name.trim(),
       start_date: new Date(startDate).toISOString(),
