@@ -52,6 +52,15 @@ export async function PUT(
       max_selections: z.number().int().positive().nullable().optional(), // For multiple choice: max selections allowed (null = no limit)
       is_optional: z.boolean().optional(), // If true, question can be left unanswered
       order_index: z.number().int().min(0).optional(),
+      choices: z
+        .array(
+          z.object({
+            choice_text: z.string().min(1).max(255),
+            order_index: z.number().int().min(0),
+          }),
+        )
+        .max(10)
+        .optional(),
     })
 
     const parseResult = bodySchema.safeParse(await request.json())
@@ -136,19 +145,80 @@ export async function PUT(
       updateValues.push(updates.order_index)
     }
 
-    if (updateFields.length === 0) {
+    // Handle choices update for choice questions
+    if (updates.choices !== undefined) {
+      // Determine the final question type after update
+      const finalQuestionType = updates.question_type ?? question.question_type
+
+      // Only allow choices for choice type questions
+      if (finalQuestionType !== "choice") {
+        if (updates.choices.length > 0) {
+          return NextResponse.json(
+            { error: "Only choice type questions can have choices" },
+            { status: 400 },
+          )
+        }
+        // If not a choice question and choices array is empty, just skip
+        // (choices will be deleted by the question_type change handler above)
+      } else {
+        // Validate choices for choice type questions
+        if (updates.choices.length === 0) {
+          return NextResponse.json(
+            { error: "Choice questions must have at least one choice" },
+            { status: 400 },
+          )
+        }
+        if (updates.choices.length > 10) {
+          return NextResponse.json(
+            { error: "Choice questions can have at most 10 choices" },
+            { status: 400 },
+          )
+        }
+      }
+    }
+
+    if (updateFields.length === 0 && updates.choices === undefined) {
       return NextResponse.json(
         { error: "No fields to update" },
         { status: 400 },
       )
     }
 
-    updateValues.push(questionId)
+    // Update question fields if any
+    if (updateFields.length > 0) {
+      updateValues.push(questionId)
+      await query(
+        `UPDATE pfq_survey_questions SET ${updateFields.join(", ")} WHERE id = ?`,
+        updateValues,
+      )
+    }
 
-    await query(
-      `UPDATE pfq_survey_questions SET ${updateFields.join(", ")} WHERE id = ?`,
-      updateValues,
-    )
+    // Handle choices update
+    if (updates.choices !== undefined) {
+      // Determine the final question type after update
+      const finalQuestionType = updates.question_type ?? question.question_type
+
+      // Only update choices if the question is (or will be) a choice type
+      if (finalQuestionType === "choice") {
+        // Delete all existing choices
+        await query(
+          "DELETE FROM pfq_survey_answer_choices WHERE question_id = ?",
+          [questionId],
+        )
+
+        // Insert new choices
+        if (updates.choices.length > 0) {
+          for (const choice of updates.choices) {
+            await query(
+              "INSERT INTO pfq_survey_answer_choices (question_id, choice_text, order_index) VALUES (?, ?, ?)",
+              [questionId, choice.choice_text, choice.order_index],
+            )
+          }
+        }
+      }
+      // If changing from choice to non-choice, choices are already deleted
+      // by the question_type change handler above
+    }
 
     const updatedQuestion = (await queryOne(
       "SELECT id, group_id, survey_id, question_text, question_type, allow_multiple, max_selections, is_optional, order_index, created_at FROM pfq_survey_questions WHERE id = ? LIMIT 1",
