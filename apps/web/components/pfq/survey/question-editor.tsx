@@ -56,7 +56,13 @@ export function QuestionEditor({
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editingQuestion, setEditingQuestion] = useState<{
     question_text: string
-    question_type: "range_5" | "range_10" | "likert" | "text" | "choice" | "number"
+    question_type:
+      | "range_5"
+      | "range_10"
+      | "likert"
+      | "text"
+      | "choice"
+      | "number"
     allow_multiple?: boolean
     is_optional?: boolean
     order_index: number
@@ -65,7 +71,13 @@ export function QuestionEditor({
   const [adding, setAdding] = useState(false)
   const [newQuestion, setNewQuestion] = useState<{
     question_text: string
-    question_type: "range_5" | "range_10" | "likert" | "text" | "choice" | "number"
+    question_type:
+      | "range_5"
+      | "range_10"
+      | "likert"
+      | "text"
+      | "choice"
+      | "number"
     allow_multiple?: boolean
     is_optional?: boolean
     order_index: number
@@ -356,7 +368,13 @@ export function QuestionEditor({
               <Select
                 value={newQuestion.question_type}
                 onValueChange={(
-                  value: "range_5" | "range_10" | "likert" | "text" | "choice" | "number",
+                  value:
+                    | "range_5"
+                    | "range_10"
+                    | "likert"
+                    | "text"
+                    | "choice"
+                    | "number",
                 ) =>
                   setNewQuestion({
                     ...newQuestion,

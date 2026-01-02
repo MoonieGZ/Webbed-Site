@@ -159,9 +159,7 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         const savedData = JSON.parse(saved)
         if (savedData.answers && typeof savedData.answers === "object") {
           setAnswers(savedData.answers)
-          setTouchedQuestions(
-            new Set<number>(savedData.touchedQuestions || []),
-          )
+          setTouchedQuestions(new Set<number>(savedData.touchedQuestions || []))
         }
       }
     } catch (error) {
@@ -186,7 +184,10 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
         localStorage.setItem(storageKey, JSON.stringify(dataToSave))
       } catch (error) {
         // Handle quota exceeded or other errors gracefully
-        if (error instanceof DOMException && error.name === "QuotaExceededError") {
+        if (
+          error instanceof DOMException &&
+          error.name === "QuotaExceededError"
+        ) {
           console.warn("localStorage quota exceeded, cannot save progress")
         } else {
           console.error("Error saving to localStorage:", error)

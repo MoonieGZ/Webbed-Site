@@ -66,6 +66,9 @@ export function questionHasRequiredData(question: Question): boolean {
 /**
  * Generate localStorage key for survey progress
  */
-export function getSurveyProgressKey(publicId: string, apiKeyHash: string): string {
+export function getSurveyProgressKey(
+  publicId: string,
+  apiKeyHash: string,
+): string {
   return `survey-${publicId}-${apiKeyHash}`
 }
