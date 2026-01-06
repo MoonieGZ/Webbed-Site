@@ -264,8 +264,7 @@ function AggregatedResultsView({
     <div className="space-y-4">
       {validResults.map((result, index) => {
         const showGroupHeader =
-          result.group_id !== undefined &&
-          result.group_id !== currentGroupId
+          result.group_id !== undefined && result.group_id !== currentGroupId
 
         if (showGroupHeader) {
           currentGroupId = result.group_id

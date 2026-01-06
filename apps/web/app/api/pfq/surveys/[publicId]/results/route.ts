@@ -145,7 +145,7 @@ export async function GET(
 
           // Create a map of choice text to count
           const choiceCounts: Record<string, number> = {}
-          
+
           // Initialize all choices with 0
           for (const choice of choices) {
             choiceCounts[choice.choice_text] = 0
@@ -157,7 +157,10 @@ export async function GET(
               const parsed = JSON.parse(answer.answer_value)
               if (Array.isArray(parsed)) {
                 for (const choice of parsed) {
-                  if (typeof choice === "string" && choiceCounts.hasOwnProperty(choice)) {
+                  if (
+                    typeof choice === "string" &&
+                    choiceCounts.hasOwnProperty(choice)
+                  ) {
                     choiceCounts[choice] = (choiceCounts[choice] || 0) + 1
                   }
                 }
@@ -177,7 +180,8 @@ export async function GET(
             return {
               value: choice.choice_text,
               count,
-              percentage: Math.round((count / totalResponses) * 100 * 100) / 100,
+              percentage:
+                Math.round((count / totalResponses) * 100 * 100) / 100,
             }
           })
         } else if (question.question_type === "likert") {
@@ -200,7 +204,8 @@ export async function GET(
             return {
               value: option,
               count,
-              percentage: Math.round((count / totalResponses) * 100 * 100) / 100,
+              percentage:
+                Math.round((count / totalResponses) * 100 * 100) / 100,
             }
           })
         } else {
