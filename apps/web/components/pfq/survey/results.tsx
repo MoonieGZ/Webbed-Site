@@ -258,45 +258,65 @@ function AggregatedResultsView({
     )
   }
 
+  let currentGroupId: number | undefined = undefined
+
   return (
     <div className="space-y-4">
-      {validResults.map((result) => (
-        <Card key={result.question_id}>
-          <CardHeader>
-            <CardTitle>{result.question_text}</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Type: {result.question_type}
-            </p>
-          </CardHeader>
-          <CardContent>
-            {result.total_responses === 0 ||
-            !result.data ||
-            !Array.isArray(result.data) ||
-            result.data.length === 0 ? (
-              <p className="text-muted-foreground">No responses yet</p>
-            ) : (
-              <div className="space-y-3">
-                {result.data.map((item, index) => (
-                  <div key={index} className="space-y-1">
-                    <div className="flex items-center justify-between text-sm">
-                      <span>{item.value}</span>
-                      <span className="font-medium">
-                        {item.count} ({item.percentage}%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div
-                        className="bg-primary h-2 rounded-full transition-all"
-                        style={{ width: `${item.percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+      {validResults.map((result, index) => {
+        const showGroupHeader =
+          result.group_id !== undefined &&
+          result.group_id !== currentGroupId
+
+        if (showGroupHeader) {
+          currentGroupId = result.group_id
+        }
+
+        return (
+          <div key={result.question_id}>
+            {showGroupHeader && result.group_name && (
+              <div className="mb-4 mt-6 first:mt-0">
+                <h3 className="text-lg font-semibold">{result.group_name}</h3>
+                <Separator className="mt-2" />
               </div>
             )}
-          </CardContent>
-        </Card>
-      ))}
+            <Card>
+              <CardHeader>
+                <CardTitle>{result.question_text}</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Type: {result.question_type}
+                </p>
+              </CardHeader>
+              <CardContent>
+                {result.total_responses === 0 ||
+                !result.data ||
+                !Array.isArray(result.data) ||
+                result.data.length === 0 ? (
+                  <p className="text-muted-foreground">No responses yet</p>
+                ) : (
+                  <div className="space-y-3">
+                    {result.data.map((item, itemIndex) => (
+                      <div key={itemIndex} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>{item.value}</span>
+                          <span className="font-medium">
+                            {item.count} ({item.percentage}%)
+                          </span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div
+                            className="bg-primary h-2 rounded-full transition-all"
+                            style={{ width: `${item.percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )
+      })}
     </div>
   )
 }

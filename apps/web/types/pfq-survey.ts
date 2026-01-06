@@ -97,6 +97,10 @@ export interface SurveyResultsAggregated {
   question_text: string
   question_type: SurveyQuestionType
   total_responses: number
+  group_id?: number
+  group_name?: string
+  group_order_index?: number
+  order_index?: number
   data: {
     value: string
     count: number
