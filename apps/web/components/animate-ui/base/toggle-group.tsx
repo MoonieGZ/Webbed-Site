@@ -61,6 +61,7 @@ type ToggleGroupProps = React.ComponentProps<typeof ToggleGroupPrimitive> &
   Omit<VariantProps<typeof toggleVariants>, "type"> & {
     transition?: Transition
     activeClassName?: string
+    toggleMultiple?: boolean
   }
 
 function ToggleGroup({

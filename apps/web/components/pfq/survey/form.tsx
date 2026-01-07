@@ -776,8 +776,8 @@ export function SurveyForm({ publicId }: SurveyFormProps) {
                   isMultiple && Array.isArray(value) ? value.length : 0
                 const isAtMax = Boolean(
                   question.max_selections &&
-                    currentSelections >= question.max_selections &&
-                    !isChecked,
+                  currentSelections >= question.max_selections &&
+                  !isChecked,
                 )
 
                 return (

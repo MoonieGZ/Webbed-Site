@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { toastStyles } from "@/lib/toast-styles"
 import type { PFQApiKeyInfo } from "@/types/pfq"
+import { openPFQApiKeyPage as secureOpenPFQApiKeyPage } from "@/lib/survey-constants"
 
 export function usePFQApiKey() {
   const [apiKeyInfo, setApiKeyInfo] = useState<PFQApiKeyInfo | null>(null)
@@ -96,11 +97,7 @@ export function usePFQApiKey() {
   }
 
   const openPFQApiKeyPage = () => {
-    window.open(
-      "https://pokefarm.com/farm#tab=5.7",
-      "_blank",
-      "noopener,noreferrer",
-    )
+    secureOpenPFQApiKeyPage()
   }
 
   return {

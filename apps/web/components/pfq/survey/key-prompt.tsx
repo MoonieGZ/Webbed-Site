@@ -18,6 +18,8 @@ import { setCookie } from "@/lib/cookie-utils"
 import {
   PFQ_SURVEY_API_KEY_COOKIE,
   API_KEY_COOKIE_EXPIRY_DAYS,
+  PFQ_API_KEY_PAGE_URL,
+  openPFQApiKeyPage as secureOpenPFQApiKeyPage,
 } from "@/lib/survey-constants"
 import { useState } from "react"
 import Link from "next/link"
@@ -79,11 +81,7 @@ export function SurveyKeyPrompt({
   }
 
   const openPFQApiKeyPage = () => {
-    window.open(
-      "https://pokefarm.com/farm#tab=5.7",
-      "_blank",
-      "noopener,noreferrer",
-    )
+    secureOpenPFQApiKeyPage()
   }
 
   if (hasApiKeyFromProfile && apiKey) {
@@ -100,7 +98,7 @@ export function SurveyKeyPrompt({
         <CardDescription>
           Please enter your{" "}
           <Link
-            href="https://pokefarm.com/farm#tab=5.7"
+            href={PFQ_API_KEY_PAGE_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:underline inline-flex items-center gap-1"
