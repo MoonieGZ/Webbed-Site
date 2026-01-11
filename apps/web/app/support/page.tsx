@@ -1,4 +1,6 @@
 "use client"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { SidebarTrigger } from "@/components/animate-ui/radix/sidebar"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -9,8 +11,30 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { SupportForm } from "@/components/support/support-form"
+import { useUser } from "@/hooks/login/use-user"
 
 export default function SupportPage() {
+  const { user, loading } = useUser()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login")
+    }
+  }, [user, loading, router])
+
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2">

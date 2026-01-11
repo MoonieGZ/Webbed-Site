@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     const schema = z.object({
       username: z.string().trim().min(1).max(64),
       email: z.string().trim().email().max(255),
-      category: z.enum(["feature", "bug", "streamer"]),
+      category: z.enum(["feature", "bug", "streamer", "restriction", "other"]),
       subject: z.string().trim().min(1).max(255),
       message: z.string().trim().min(1).max(5000),
     })
@@ -68,6 +68,14 @@ export async function POST(request: NextRequest) {
 
     const sessionToken = request.cookies.get("session")?.value
     const requester = sessionToken ? await getUserBySession(sessionToken) : null
+
+    // Require authentication
+    if (!requester) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 },
+      )
+    }
 
     // Security: attachments saved under private dir; filenames randomized; URLs served via admin-only route
     const attachmentUrls: string[] = []

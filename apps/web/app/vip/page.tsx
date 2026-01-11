@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/animate-ui/radix/sidebar"
 import {
@@ -12,8 +14,30 @@ import {
 import { SupporterCard } from "@/components/vip/supporter-card"
 import { SupporterIntroCard } from "@/components/vip/supporter-intro-card"
 import { SupporterProgressCard } from "@/components/vip/supporter-progress-card"
+import { useUser } from "@/hooks/login/use-user"
 
 export default function VIPPage() {
+  const { user, loading } = useUser()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login")
+    }
+  }, [user, loading, router])
+
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2">

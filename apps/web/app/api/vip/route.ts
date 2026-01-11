@@ -44,6 +44,14 @@ export async function POST(request: NextRequest) {
     const sessionToken = request.cookies.get("session")?.value
     const requester = sessionToken ? await getUserBySession(sessionToken) : null
 
+    // Require authentication
+    if (!requester) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 },
+      )
+    }
+
     const adminEmail = process.env.ADMIN_EMAIL
     if (!adminEmail) {
       return NextResponse.json(
