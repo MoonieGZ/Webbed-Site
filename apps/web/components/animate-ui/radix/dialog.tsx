@@ -47,11 +47,13 @@ function Dialog({ children, ...props }: DialogProps) {
     [props],
   )
 
+  const { onOpenChange: _, ...rootProps } = props
+
   return (
     <DialogContext.Provider value={{ isOpen }}>
       <DialogPrimitive.Root
         data-slot="dialog"
-        {...props}
+        {...rootProps}
         onOpenChange={handleOpenChange}
       >
         {children}

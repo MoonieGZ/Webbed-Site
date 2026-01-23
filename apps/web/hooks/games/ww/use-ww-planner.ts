@@ -523,7 +523,12 @@ export function useWwPlanner() {
 
   const chooseCharacter = (c: CharacterAsset) => {
     setSelectedCharacter(c)
-    setShowAddCharacter(false)
+
+    // Delay closing the dialog to allow exit animation to play
+    // The dialog uses a spring animation that takes ~200-300ms
+    setTimeout(() => {
+      setShowAddCharacter(false)
+    }, 150)
 
     setFromAscension(0)
     setToAscension(6)
@@ -543,17 +548,30 @@ export function useWwPlanner() {
       [true, true],
       [true, true],
     ])
-    setShowCharacterConfig(true)
+
+    // Delay opening config dialog to allow add character dialog to close first
+    setTimeout(() => {
+      setShowCharacterConfig(true)
+    }, 300)
   }
 
   const chooseWeapon = (w: WeaponAsset) => {
     setSelectedWeapon(w)
-    setShowAddWeapon(false)
+
+    // Delay closing the dialog to allow exit animation to play
+    setTimeout(() => {
+      setShowAddWeapon(false)
+    }, 150)
+
     setWFromAscension(0)
     setWToAscension(6)
     setWFromLevel(1)
     setWToLevel(90)
-    setShowWeaponConfig(true)
+
+    // Delay opening config dialog to allow add weapon dialog to close first
+    setTimeout(() => {
+      setShowWeaponConfig(true)
+    }, 300)
   }
 
   const cancelCharacterConfig = () => {

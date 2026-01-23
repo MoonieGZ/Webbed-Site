@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -34,6 +35,8 @@ export function PlannerTopBar({
   summaryOpen: boolean
   setSummaryOpen: (o: boolean) => void
 }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+
   return (
     <Card>
       <CardHeader>
@@ -50,7 +53,7 @@ export function PlannerTopBar({
           what materials you need to collect.
         </div>
         <div className="flex items-center gap-2">
-          <DropdownMenu>
+          <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
                 <ListPlus />
@@ -58,25 +61,55 @@ export function PlannerTopBar({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onAddCharacter}>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault()
+                  setMenuOpen(false)
+                  onAddCharacter()
+                }}
+              >
                 <UserPlus />
                 Add Character
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onAddWeapon}>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault()
+                  setMenuOpen(false)
+                  onAddWeapon()
+                }}
+              >
                 <Swords />
                 Add Weapon
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onManageInventory}>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault()
+                  setMenuOpen(false)
+                  onManageInventory()
+                }}
+              >
                 <LayoutList />
                 Manage Inventory
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={onReorderPlans}>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault()
+                  setMenuOpen(false)
+                  onReorderPlans()
+                }}
+              >
                 <ListOrdered />
                 Re-order Plans
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setSummaryOpen(!summaryOpen)}>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault()
+                  setMenuOpen(false)
+                  setSummaryOpen(!summaryOpen)
+                }}
+              >
                 <ClipboardCheck />
                 Toggle Material Summary
               </DropdownMenuItem>

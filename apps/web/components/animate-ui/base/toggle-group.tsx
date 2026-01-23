@@ -71,6 +71,7 @@ function ToggleGroup({
   children,
   transition = { type: "spring", bounce: 0, stiffness: 200, damping: 25 },
   activeClassName,
+  toggleMultiple,
   ...props
 }: ToggleGroupProps) {
   const globalId = React.useId()
@@ -80,7 +81,7 @@ function ToggleGroup({
       value={{
         variant,
         size,
-        type: props.toggleMultiple ? "multiple" : "single",
+        type: toggleMultiple ? "multiple" : "single",
         transition,
         activeClassName,
         globalId,

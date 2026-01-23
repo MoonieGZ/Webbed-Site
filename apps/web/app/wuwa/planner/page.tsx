@@ -166,9 +166,13 @@ function PlannerContent() {
 
       <AddCharacterDialog
         open={planner.showAddCharacter}
-        onOpenChange={(o) =>
-          o ? planner.openAddCharacter() : planner.closeAddCharacter()
-        }
+        onOpenChange={(o) => {
+          if (o) {
+            planner.openAddCharacter()
+          } else {
+            planner.closeAddCharacter()
+          }
+        }}
         search={planner.search}
         setSearch={planner.setSearch}
         characters={planner.filteredCharacters}
@@ -198,9 +202,15 @@ function PlannerContent() {
 
       <AddWeaponDialog
         open={planner.showAddWeapon}
-        onOpenChange={(o) =>
-          o ? planner.openAddWeapon() : planner.closeAddWeapon()
-        }
+        onOpenChange={(o) => {
+          // Only update state if it's actually changing
+          // This prevents the dialog from reopening unexpectedly
+          if (o && !planner.showAddWeapon) {
+            planner.openAddWeapon()
+          } else if (!o && planner.showAddWeapon) {
+            planner.closeAddWeapon()
+          }
+        }}
         search={planner.search}
         setSearch={planner.setSearch}
         weapons={planner.filteredWeapons}

@@ -69,6 +69,7 @@ function DropdownMenu({
     >
       <DropdownMenuPrimitive.Root
         data-slot="dropdown-menu"
+        modal={false}
         {...props}
         onOpenChange={handleOpenChange}
       >
@@ -213,6 +214,11 @@ function DropdownMenuContent({
           <DropdownMenuPrimitive.Content
             sideOffset={sideOffset}
             asChild
+            onCloseAutoFocus={(event) => {
+              // Prevent automatic focus restoration to avoid focus trap issues
+              // The menu should close without stealing focus from the page
+              event.preventDefault()
+            }}
             {...props}
           >
             <motion.div
